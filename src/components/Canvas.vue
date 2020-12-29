@@ -320,10 +320,10 @@ export default {
 #twod {
   position: absolute;
   z-index: 0;
-  /* -webkit-user-select: none;
+  -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none; */
+  user-select: none;
 }
 
 #threed {

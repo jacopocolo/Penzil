@@ -3,7 +3,7 @@
     :quaternion="quaternion"
     @viewport-camera-update="updateCameraPosition"
   />
-  <!-- <tool-selector @selected-tool="setSelectedTool" /> -->
+  <tool-selector @selected-tool="setSelectedTool" />
   <Canvas :selectedTool="tool" />
 </template>
 
@@ -15,12 +15,11 @@ import CameraControls from "camera-controls";
 CameraControls.install({ THREE: THREE });
 
 import Canvas from "./components/Canvas.vue";
-// import ToolSelector from "./components/ToolSelector.vue";
+import ToolSelector from "./components/ToolSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
-//import ToolSelector from "./components/ToolSelector.vue";
 //import LineSettings from "./components/LineSettings.vue";
 //import Old from "./components/Old.vue";
 
@@ -50,7 +49,7 @@ export default {
     // ToolSelector,
     Canvas,
     // LineSettings,
-    // ToolSelector,
+    ToolSelector,
     ViewportCube,
   },
   data() {
@@ -223,6 +222,10 @@ html,
   margin: 0;
   padding: 0;
   border: 0;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 #app {

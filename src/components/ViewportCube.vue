@@ -10,12 +10,7 @@
     id="viewport"
   >
     <canvas id="viewportCanvas"></canvas>
-    <!-- <span
-      class="reset-camera"
-      @click="resetCamera()"
-      v-bind:class="[ui.resetDisabled ? 'disabled ' : '']"
-      >↺</span
-    > -->
+    <!-- <span class="reset-camera" @click="resetCamera()">↺</span> -->
   </div>
 </template>
 
@@ -223,19 +218,6 @@ export default {
       //   false
       // );
     },
-    eventHandling: function () {
-      // viewPortControls.addEventListener("start", () => {
-      //   console.log("start");
-      //   this.$emit("viewport-camera-update", "start");
-      // });
-      // viewPortControls.addEventListener("change", () => {
-      //   this.$emit("viewport-camera-update", "updated");
-      // });
-      // viewPortControls.addEventListener("end", () => {
-      //   console.log("stop");
-      //   this.$emit("viewport-camera-update", "end");
-      // });
-    },
     rotate: function (deltaX, deltaY) {
       let w = 150;
       var PI_2 = Math.PI * 2;
@@ -244,110 +226,144 @@ export default {
       var phi = (PI_2 * speed * deltaY) / w;
       cameraControls.rotate(theta, phi, false);
     },
-    evalFaceIndex: function (index) {
+    evalFaceIndexAndRepositionCamera: function (index) {
+      let target = new THREE.Vector3();
+      target = cameraControls.getTarget(target);
+
+      let lookAt = function (x, y, z) {
+        cameraControls.dampingFactor = 0.5;
+        cameraControls.enabled = false;
+        cameraControls.setLookAt(x, y, z, target.x, target.y, target.z, true);
+        cameraControls.enabled = true;
+        setTimeout(() => {
+          cameraControls.dampingFactor = 10;
+        }, 100);
+      };
+
       switch (index) {
         case 0:
-          console.log("Right");
+          lookAt(target.x + 10, target.y, target.z);
           break;
         case 1:
-          console.log("Right");
+          lookAt(target.x + 10, target.y, target.z);
           break;
         case 2:
-          console.log("Left");
+          lookAt(target.x - 10, target.y, target.z);
           break;
         case 3:
-          console.log("Left");
+          lookAt(target.x - 10, target.y, target.z);
           break;
         case 4:
-          console.log("Top");
+          lookAt(target.x, target.y + 10, target.z);
           break;
         case 5:
-          console.log("Top");
+          lookAt(target.x, target.y + 10, target.z);
           break;
         case 6:
-          console.log("Bottom");
+          lookAt(target.x, target.y - 10, target.z);
           break;
         case 7:
-          console.log("Bottom");
+          lookAt(target.x, target.y - 10, target.z);
           break;
         case 8:
-          console.log("Front");
+          lookAt(target.x, target.y, target.z + 10);
           break;
         case 9:
-          console.log("Front");
+          lookAt(target.x, target.y, target.z + 10);
           break;
         case 10:
-          console.log("Back");
+          lookAt(target.x, target.y, target.z - 10);
           break;
         case 11:
-          console.log("Back");
+          lookAt(target.x, target.y, target.z - 10);
           break;
         default:
           console.log(index);
       }
     },
+    onTapStart: function () {
+      this.mouse.down = true;
+      this.mouse.dragStartPosition = new THREE.Vector2(
+        this.mouse.cx,
+        this.mouse.cy
+      );
+      this.mouse.lastDragPosition = new THREE.Vector2(
+        this.mouse.cx,
+        this.mouse.cy
+      );
+      document.addEventListener("mousemove", this.handleInput);
+      document.addEventListener("mouseup", this.handleInput);
+      document.addEventListener("touchmove", this.handleInput);
+      document.addEventListener("touchend", this.handleInput);
+    },
+    onTapMove: function () {
+      if (this.mouse.down) {
+        this.rotate(
+          this.mouse.lastDragPosition.x - this.mouse.cx,
+          this.mouse.lastDragPosition.y - this.mouse.cy
+        );
+        this.mouse.lastDragPosition = new THREE.Vector2(
+          this.mouse.cx,
+          this.mouse.cy
+        );
+      }
+    },
+    onTapEnd: function (raycaster) {
+      console.log(
+        this.mouse.dragStartPosition.distanceTo(this.mouse.lastDragPosition)
+      );
+
+      if (
+        this.mouse.dragStartPosition.distanceTo(this.mouse.lastDragPosition) < 5
+      ) {
+        raycaster.setFromCamera(
+          new THREE.Vector2(this.mouse.tx, this.mouse.ty),
+          viewPortCamera
+        );
+
+        try {
+          this.evalFaceIndexAndRepositionCamera(
+            raycaster.intersectObjects(viewPortScene.children)[0].faceIndex
+          );
+        } catch (error) {
+          //raycaster didn't find anything
+        }
+      }
+      this.mouse.dragStartPosition = new THREE.Vector2();
+      this.mouse.lastDragPosition = new THREE.Vector2();
+      this.mouse.cx = 0; //x coord for canvas
+      this.mouse.cy = 0;
+      document.removeEventListener("mousemove", this.handleInput);
+      document.removeEventListener("mouseup", this.handleInput);
+      document.removeEventListener("touchmove", this.handleInput);
+      document.removeEventListener("touchend", this.handleInput);
+      this.mouse.down = false;
+    },
     handleInput: function (event) {
-      //event.preventDefault();
       this.updateMouseCoordinates(event);
+      event.preventDefault();
       let raycaster = new THREE.Raycaster();
 
       switch (event.type) {
         case "mousedown":
-          raycaster.setFromCamera(
-            new THREE.Vector2(this.mouse.tx, this.mouse.ty),
-            viewPortCamera
-          );
-
-          try {
-            this.evalFaceIndex(
-              raycaster.intersectObjects(viewPortScene.children)[0].faceIndex
-            );
-          } catch (error) {
-            //raycaster didn't find anything
-          }
-
-          this.mouse.down = true;
-          this.mouse.dragStartPosition = new THREE.Vector2(
-            this.mouse.cx,
-            this.mouse.cy
-          );
-          this.mouse.lastDragPosition = new THREE.Vector2(
-            this.mouse.cx,
-            this.mouse.cy
-          );
-          document.addEventListener("mousemove", this.handleInput);
-          document.addEventListener("mouseup", this.handleInput);
+          this.onTapStart();
           break;
         case "touchstart":
-          //this.mouse.down = true;
+          this.onTapStart();
           break;
         case "mousemove":
-          if (this.mouse.down) {
-            this.rotate(
-              this.mouse.lastDragPosition.x - this.mouse.cx,
-              this.mouse.lastDragPosition.y - this.mouse.cy
-            );
-            this.mouse.lastDragPosition = new THREE.Vector2(
-              this.mouse.cx,
-              this.mouse.cy
-            );
-          }
+          this.onTapMove();
           break;
         case "touchmove":
-          //
+          this.onTapMove();
           break;
         case "touchend":
-          //
+          console.log("touchend");
+          this.onTapEnd(raycaster);
           break;
         case "mouseup":
-          //
-          this.mouse.dragStartPosition = new THREE.Vector2();
-          this.mouse.lastDragPosition = new THREE.Vector2();
-          this.mouse.cx = 0; //x coord for canvas
-          this.mouse.cy = 0;
-          document.removeEventListener("mousemove", this.handleInput);
-          document.removeEventListener("mouseup", this.handleInput);
-          this.mouse.down = false;
+          console.log("mouseup");
+          this.onTapEnd(raycaster);
           break;
         default:
         //nothing;
@@ -376,6 +392,10 @@ export default {
   top: 0;
   z-index: 2;
   background-color: black;
+  -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none;
 }
 
 #viewportCanvas {
