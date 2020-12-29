@@ -629,7 +629,7 @@ var renderer,
   miniAxisScene,
   camera,
   miniAxisCamera,
-controls,
+  controls,
   directControls,
   transformControls;
 //clock;

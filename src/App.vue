@@ -1,5 +1,9 @@
 <template>
-  <ToolSelector @selected-tool="setSelectedTool" />
+  <viewport-cube
+    :quaternion="quaternion"
+    @viewport-camera-update="updateCameraPosition"
+  />
+  <!-- <tool-selector @selected-tool="setSelectedTool" /> -->
   <Canvas :selectedTool="tool" />
 </template>
 
@@ -11,7 +15,8 @@ import CameraControls from "camera-controls";
 CameraControls.install({ THREE: THREE });
 
 import Canvas from "./components/Canvas.vue";
-import ToolSelector from "./components/ToolSelector.vue";
+// import ToolSelector from "./components/ToolSelector.vue";
+import ViewportCube from "./components/ViewportCube.vue";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
@@ -19,7 +24,20 @@ import ToolSelector from "./components/ToolSelector.vue";
 //import LineSettings from "./components/LineSettings.vue";
 //import Old from "./components/Old.vue";
 
-export var renderer, scene, camera, directControls, clock;
+export let renderer = new THREE.WebGLRenderer({
+  antialias: true,
+  alpha: false,
+  preserveDrawingBuffer: false,
+});
+export let camera = new THREE.OrthographicCamera(
+  window.innerWidth / -2,
+  window.innerWidth / 2,
+  window.innerHeight / 2,
+  window.innerHeight / -2,
+  0,
+  20
+);
+export let scene, cameraControls, clock;
 
 var main, drawingCanvas;
 //context
@@ -32,11 +50,13 @@ export default {
     // ToolSelector,
     Canvas,
     // LineSettings,
-    ToolSelector,
+    // ToolSelector,
+    ViewportCube,
   },
   data() {
     return {
       tool: "draw",
+      quaternion: undefined,
     };
   },
   methods: {
@@ -46,11 +66,6 @@ export default {
       //context = drawingCanvas.getContext("2d");
       main = document.getElementById("threed");
 
-      renderer = new THREE.WebGLRenderer({
-        antialias: true,
-        alpha: false,
-        preserveDrawingBuffer: false,
-      });
       renderer.setPixelRatio(window.devicePixelRatio);
       renderer.setClearColor(0x000000, 0);
       renderer.setSize(window.innerWidth, window.innerHeight);
@@ -59,9 +74,7 @@ export default {
 
       scene = new THREE.Scene();
       //Set the background based on the css variable;
-      var bgCol = getComputedStyle(document.documentElement).getPropertyValue(
-        "--bg-color"
-      );
+      var bgCol = 0xffffff;
       scene.background = new THREE.Color(bgCol);
       // scene.fog = new THREE.Fog(bgCol, 9, 13);
 
@@ -85,14 +98,6 @@ export default {
       gridHelper.material.fog = false;
       scene.add(gridHelper);
 
-      camera = new THREE.OrthographicCamera(
-        window.innerWidth / -2,
-        window.innerWidth / 2,
-        window.innerHeight / 2,
-        window.innerHeight / -2,
-        0,
-        20
-      );
       camera.layers.enable(0); // enabled by default
       camera.layers.enable(1);
       camera.zoom = 160;
@@ -100,18 +105,25 @@ export default {
 
       clock = new THREE.Clock();
 
-      directControls = new CameraControls(camera, drawingCanvas);
-      directControls.dampingFactor = 10;
-      directControls.mouseButtons.left = CameraControls.ACTION.NONE;
-      directControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
-      directControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
-      directControls.touches.one = CameraControls.ACTION.NONE;
-      directControls.touches.two = CameraControls.ACTION.TOUCH_ROTATE;
-      directControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
+      cameraControls = new CameraControls(camera, drawingCanvas);
+      cameraControls.dampingFactor = 10;
+      cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
+      cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
+      cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
+      cameraControls.touches.one = CameraControls.ACTION.NONE;
+      cameraControls.touches.two = CameraControls.ACTION.TOUCH_ROTATE;
+      cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
 
-      // directControls.addEventListener("update", () => {
-      //   // console.log("updated");
-      // });
+      cameraControls.addEventListener("update", () => {
+        if (cameraControls.enabled == true) {
+          this.quaternion = [
+            camera.quaternion.x,
+            camera.quaternion.y,
+            camera.quaternion.z,
+            camera.quaternion.w,
+          ];
+        }
+      });
 
       var geometry = new THREE.SphereBufferGeometry(0.025, 32, 32);
       var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
@@ -139,17 +151,45 @@ export default {
     },
     animate: function () {
       const delta = clock.getDelta();
-      let hasdirectControlsUpdated = directControls.update(delta);
+      let hasCameraControlsUpdated = cameraControls.update(delta);
 
       requestAnimationFrame(this.animate);
 
-      if (hasdirectControlsUpdated) {
+      if (hasCameraControlsUpdated) {
         renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
         renderer.render(scene, camera);
       }
     },
     setSelectedTool: function (val) {
       this.tool = val;
+    },
+    updateCameraPosition: function (val) {
+      console.log(val);
+      renderer.render(scene, camera);
+      switch (val) {
+        case "start":
+          cameraControls.enabled = false;
+          cameraControls.dampingFactor = 1;
+          console.log("cameraControls disabled");
+          break;
+        case "update":
+          // this.quaternion = [
+          //   camera.quaternion.x,
+          //   camera.quaternion.y,
+          //   camera.quaternion.z,
+          //   camera.quaternion.w,
+          // ];
+          // console.log(this.quaternion);
+          //cameraControls.update();
+          break;
+        case "end":
+          cameraControls.enabled = true;
+          cameraControls.dampingFactor = 10;
+          break;
+        default:
+        //nothing
+      }
+      renderer.render(scene, camera);
     },
   },
   mounted() {

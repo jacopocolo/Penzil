@@ -11,6 +11,8 @@
   <div id="threed"></div>
 </template>
 
+
+
 <script>
 import * as THREE from "three";
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
@@ -82,7 +84,7 @@ export default {
         this.mesh.raycast = MeshLineRaycast;
         this.mesh.layers.set(1);
         this.bufferPoints = new Array();
-        this.size = 8;
+        this.size = 4;
       }
       start() {
         scene.add(this.mesh);
@@ -129,10 +131,10 @@ export default {
         // sphere.position.set(v3.x, v3.y, v3.z);
 
         this.setGeometry();
+        renderer.render(scene, camera);
       }
       end() {
         this.setGeometry("mouseup");
-        console.log(scene.children);
       }
       appendToBuffer(pt) {
         this.bufferPoints.push(pt);
@@ -224,7 +226,6 @@ export default {
           //   //   mirror.updateMirrorOf(mesh);
           //   // }
         }
-        renderer.render(scene, camera);
       }
       // fromVertices(vertices, lineColor, lineWidth, mirrorOn, returnLineBool) {
       //   line.render.start(
@@ -256,21 +257,18 @@ export default {
     onStart: function (event) {
       if (event.button == 0 || event.touches.length == 1) {
         this.mouse.down = true;
-        console.log("start");
         line = new this.draw();
         line.start();
       }
     },
     onMove: function (event) {
       if (this.mouse.down && (event.button == 0 || event.touches.length == 1)) {
-        console.log("move");
         line.move(this.mouse.tx, this.mouse.ty, 0, this.mouse.force, true);
         renderer.render(scene, camera);
       }
     },
     onEnd: function (event) {
       if (this.mouse.down && (event.button == 0 || event.touches.length == 1)) {
-        console.log("end");
         line.end();
         renderer.render(scene, camera);
       }
@@ -280,13 +278,22 @@ export default {
       this.updateMouseCoordinates(event);
 
       switch (event.type) {
-        case "touchstart" || "mousedown":
+        case "mousedown":
           this.onStart(event);
           break;
-        case "touchmove" || "mousemove":
+        case "touchstart":
+          this.onStart(event);
+          break;
+        case "mousemove":
           this.onMove(event);
           break;
-        case "touchend" || "mouseup":
+        case "touchmove":
+          this.onMove(event);
+          break;
+        case "touchend":
+          this.onEnd(event);
+          break;
+        case "mouseup":
           this.onEnd(event);
           break;
         default:
@@ -304,7 +311,7 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 #container {
   height: 100%;
   width: 100%;
@@ -312,11 +319,11 @@ export default {
 
 #twod {
   position: absolute;
-  z-index: 2;
-  -webkit-user-select: none; /* Safari */
-  -moz-user-select: none; /* Firefox */
-  -ms-user-select: none; /* IE10+/Edge */
-  user-select: none; /* Standard */
+  z-index: 0;
+  /* -webkit-user-select: none;
+  -moz-user-select: none;
+  -ms-user-select: none;
+  user-select: none; */
 }
 
 #threed {
