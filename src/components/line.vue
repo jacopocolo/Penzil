@@ -1,15 +1,4 @@
-<template>
-  <canvas
-    @touchstart="handleInput"
-    @touchmove="handleInput"
-    @touchend="handleInput"
-    @mousedown="handleInput"
-    @mousemove="handleInput"
-    @mouseup="handleInput"
-    id="twod"
-  ></canvas>
-  <div id="threed"></div>
-</template>
+<template></template>
 
 
 

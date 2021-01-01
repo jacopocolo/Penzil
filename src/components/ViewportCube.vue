@@ -10,7 +10,12 @@
     id="viewport"
   >
     <canvas id="viewportCanvas"></canvas>
-    <!-- <span class="reset-camera" @click="resetCamera()">↺</span> -->
+    <span
+      class="reset-camera"
+      @click="resetCamera()"
+      v-bind:class="[cameraResetDisabled ? 'disabled ' : '']"
+      >↺</span
+    >
   </div>
 </template>
 
@@ -23,7 +28,7 @@ let viewPortRenderer, viewPortScene, viewPortCamera;
 
 export default {
   name: "ViewportCube",
-  props: { quaternion: Array },
+  props: { quaternion: Array, cameraResetDisabled: Boolean },
   data() {
     return {
       mouse: {
@@ -80,15 +85,6 @@ export default {
 
       this.addViewPortCube();
 
-      // viewPortControls = new OrbitControls(camera, viewPortRenderer.domElement);
-      // viewPortControls.rotateSpeed = 0.4;
-      // viewPortControls.enableZoom = false;
-      // viewPortControls.enablePan = false;
-      // viewPortControls.saveState();
-      // viewPortControls.addEventListener("change", () => {
-      //   this.$emit("viewport-camera-update", "update");
-      // });
-
       this.render();
     },
     addViewPortCube: function () {
@@ -138,85 +134,6 @@ export default {
       const geometry = new THREE.BoxGeometry(1, 1, 1);
       const cube = new THREE.Mesh(geometry, materials);
       viewPortScene.add(cube);
-
-      // viewPortRenderer.domElement.addEventListener(
-      //   "mousedown",
-      //   () => {
-      //     directControls.enabled = false;
-      //   },
-      //   false
-      // );
-      // viewPortRenderer.domElement.addEventListener(
-      //   "touchstart",
-      //   () => {
-      //     directControls.enabled = false;
-      //   },
-      //   false
-      // );
-
-      // viewPortRenderer.domElement.addEventListener(
-      //   "mousemove",
-      //   (e) => {
-      //     if (directControls.enabled == false) {
-      //       console.log(e.movementX, e.movementY);
-      //       miniAxisMouse.moved = true;
-      //     }
-      //   },
-      //   false
-      // );
-      // viewPortRenderer.domElement.addEventListener(
-      //   "touchmove",
-      //   () => {
-      //     if (directControls.enabled == false) {
-      //       miniAxisMouse.moved = true;
-      //     }
-      //   },
-      //   false
-      // );
-
-      // viewPortRenderer.domElement.addEventListener(
-      //   "mouseup",
-      //   (event) => {
-      //     directControls.enabled = true;
-      //     console.log(miniAxisMouse.moved);
-      //     if (miniAxisMouse.moved == true) {
-      //       directControls.setLookAt(
-      //         camera.position.x,
-      //         camera.position.y,
-      //         camera.position.z,
-      //         controls.target.x,
-      //         controls.target.y,
-      //         controls.target.z,
-      //         false
-      //       );
-      //     } else {
-      //       repositionCamera(event);
-      //     }
-      //     miniAxisMouse.moved = false;
-      //   },
-      //   false
-      // );
-      // viewPortRenderer.domElement.addEventListener(
-      //   "touchend",
-      //   (event) => {
-      //     directControls.enabled = true;
-      //     if (miniAxisMouse.moved == true) {
-      //       directControls.setLookAt(
-      //         camera.position.x,
-      //         camera.position.y,
-      //         camera.position.z,
-      //         controls.target.x,
-      //         controls.target.y,
-      //         controls.target.z,
-      //         false
-      //       );
-      //     } else {
-      //       repositionCamera(event);
-      //     }
-      //     miniAxisMouse.moved = false;
-      //   },
-      //   false
-      // );
     },
     rotate: function (deltaX, deltaY) {
       let w = 150;
@@ -339,6 +256,16 @@ export default {
       document.removeEventListener("touchend", this.handleInput);
       this.mouse.down = false;
     },
+    resetCamera: function () {
+      cameraControls.dampingFactor = 0.5;
+      cameraControls.enabled = false;
+      cameraControls.setLookAt(0, 0, 10, 0, 0, 0, true);
+      cameraControls.zoomTo(160, true);
+      cameraControls.enabled = true;
+      setTimeout(() => {
+        cameraControls.dampingFactor = 10;
+      }, 100);
+    },
     handleInput: function (event) {
       this.updateMouseCoordinates(event);
       event.preventDefault();
@@ -403,5 +330,23 @@ export default {
   height: 150px;
   width: 150px;
   z-index: 3;
+}
+
+.reset-camera {
+  height: 32px;
+  width: 32px;
+  border-radius: 16px;
+  background-color: rgba(255, 255, 255, 0.2);
+  font-size: 2em;
+  line-height: 1em;
+  position: absolute;
+  color: rgba(255, 255, 255, 1);
+  opacity: 1;
+  bottom: 8px;
+  right: 8px;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  z-index: 6;
 }
 </style>

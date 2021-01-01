@@ -1,6 +1,7 @@
 <template>
   <viewport-cube
     :quaternion="quaternion"
+    :cameraResetDisabled="cameraResetDisabled"
     @viewport-camera-update="updateCameraPosition"
   />
   <tool-selector @selected-tool="setSelectedTool" />
@@ -56,6 +57,7 @@ export default {
     return {
       tool: "draw",
       quaternion: undefined,
+      cameraResetDisabled: false,
     };
   },
   methods: {
@@ -121,6 +123,26 @@ export default {
             camera.quaternion.z,
             camera.quaternion.w,
           ];
+        }
+      });
+
+      cameraControls.addEventListener("sleep", () => {
+        let target = new THREE.Vector3();
+        target = cameraControls.getTarget(target);
+        var x = target.x;
+        var y = target.y;
+        var z = target.z;
+
+        if (
+          camera.position.z != 10 ||
+          x != 0 ||
+          y != 0 ||
+          z != 0 ||
+          camera.zoom != 160
+        ) {
+          this.cameraResetDisabled = false;
+        } else {
+          this.cameraResetDisabled = true;
         }
       });
 
@@ -197,8 +219,6 @@ export default {
   },
 };
 </script>
-
-
 // how to update component data from app https://stackoverflow.com/questions/47281746/vue-update-component-data-from-vue-instance
 
 <style>
@@ -234,5 +254,10 @@ html,
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
   width: 100%;
+}
+
+.disabled {
+  pointer-events: none;
+  opacity: 0.6;
 }
 </style>
