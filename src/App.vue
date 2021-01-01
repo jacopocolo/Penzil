@@ -2,10 +2,15 @@
   <viewport-cube
     :quaternion="quaternion"
     :cameraResetDisabled="cameraResetDisabled"
-    @viewport-camera-update="updateCameraPosition"
   />
   <tool-selector @selected-tool="setSelectedTool" />
-  <Canvas :selectedTool="tool" />
+  <Canvas
+    :selectedTool="tool"
+    @new-line="setLine"
+    @move-line="setLine"
+    @end-line="setLine"
+  />
+  <Line :event="lineEvent" />
 </template>
 
 <script>
@@ -18,6 +23,7 @@ CameraControls.install({ THREE: THREE });
 import Canvas from "./components/Canvas.vue";
 import ToolSelector from "./components/ToolSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
+import Line from "./components/Line";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
@@ -49,6 +55,7 @@ export default {
     // Toast,
     // ToolSelector,
     Canvas,
+    Line,
     // LineSettings,
     ToolSelector,
     ViewportCube,
@@ -58,6 +65,7 @@ export default {
       tool: "draw",
       quaternion: undefined,
       cameraResetDisabled: false,
+      lineEvent: null,
     };
   },
   methods: {
@@ -184,33 +192,8 @@ export default {
     setSelectedTool: function (val) {
       this.tool = val;
     },
-    updateCameraPosition: function (val) {
-      console.log(val);
-      renderer.render(scene, camera);
-      switch (val) {
-        case "start":
-          cameraControls.enabled = false;
-          cameraControls.dampingFactor = 1;
-          console.log("cameraControls disabled");
-          break;
-        case "update":
-          // this.quaternion = [
-          //   camera.quaternion.x,
-          //   camera.quaternion.y,
-          //   camera.quaternion.z,
-          //   camera.quaternion.w,
-          // ];
-          // console.log(this.quaternion);
-          //cameraControls.update();
-          break;
-        case "end":
-          cameraControls.enabled = true;
-          cameraControls.dampingFactor = 10;
-          break;
-        default:
-        //nothing
-      }
-      renderer.render(scene, camera);
+    setLine: function (val) {
+      this.lineEvent = val;
     },
   },
   mounted() {
