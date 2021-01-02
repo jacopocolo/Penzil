@@ -13,6 +13,7 @@
     <span
       class="reset-camera"
       @click="resetCamera()"
+      @touchstart="resetCamera()"
       v-bind:class="[cameraResetDisabled ? 'disabled ' : '']"
       >↺</span
     >
@@ -226,10 +227,6 @@ export default {
       }
     },
     onTapEnd: function (raycaster) {
-      console.log(
-        this.mouse.dragStartPosition.distanceTo(this.mouse.lastDragPosition)
-      );
-
       if (
         this.mouse.dragStartPosition.distanceTo(this.mouse.lastDragPosition) < 5
       ) {
@@ -285,11 +282,9 @@ export default {
           this.onTapMove();
           break;
         case "touchend":
-          console.log("touchend");
           this.onTapEnd(raycaster);
           break;
         case "mouseup":
-          console.log("mouseup");
           this.onTapEnd(raycaster);
           break;
         default:
@@ -307,6 +302,7 @@ export default {
   },
   mounted() {
     this.init();
+    this.render();
   },
 };
 </script>
@@ -318,11 +314,6 @@ export default {
   width: 150px;
   top: 0;
   z-index: 2;
-  background-color: black;
-  -webkit-user-select: none;
-  -moz-user-select: none;
-  -ms-user-select: none;
-  user-select: none;
 }
 
 #viewportCanvas {
@@ -330,6 +321,7 @@ export default {
   height: 150px;
   width: 150px;
   z-index: 3;
+  background-color: black;
 }
 
 .reset-camera {
@@ -347,6 +339,6 @@ export default {
   justify-content: center;
   align-content: center;
   text-align: center;
-  z-index: 6;
+  z-index: 4;
 }
 </style>

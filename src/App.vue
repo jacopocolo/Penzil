@@ -4,26 +4,18 @@
     :cameraResetDisabled="cameraResetDisabled"
   />
   <tool-selector @selected-tool="setSelectedTool" />
-  <Canvas
-    :selectedTool="tool"
-    @new-line="setLine"
-    @move-line="setLine"
-    @end-line="setLine"
-  />
-  <Line :event="lineEvent" />
+  <Canvas :selectedTool="tool" />
 </template>
 
 <script>
 import * as THREE from "three";
 //import { TransformControls } from "three";
-//import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import CameraControls from "camera-controls";
 CameraControls.install({ THREE: THREE });
 
 import Canvas from "./components/Canvas.vue";
 import ToolSelector from "./components/ToolSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
-import Line from "./components/Line";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
@@ -32,8 +24,8 @@ import Line from "./components/Line";
 
 export let renderer = new THREE.WebGLRenderer({
   antialias: true,
-  alpha: false,
-  preserveDrawingBuffer: false,
+  alpha: true,
+  preserveDrawingBuffer: true, //this is the configuration that allows the renderer to redraw only the current line when we are drawing instead of the whole scene. If I remember correctly it could create some issues with the video rendering. Leaving a note in case it does. One potential workaround would be to have two separte renderers, one for the scene, one for the current line.
 });
 export let camera = new THREE.OrthographicCamera(
   window.innerWidth / -2,
@@ -43,7 +35,7 @@ export let camera = new THREE.OrthographicCamera(
   0,
   20
 );
-export let scene, cameraControls, clock;
+export let scene, drawingScene, cameraControls, clock;
 
 var main, drawingCanvas;
 //context
@@ -55,7 +47,6 @@ export default {
     // Toast,
     // ToolSelector,
     Canvas,
-    Line,
     // LineSettings,
     ToolSelector,
     ViewportCube,
@@ -65,7 +56,6 @@ export default {
       tool: "draw",
       quaternion: undefined,
       cameraResetDisabled: false,
-      lineEvent: null,
     };
   },
   methods: {
@@ -76,7 +66,7 @@ export default {
       main = document.getElementById("threed");
 
       renderer.setPixelRatio(window.devicePixelRatio);
-      renderer.setClearColor(0x000000, 0);
+      renderer.setClearColor(0x000000, 0); // the default
       renderer.setSize(window.innerWidth, window.innerHeight);
       main.appendChild(renderer.domElement);
       renderer.domElement.id = "threeJsCanvas";
@@ -86,6 +76,8 @@ export default {
       var bgCol = 0xffffff;
       scene.background = new THREE.Color(bgCol);
       // scene.fog = new THREE.Fog(bgCol, 9, 13);
+
+      drawingScene = new THREE.Scene(); //this scene is only used for rendering lines as they are being drawn. Lines are then moved to the main scene.
 
       var axesHelper = new THREE.AxesHelper();
       axesHelper.applyMatrix4(new THREE.Matrix4().makeScale(5, 5, 5));
@@ -177,6 +169,9 @@ export default {
       renderer.setSize(window.innerWidth, window.innerHeight);
       drawingCanvas.width = window.innerWidth;
       drawingCanvas.height = window.innerHeight;
+
+      renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
+      renderer.render(scene, camera);
     },
     animate: function () {
       const delta = clock.getDelta();
@@ -191,9 +186,6 @@ export default {
     },
     setSelectedTool: function (val) {
       this.tool = val;
-    },
-    setLine: function (val) {
-      this.lineEvent = val;
     },
   },
   mounted() {

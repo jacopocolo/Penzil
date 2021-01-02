@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { scene, renderer, camera } from "../App.vue";
+import { line } from "./line.js";
 
 export default {
   name: "Canvas",
@@ -60,32 +60,17 @@ export default {
     onStart: function (event) {
       if (event.button == 0 || event.touches.length == 1) {
         this.mouse.down = true;
-        //line = new this.draw();
-        //line.start();
-
-        this.$emit("new-line", { action: "start" });
+        line.onStart();
       }
     },
     onMove: function (event) {
       if (this.mouse.down && (event.button == 0 || event.touches.length == 1)) {
-        this.$emit("move-line", {
-          action: "move",
-          x: this.mouse.tx,
-          y: this.mouse.ty,
-          z: 0,
-          force: this.mouse.force,
-          unproject: true,
-        });
-
-        //line.move(this.mouse.tx, this.mouse.ty, 0, this.mouse.force, true);
-        renderer.render(scene, camera);
+        line.onMove(this.mouse.tx, this.mouse.ty, 0, this.mouse.force, true);
       }
     },
-    onEnd: function (event) {
-      if (this.mouse.down && (event.button == 0 || event.touches.length == 1)) {
-        this.$emit("end-line", { action: "end" });
-        //line.end();
-        renderer.render(scene, camera);
+    onEnd: function () {
+      if (this.mouse.down) {
+        line.onEnd();
       }
       this.mouse.down = false;
     },
@@ -93,14 +78,8 @@ export default {
       this.updateMouseCoordinates(event);
 
       switch (event.type) {
-        case "mousedown":
-          this.onStart(event);
-          break;
         case "touchstart":
           this.onStart(event);
-          break;
-        case "mousemove":
-          this.onMove(event);
           break;
         case "touchmove":
           this.onMove(event);
@@ -108,13 +87,18 @@ export default {
         case "touchend":
           this.onEnd(event);
           break;
+        case "mousedown":
+          this.onStart(event);
+          break;
+        case "mousemove":
+          this.onMove(event);
+          break;
         case "mouseup":
           this.onEnd(event);
           break;
         default:
         //nothing;
       }
-      // event.preventDefault();
     },
   },
   watch: {
