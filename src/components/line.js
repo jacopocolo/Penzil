@@ -1,6 +1,7 @@
 import * as THREE from "three";
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
+import { mirror } from "./mirror.js"
 
 let line = {
     l: undefined,
@@ -26,23 +27,22 @@ let line = {
             this.bufferPoints = new Array();
             this.size = 4;
         }
-        start() {
-            //renderer.render(scene, camera);
+        start(mirrorOn) {
             drawingScene.add(this.mesh);
-            //renderer.render(drawingScene, camera);
-            // switch (mirrorOn) {
-            //   case "x":
-            //     // mirror.object(mesh, "x");
-            //     break;
-            //   case "y":
-            //     // mirror.object(mesh, "y");
-            //     break;
-            //   case "z":
-            //     // mirror.object(mesh, "z");
-            //     break;
-            //   default:
-            //   //it's false, do nothing
-            // }
+
+            switch (mirrorOn) {
+                case "x":
+                    mirror.object(this.mesh, "x", drawingScene);
+                    break;
+                case "y":
+                    mirror.object(this.mesh, "y", drawingScene);
+                    break;
+                case "z":
+                    mirror.object(this.mesh, "z", drawingScene);
+                    break;
+                default:
+                //it's false, do nothing
+            }
         }
         move(x, y, z, force, unproject) {
             var v3 = new THREE.Vector3(x, y, z);
@@ -77,16 +77,26 @@ let line = {
             renderer.render(drawingScene, camera);
 
         }
-        end() {
-
-            console.log("end")
+        end(mirrorOn) {
 
             this.setGeometry("mouseup");
             scene.add(this.mesh)
-            drawingScene.clear();
 
-            console.log(scene);
-            console.log(drawingScene);
+            switch (mirrorOn) {
+                case "x":
+                    mirror.object(this.mesh, "x", scene);
+                    break;
+                case "y":
+                    mirror.object(this.mesh, "y", scene);
+                    break;
+                case "z":
+                    mirror.object(this.mesh, "z", scene);
+                    break;
+                default:
+                //it's false, do nothing
+            }
+
+            drawingScene.clear();
 
             renderer.autoClear = true;
             renderer.render(scene, camera);
@@ -176,10 +186,10 @@ let line = {
                 //   );
                 //   this.geometry.center();
                 this.setGeometry("tail");
-                //   this.geometry.needsUpdate = true;
-                //   // if (mesh.userData.mirror) {
-                //   //   mirror.updateMirrorOf(mesh);
-                //   // }
+                this.geometry.needsUpdate = true;
+                // if (this.mesh.userData.mirror) {
+                //     this.mirror.updateMirrorOf(this.mesh);
+                // }
             }
         }
         // fromVertices(vertices, lineColor, lineWidth, mirrorOn, returnLineBool) {
@@ -209,15 +219,15 @@ let line = {
         //   }
         // }
     },
-    onStart: function () {
+    onStart: function (mirrorOn) {
         this.l = new this.draw();
-        this.l.start();
+        this.l.start(mirrorOn);
     },
     onMove: function (x, y, z, force, unproject) {
         this.l.move(x, y, z, force, unproject);
     },
-    onEnd: function () {
-        this.l.end();
+    onEnd: function (mirrorOn) {
+        this.l.end(mirrorOn);
     },
 }
 

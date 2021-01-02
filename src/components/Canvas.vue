@@ -32,6 +32,7 @@ export default {
   },
   props: {
     selectedTool: String,
+    mirror: [Boolean, String],
   },
   methods: {
     updateMouseCoordinates: function (event) {
@@ -60,7 +61,7 @@ export default {
     onStart: function (event) {
       if (event.button == 0 || event.touches.length == 1) {
         this.mouse.down = true;
-        line.onStart();
+        line.onStart(this.mirror);
       }
     },
     onMove: function (event) {
@@ -70,7 +71,7 @@ export default {
     },
     onEnd: function () {
       if (this.mouse.down) {
-        line.onEnd();
+        line.onEnd(this.mirror);
       }
       this.mouse.down = false;
     },
@@ -101,11 +102,7 @@ export default {
       }
     },
   },
-  watch: {
-    selectedTool: function (val) {
-      console.log(val); //you can just read selectedTool as a regular value now
-    },
-  },
+  watch: {},
   mounted() {},
 };
 </script>

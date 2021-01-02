@@ -4,7 +4,7 @@
     :cameraResetDisabled="cameraResetDisabled"
   />
   <tool-selector @selected-tool="setSelectedTool" />
-  <Canvas :selectedTool="tool" />
+  <Canvas :selectedTool="tool" :mirror="mirror" />
 </template>
 
 <script>
@@ -54,6 +54,7 @@ export default {
   data() {
     return {
       tool: "draw",
+      mirror: false,
       quaternion: undefined,
       cameraResetDisabled: false,
     };
