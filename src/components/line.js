@@ -1,5 +1,5 @@
 import * as THREE from "three";
-// import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
+
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
 import { mirror } from "./mirror.js"
@@ -102,9 +102,6 @@ let line = {
             this.geometry.needsUpdate = true;
             renderer.render(scene, camera);
 
-            console.log(this.mesh)
-
-            console.log(mirrorOn)
             switch (mirrorOn) {
                 case "x":
                     mirror.object(this.mesh, "x", scene);
@@ -258,8 +255,6 @@ let line = {
             this.l.geometry.vertices.push(v3);
         }
         this.l.setGeometry("tail");
-
-        console.log(mirrorOn)
 
         return this.l.mesh
     }

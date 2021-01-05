@@ -39,10 +39,9 @@ export let camera = new THREE.OrthographicCamera(
   0,
   20
 );
-export let scene, drawingScene, cameraControls, clock;
+export let scene, drawingScene, cameraControls, context;
 
-var main, drawingCanvas;
-//context
+var main, drawingCanvas, clock;
 
 export default {
   name: "App",
@@ -69,7 +68,7 @@ export default {
     init: function () {
       CameraControls.install({ THREE: THREE });
       drawingCanvas = document.getElementById("twod");
-      //context = drawingCanvas.getContext("2d");
+      context = drawingCanvas.getContext("2d");
       main = document.getElementById("threed");
 
       renderer.setPixelRatio(window.devicePixelRatio);

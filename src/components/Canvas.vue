@@ -14,6 +14,7 @@
 
 <script>
 import { line } from "./line.js";
+import { select } from "./select.js";
 
 export default {
   name: "Canvas",
@@ -65,6 +66,17 @@ export default {
           case "draw":
             line.onStart(this.mirror);
             break;
+          case "erase":
+            //
+            break;
+          case "select":
+            select.onStart(
+              this.mouse.tx,
+              this.mouse.ty,
+              this.mouse.cx,
+              this.mouse.cy
+            );
+            break;
           default:
             break;
         }
@@ -82,6 +94,12 @@ export default {
               true
             );
             break;
+          case "erase":
+            //
+            break;
+          case "select":
+            select.onMove(this.mouse.cx, this.mouse.cy);
+            break;
           default:
             break;
         }
@@ -92,6 +110,12 @@ export default {
         switch (this.selectedTool) {
           case "draw":
             line.onEnd(this.mirror);
+            break;
+          case "erase":
+            //
+            break;
+          case "select":
+            select.onEnd(this.mouse.tx, this.mouse.ty);
             break;
           default:
             break;
