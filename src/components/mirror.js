@@ -80,6 +80,7 @@ let mirror = {
                 return;
         }
         activeScene.add(clone);
+        clone.updateMatrix();
     },
     eraseMirrorOf: function (obj) {
         if (obj.userData.mirror) {

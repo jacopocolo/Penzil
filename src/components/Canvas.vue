@@ -27,7 +27,6 @@ export default {
         cy: 0, //y coord for canvas
         force: 0,
       },
-      tool: "draw",
     };
   },
   props: {
@@ -61,17 +60,42 @@ export default {
     onStart: function (event) {
       if (event.button == 0 || event.touches.length == 1) {
         this.mouse.down = true;
-        line.onStart(this.mirror);
+
+        switch (this.selectedTool) {
+          case "draw":
+            line.onStart(this.mirror);
+            break;
+          default:
+            break;
+        }
       }
     },
     onMove: function (event) {
       if (this.mouse.down && (event.button == 0 || event.touches.length == 1)) {
-        line.onMove(this.mouse.tx, this.mouse.ty, 0, this.mouse.force, true);
+        switch (this.selectedTool) {
+          case "draw":
+            line.onMove(
+              this.mouse.tx,
+              this.mouse.ty,
+              0,
+              this.mouse.force,
+              true
+            );
+            break;
+          default:
+            break;
+        }
       }
     },
     onEnd: function () {
       if (this.mouse.down) {
-        line.onEnd(this.mirror);
+        switch (this.selectedTool) {
+          case "draw":
+            line.onEnd(this.mirror);
+            break;
+          default:
+            break;
+        }
       }
       this.mouse.down = false;
     },
@@ -115,7 +139,7 @@ export default {
 
 #twod {
   position: absolute;
-  z-index: 0;
+  z-index: 1;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;

@@ -55,7 +55,7 @@ export default {
   position: absolute;
   top: 0;
   left: calc(50% - 160px);
-  z-index: 1;
+  z-index: 2;
 }
 
 .toolSelection {

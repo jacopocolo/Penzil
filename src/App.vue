@@ -5,6 +5,8 @@
   />
   <tool-selector @selected-tool="setSelectedTool" />
   <Canvas :selectedTool="tool" :mirror="mirror" />
+  <undo-redo />
+  <import />
 </template>
 
 <script>
@@ -16,6 +18,8 @@ CameraControls.install({ THREE: THREE });
 import Canvas from "./components/Canvas.vue";
 import ToolSelector from "./components/ToolSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
+import UndoRedo from "./components/UndoRedo.vue";
+import Import from "./components/Import.vue";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
@@ -50,6 +54,8 @@ export default {
     // LineSettings,
     ToolSelector,
     ViewportCube,
+    UndoRedo,
+    Import,
   },
   data() {
     return {
