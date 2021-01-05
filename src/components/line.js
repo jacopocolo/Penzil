@@ -58,11 +58,11 @@ let line = {
                 if (pt) {
                     v3 = new THREE.Vector3(pt.x, pt.y, pt.z);
                     this.mesh.geometry.userData.force.push(pt.w);
-                    this.mesh.geometry.userData.points.push(v3);
+                    this.geometry.vertices.push(v3);
                 }
             } else {
                 this.mesh.geometry.userData.force.push(force);
-                this.mesh.geometry.userData.points.push.push(v3);
+                this.geometry.vertices.push.push(v3);
             }
 
             // const geometry = new THREE.SphereGeometry(0.01, 32, 32);
@@ -85,7 +85,7 @@ let line = {
             renderer.autoClear = true;
             renderer.render(scene, camera);
 
-            this.mesh.geometry.verticesNeedsUpdate = true;
+            this.geometry.verticesNeedsUpdate = true;
             renderer.render(scene, camera);
 
             this.mesh.position.set(
@@ -95,16 +95,16 @@ let line = {
             );
             renderer.render(scene, camera);
 
-            this.mesh.geometry.geometry.center();
+            this.geometry.center();
             renderer.render(scene, camera);
             this.setGeometry("tail");
             renderer.render(scene, camera);
-            this.mesh.geometry.needsUpdate = true;
+            this.geometry.needsUpdate = true;
             renderer.render(scene, camera);
 
             console.log(this.mesh)
 
-            this.mesh.geometry.points.forEach(element => {
+            this.geometry.vertices.forEach(element => {
                 const geometry = new THREE.SphereGeometry(0.01, 3, 3);
                 const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
                 const sphere = new THREE.Mesh(geometry, material);
@@ -184,10 +184,10 @@ let line = {
             return null;
         }
         setGeometry(end) {
-            this.mesh.geometry.setPoints(
-                this.mesh.geometry.userData.points,
+            this.line.setPoints(
+                this.geometry.vertices,
                 (p) => {
-                    let points = this.mesh.geometry.userData.points;
+                    let points = this.geometry.vertices;
                     let force = this.mesh.geometry.userData.force;
                     function map(n, start1, stop1, start2, stop2) {
                         return (
