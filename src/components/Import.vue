@@ -30,18 +30,18 @@ export default {
         function onReaderLoad(event) {
           var json = JSON.parse(event.target.result);
 
-          var lightestColor = getComputedStyle(
-            document.documentElement
-          ).getPropertyValue("--line-color-lightest");
-          var lightColor = getComputedStyle(
-            document.documentElement
-          ).getPropertyValue("--line-color-light");
-          var mediumColor = getComputedStyle(
-            document.documentElement
-          ).getPropertyValue("--line-color-medium");
-          var darkColor = getComputedStyle(
-            document.documentElement
-          ).getPropertyValue("--line-color-dark");
+          // var lightestColor = getComputedStyle(
+          //   document.documentElement
+          // ).getPropertyValue("--line-color-lightest");
+          // var lightColor = getComputedStyle(
+          //   document.documentElement
+          // ).getPropertyValue("--line-color-light");
+          // var mediumColor = getComputedStyle(
+          //   document.documentElement
+          // ).getPropertyValue("--line-color-medium");
+          // var darkColor = getComputedStyle(
+          //   document.documentElement
+          // ).getPropertyValue("--line-color-dark");
 
           try {
             json.forEach((importedLine) => {
@@ -55,32 +55,32 @@ export default {
                   );
                 }
 
-                var color;
-                switch (true) {
-                  case importedLine.c == 0:
-                    color = lightestColor;
-                    break;
-                  case importedLine.c == 1:
-                    color = lightColor;
-                    break;
-                  case importedLine.c == 2:
-                    color = mediumColor;
-                    break;
-                  case importedLine.c == 3:
-                    color = darkColor;
-                    break;
-                  default:
-                    color = lightestColor; //safe
-                }
+                // var color;
+                // switch (true) {
+                //   case importedLine.c == 0:
+                //     color = lightestColor;
+                //     break;
+                //   case importedLine.c == 1:
+                //     color = lightColor;
+                //     break;
+                //   case importedLine.c == 2:
+                //     color = mediumColor;
+                //     break;
+                //   case importedLine.c == 3:
+                //     color = darkColor;
+                //     break;
+                //   default:
+                //     color = lightestColor; //safe
+                // }
 
-                console.log(color);
+                //console.log(color);
 
                 var l = line.fromVertices(
                   vertices,
-                  //   color,
-                  //   importedLine.w,
-                  //   importedLine.a,
-                  true
+                  //color,
+                  importedLine.w,
+                  importedLine.a
+                  //true
                 );
 
                 l.position.set(
@@ -100,14 +100,16 @@ export default {
                   importedLine.s.z
                 );
 
-                l.updateMatrix();
+                //l.updateMatrix();
 
-                mirror.updateMirrorOf(l);
+                mirror.updateMirrorOf(l, scene);
               }
             });
             renderer.render(scene, camera);
+            //console.log(scene);
             // app.ui.showOverflowMenu = false;
           } catch (err) {
+            console.log(err);
             // app.toast.show = true;
             // app.toast.text = "Error. No line data found";
             // setTimeout(function () {

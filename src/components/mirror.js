@@ -1,17 +1,20 @@
 import * as THREE from "three";
 import { MeshLineRaycast } from "three.meshline";
-import { scene, drawingScene } from "../App.vue";
+import { scene } from "../App.vue";
 
 
 let mirror = {
-    updateMirrorOf: function (obj) {
+    updateMirrorOf: function (obj, activeScene) {
+
+        console.log(obj)
+
         if (obj.type === "Group") {
             obj.children.forEach((obj) => {
                 mirror.updateMirrorOf(obj);
             });
         } else if (obj.userData.mirror) {
             //let's check if there's a matching mirror object otherwise we do nothing
-            let mirroredObject = drawingScene.getObjectByProperty(
+            let mirroredObject = activeScene.getObjectByProperty(
                 "uuid",
                 obj.userData.mirror
             );
@@ -76,11 +79,10 @@ let mirror = {
             case "z":
                 clone.applyMatrix4(obj.matrixWorld.makeScale(1, 1, -1));
                 break;
-            default:
-                return;
         }
         activeScene.add(clone);
-        clone.updateMatrix();
+        console.log("reached")
+        //clone.updateMatrix();
     },
     eraseMirrorOf: function (obj) {
         if (obj.userData.mirror) {
