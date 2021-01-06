@@ -143,24 +143,29 @@ let select = {
             this.color = "red";
         }
         transforming() {
-            //have to figure out how to handle thi
-            return false
+            //have to figure out how to handle this
+            if (this.controls != undefined) {
+                return true
+            } else {
+                return false
+            }
         }
         start(tx, ty, cx, cy) {
-            this.raycaster.setFromCamera(new THREE.Vector2(tx, ty), camera);
-            try {
-                var intersectedObject = this.raycaster.intersectObjects(scene.children)[0]
-                    .object;
-                this.activeSelection.push(intersectedObject);
-            } catch (err) {
-                //expected error if nothing is found
+            if (this.transforming() === false) {
+                this.raycaster.setFromCamera(new THREE.Vector2(tx, ty), camera);
+                try {
+                    var intersectedObject = this.raycaster.intersectObjects(scene.children)[0]
+                        .object;
+                    this.activeSelection.push(intersectedObject);
+                } catch (err) {
+                    //expected error if nothing is found
+                }
+
+                this.selector.start.x = tx;
+                this.selector.start.y = ty;
+                this.selector.cssStart.x = cx;
+                this.selector.cssStart.y = cy;
             }
-
-            this.selector.start.x = tx;
-            this.selector.start.y = ty;
-            this.selector.cssStart.x = cx;
-            this.selector.cssStart.y = cy;
-
         }
         move(cx, cy) {
             if (this.transforming() === false && this.selected.length == 0) {
@@ -197,7 +202,7 @@ let select = {
 
             if (this.transforming() === false) {
                 if (this.activeSelection.length == 0 || this.selected.length > 0) {
-                    //this.deselect();
+                    this.deselect();
                 } else {
                     this.select(this.activeSelection);
                 }
@@ -298,7 +303,6 @@ let select = {
                     break;
                 case this.selected.length == 1:
                     this.toggleSelectionColor(this.selected[0], false);
-
                     break;
                 case this.selected.length > 1:
                     //var ungroupArray = [];
@@ -319,6 +323,7 @@ let select = {
     onStart: function (tx, ty, cx, cy) {
         this.s = new this.selection();
         this.s.start(tx, ty, cx, cy)
+        console.log(scene)
     },
     onMove: function (cx, cy) {
         this.s.move(cx, cy)
