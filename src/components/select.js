@@ -130,13 +130,12 @@ let select = {
     },
     selection: class {
         constructor() {
-            this.array = new Array;
-            this.activeSelection = new Array;
             this.selected = new Array;
             this.selector = new select.vertexSelection()
-            this.helper;
+            this.helper = undefined;
+            this.controls = undefined;
             this.group;
-            this.controls;
+            this.transforming = Boolean;
             this.raycaster = new THREE.Raycaster();
             this.raycaster.params.Line.threshold = 0.05;
             this.raycaster.layers.set(1);
@@ -144,31 +143,27 @@ let select = {
         }
         transforming() {
             //have to figure out how to handle this
-            if (this.controls != undefined) {
+            if (scene.userData.controls != undefined) {
                 return true
             } else {
                 return false
             }
         }
         start(tx, ty, cx, cy) {
-            if (this.transforming() === false) {
-                this.raycaster.setFromCamera(new THREE.Vector2(tx, ty), camera);
-                try {
-                    var intersectedObject = this.raycaster.intersectObjects(scene.children)[0]
-                        .object;
-                    this.activeSelection.push(intersectedObject);
-                } catch (err) {
-                    //expected error if nothing is found
-                }
-
-                this.selector.start.x = tx;
-                this.selector.start.y = ty;
-                this.selector.cssStart.x = cx;
-                this.selector.cssStart.y = cy;
+            this.raycaster.setFromCamera(new THREE.Vector2(tx, ty), camera);
+            try {
+                var intersectedObject = this.raycaster.intersectObjects(scene.children)[0].object;
+                this.selected.push(intersectedObject);
+            } catch (err) {
+                //expected error if nothing is found
             }
+            this.selector.start.x = tx;
+            this.selector.start.y = ty;
+            this.selector.cssStart.x = cx;
+            this.selector.cssStart.y = cy;
         }
         move(cx, cy) {
-            if (this.transforming() === false && this.selected.length == 0) {
+            if (this.selected.length == 0) {
                 context.globalAlpha = 1;
                 context.clearRect(0, 0, window.innerWidth, window.innerHeight);
                 context.beginPath();
@@ -194,18 +189,16 @@ let select = {
 
             try {
                 objectsInRect.forEach((object) => {
-                    this.activeSelection.push(object);
+                    this.selected.push(object);
                 });
             } catch (err) {
                 alert(err);
             }
 
-            if (this.transforming() === false) {
-                if (this.activeSelection.length == 0 || this.selected.length > 0) {
-                    this.deselect();
-                } else {
-                    this.select(this.activeSelection);
-                }
+            if (this.selected.length == 0) {
+                this.deselect();
+            } else {
+                this.select(this.selected);
             }
             renderer.render(scene, camera)
         }
@@ -213,55 +206,73 @@ let select = {
             //selection can not be zero so it's either 1 or more than 1
             //It's a single element
             if (selection.length == 1) {
-                this.helper = new THREE.BoxHelper(
-                    this.activeSelection[0],
+                scene.userData.helper = new THREE.BoxHelper(
+                    selection[0],
                     new THREE.Color(this.color)
                 );
-                this.toggleSelectionColor(this.activeSelection[0], true);
+                this.helper = scene.userData.helper;
+                this.toggleSelectionColor(selection[0], true);
+
                 scene.add(this.helper);
-                this.controls = new TransformControls(camera, document.getElementById("app"));
+                //store the controls in the scene userData so the scene maintains a reference to them as long as they are needed
+                scene.userData.controls = new TransformControls(camera, document.getElementById("app"));
+
+                this.controls = scene.userData.controls;
                 this.controls.attach(selection[0]);
+                this.controls.addEventListener("mousedown", function () {
+                    scene.userData.transforming = true;
+                })
                 this.controls.addEventListener("change", function () {
                     renderer.render(scene, camera)
+                    console.log(scene.userData.transforming)
                 })
                 this.controls.addEventListener("objectChange", function () {
                     //mirror.updateMirrorOf(this.activeSelection[0]);
                     renderer.render(scene, camera)
-                    this.helper.update();
+                    scene.userData.helper.update();
                 });
-                this.selected.push(this.activeSelection[0]);
+                this.controls.addEventListener("mouseup", function () {
+                    scene.userData.transforming = false;
+                })
                 this.helper.update();
             }
             //It's a group
             else {
                 this.group = new THREE.Group();
                 scene.add(this.group);
-                this.helper = new THREE.BoxHelper(
+                scene.userData.helper = new THREE.BoxHelper(
                     this.group,
                     new THREE.Color(this.color)
                 );
+                this.helper = scene.userData.helper;
                 scene.add(this.helper);
                 //calculate where is the center for the selected objects so we can set the center of the group before we attach objects to it;
                 var center = new THREE.Vector3();
-                this.activeSelection.forEach((obj) => {
+                selection.forEach((obj) => {
                     this.toggleSelectionColor(obj, true);
                     center.add(obj.position);
                 });
-                center.divideScalar(this.activeSelection.length);
+                center.divideScalar(selection.length);
                 this.group.position.set(center.x, center.y, center.z);
-                //Clone all the elements in the active selection to the temporary groups
-                this.activeSelection.forEach((element) => {
+                //Clone all the elements in the selection to the temporary groups
+                selection.forEach((element) => {
                     var clone = element.clone();
                     scene.add(clone);
                     this.group.attach(clone);
                     clone.userData.uuid = element.uuid;
                     clone.visible = false;
-                    this.selected.push(element);
                 });
                 this.helper.update();
-                this.controls = new TransformControls(camera, document.getElementById("app"));
+                scene.userData.controls = new TransformControls(camera, document.getElementById("app"));
+                this.controls = scene.userData.controls;
                 this.controls.attach(this.group);
             }
+            this.controls.addEventListener("mousedown", function () {
+                this.transforming = true;
+            })
+            this.controls.addEventListener("change", function () {
+                renderer.render(scene, camera)
+            })
             this.controls.addEventListener("objectChange", function () {
                 this.helper.update();
                 this.controls.object.children.forEach((obj) => {
@@ -284,6 +295,9 @@ let select = {
                     renderer.render(scene, camera)
                 });
             });
+            this.controls.addEventListener("mouseup", function () {
+                this.transforming = false;
+            })
             scene.add(this.controls);
         }
         toggleSelectionColor(object, bool) {
@@ -294,36 +308,46 @@ let select = {
             }
         }
         deselect() {
-            this.controls.detach();
-            scene.remove(this.controls);
-            scene.remove(this.helper);
+            if (this.controls) {
+                scene.userData.controls.detach();
+                scene.remove(scene.userData.controls);
+                scene.remove(scene.userData.helper);
+                //clear references to controls and helper
+                delete scene.userData.transforming;
+                delete scene.userData.controls;
+                delete scene.userData.helper;
 
-            switch (true) {
-                case this.selected.length == 0:
-                    break;
-                case this.selected.length == 1:
-                    this.toggleSelectionColor(this.selected[0], false);
-                    break;
-                case this.selected.length > 1:
-                    //var ungroupArray = [];
-
-                    for (var i = 0; i < this.selected.length; i++) {
-                        var obj = this.selected[i];
-                        this.toggleSelectionColor(obj, false);
-                    }
-
-                    scene.remove(this.group);
-                    this.group = undefined;
-
-                    break;
-                default:
+                switch (true) {
+                    case this.selected.length == 0:
+                        break;
+                    case this.selected.length == 1:
+                        this.toggleSelectionColor(this.selected[0], false);
+                        break;
+                    case this.selected.length > 1:
+                        for (var i = 0; i < this.selected.length; i++) {
+                            var obj = this.selected[i];
+                            this.toggleSelectionColor(obj, false);
+                        }
+                        scene.remove(this.group);
+                        this.group = undefined;
+                        break;
+                    default:
+                }
+                renderer.render(scene, camera)
             }
         }
     },
     onStart: function (tx, ty, cx, cy) {
+
+        if (this.s && scene.userData.transforming == true) {
+            console.log("transforming")
+        }
+
+        if (this.s && this.s.selected.length > 0) {
+            this.s.deselect();
+        }
         this.s = new this.selection();
         this.s.start(tx, ty, cx, cy)
-        console.log(scene)
     },
     onMove: function (cx, cy) {
         this.s.move(cx, cy)

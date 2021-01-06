@@ -25,6 +25,7 @@ let line = {
             this.line.userData.force = new Array();
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
+            this.mesh.userData.lineColor = new THREE.Color("black");
             this.bufferPoints = new Array();
             this.size = 4;
         }
