@@ -59,7 +59,7 @@ export default {
   data() {
     return {
       tool: "draw",
-      mirror: false,
+      mirror: "x",
       quaternion: undefined,
       cameraResetDisabled: false,
     };

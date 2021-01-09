@@ -2,12 +2,8 @@ import * as THREE from "three";
 import { MeshLineRaycast } from "three.meshline";
 import { scene } from "../App.vue";
 
-
 let mirror = {
     updateMirrorOf: function (obj, activeScene) {
-
-        console.log(obj)
-
         if (obj.type === "Group") {
             obj.children.forEach((obj) => {
                 mirror.updateMirrorOf(obj);
@@ -81,7 +77,6 @@ let mirror = {
                 break;
         }
         activeScene.add(clone);
-        console.log("reached")
         //clone.updateMatrix();
     },
     eraseMirrorOf: function (obj) {

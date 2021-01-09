@@ -5,6 +5,7 @@ import { mirror } from "./mirror.js"
 
 let select = {
     s: undefined,
+    dragged: false,
     vertexSelection: class {
         constructor() {
             this.start = new THREE.Vector2();
@@ -130,12 +131,11 @@ let select = {
     },
     selection: class {
         constructor() {
-            this.selected = new Array;
+            this.selected = new Array();
             this.selector = new select.vertexSelection()
             this.helper = undefined;
             this.controls = undefined;
             this.group;
-            this.transforming = Boolean;
             this.raycaster = new THREE.Raycaster();
             this.raycaster.params.Line.threshold = 0.05;
             this.raycaster.layers.set(1);
@@ -155,6 +155,7 @@ let select = {
                 var intersectedObject = this.raycaster.intersectObjects(scene.children)[0].object;
                 this.selected.push(intersectedObject);
             } catch (err) {
+                //console.log(err)
                 //expected error if nothing is found
             }
             this.selector.start.x = tx;
@@ -192,11 +193,11 @@ let select = {
                     this.selected.push(object);
                 });
             } catch (err) {
-                alert(err);
+                //console.log(err)
             }
 
             if (this.selected.length == 0) {
-                this.deselect();
+                return
             } else {
                 this.select(this.selected);
             }
@@ -216,25 +217,19 @@ let select = {
                 scene.add(this.helper);
                 //store the controls in the scene userData so the scene maintains a reference to them as long as they are needed
                 scene.userData.controls = new TransformControls(camera, document.getElementById("app"));
-
                 this.controls = scene.userData.controls;
                 this.controls.attach(selection[0]);
-                this.controls.addEventListener("mousedown", function () {
-                    scene.userData.transforming = true;
-                })
+
                 this.controls.addEventListener("change", function () {
                     renderer.render(scene, camera)
-                    console.log(scene.userData.transforming)
                 })
                 this.controls.addEventListener("objectChange", function () {
-                    //mirror.updateMirrorOf(this.activeSelection[0]);
-                    renderer.render(scene, camera)
+                    mirror.updateMirrorOf(scene.userData.controls.object, scene);
                     scene.userData.helper.update();
+                    renderer.render(scene, camera)
                 });
-                this.controls.addEventListener("mouseup", function () {
-                    scene.userData.transforming = false;
-                })
                 this.helper.update();
+                scene.add(this.controls);
             }
             //It's a group
             else {
@@ -266,39 +261,35 @@ let select = {
                 scene.userData.controls = new TransformControls(camera, document.getElementById("app"));
                 this.controls = scene.userData.controls;
                 this.controls.attach(this.group);
-            }
-            this.controls.addEventListener("mousedown", function () {
-                this.transforming = true;
-            })
-            this.controls.addEventListener("change", function () {
-                renderer.render(scene, camera)
-            })
-            this.controls.addEventListener("objectChange", function () {
-                this.helper.update();
-                this.controls.object.children.forEach((obj) => {
-                    var position = new THREE.Vector3();
-                    obj.getWorldPosition(position);
-                    var quaternion = new THREE.Quaternion();
-                    obj.getWorldQuaternion(quaternion);
-                    var scale = new THREE.Vector3();
-                    obj.getWorldScale(scale);
-                    var selectedObj = scene.getObjectByProperty("uuid", obj.userData.uuid);
-                    selectedObj.position.set(position.x, position.y, position.z);
-                    selectedObj.quaternion.set(
-                        quaternion.x,
-                        quaternion.y,
-                        quaternion.z,
-                        quaternion.w
-                    );
-                    selectedObj.scale.set(scale.x, scale.y, scale.z);
-                    mirror.updateMirrorOf(selectedObj);
+                this.controls.addEventListener("change", function () {
+                    renderer.render(scene, camera)
+                })
+                this.controls.addEventListener("objectChange", function () {
+                    scene.userData.helper.update();
+                    scene.userData.controls.object.children.forEach((obj) => {
+                        var position = new THREE.Vector3();
+                        obj.getWorldPosition(position);
+                        var quaternion = new THREE.Quaternion();
+                        obj.getWorldQuaternion(quaternion);
+                        var scale = new THREE.Vector3();
+                        obj.getWorldScale(scale);
+                        var selectedObj = scene.getObjectByProperty("uuid", obj.userData.uuid);
+                        selectedObj.position.set(position.x, position.y, position.z);
+                        selectedObj.quaternion.set(
+                            quaternion.x,
+                            quaternion.y,
+                            quaternion.z,
+                            quaternion.w
+                        );
+                        selectedObj.scale.set(scale.x, scale.y, scale.z);
+                        mirror.updateMirrorOf(selectedObj, scene);
+                        renderer.render(scene, camera)
+                    });
                     renderer.render(scene, camera)
                 });
-            });
-            this.controls.addEventListener("mouseup", function () {
-                this.transforming = false;
-            })
-            scene.add(this.controls);
+                scene.add(this.controls);
+            }
+            this.selected = new Array();
         }
         toggleSelectionColor(object, bool) {
             if (bool) {
@@ -308,52 +299,72 @@ let select = {
             }
         }
         deselect() {
-            if (this.controls) {
-                scene.userData.controls.detach();
-                scene.remove(scene.userData.controls);
-                scene.remove(scene.userData.helper);
-                //clear references to controls and helper
-                delete scene.userData.transforming;
-                delete scene.userData.controls;
-                delete scene.userData.helper;
+            if (scene.userData.controls != undefined) {
 
                 switch (true) {
-                    case this.selected.length == 0:
+                    case scene.userData.controls.object.type == "Mesh":
+                        this.toggleSelectionColor(scene.userData.controls.object, false);
+                        //clear references to controls and helper
+                        scene.remove(scene.userData.controls);
+                        scene.remove(scene.userData.helper);
+                        scene.userData.controls.detach();
+                        delete scene.userData.controls;
+                        delete scene.userData.helper;
                         break;
-                    case this.selected.length == 1:
-                        this.toggleSelectionColor(this.selected[0], false);
-                        break;
-                    case this.selected.length > 1:
-                        for (var i = 0; i < this.selected.length; i++) {
-                            var obj = this.selected[i];
-                            this.toggleSelectionColor(obj, false);
+                    case scene.userData.controls.object.type == "Group":
+                        for (var i = 0; i < scene.userData.controls.object.children.length; i++) {
+                            this.toggleSelectionColor(scene.userData.controls.object.children[i], false);
                         }
                         scene.remove(this.group);
-                        this.group = undefined;
+                        //clear references to controls and helper
+                        scene.remove(scene.userData.controls);
+                        scene.remove(scene.userData.helper);
+                        scene.userData.controls.detach();
+                        delete scene.userData.controls;
+                        delete scene.userData.helper;
                         break;
                     default:
+                    //do nothing, nothing is selected
                 }
+
                 renderer.render(scene, camera)
             }
         }
     },
+    transforming: function () {
+        if (scene.userData.controls === undefined) {
+            return false
+        } else {
+            if (scene.userData.controls.axis == null && scene.userData.controls.dragging == false && this.dragged == false) {
+                return false
+            } else {
+                return true
+            }
+        }
+    },
     onStart: function (tx, ty, cx, cy) {
-
-        if (this.s && scene.userData.transforming == true) {
-            console.log("transforming")
+        if (this.transforming() == false) {
+            if (this.s != undefined) {
+                this.s.deselect();
+            }
+            this.s = new this.selection();
+            this.s.start(tx, ty, cx, cy)
         }
 
-        if (this.s && this.s.selected.length > 0) {
-            this.s.deselect();
-        }
-        this.s = new this.selection();
-        this.s.start(tx, ty, cx, cy)
     },
     onMove: function (cx, cy) {
-        this.s.move(cx, cy)
+        if (this.transforming() == false) {
+            this.s.move(cx, cy)
+        } else {
+            this.dragged = true;
+        }
+
     },
     onEnd: function (tx, ty) {
-        this.s.end(tx, ty)
+        if (this.transforming() == false) {
+            this.s.end(tx, ty);
+        }
+        this.dragged = false;
     }
 }
 
