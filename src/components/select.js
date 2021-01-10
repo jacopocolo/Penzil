@@ -3,6 +3,9 @@ import { scene, renderer, camera, context } from "../App.vue";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { mirror } from "./mirror.js"
 
+let controls;
+let helper;
+
 let select = {
     s: undefined,
     dragged: false,

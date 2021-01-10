@@ -4,7 +4,7 @@
     :cameraResetDisabled="cameraResetDisabled"
   />
   <tool-selector @selected-tool="setSelectedTool" />
-  <Canvas :selectedTool="tool" :mirror="mirror" />
+  <Canvas :selectedTool="tool" :mirror="mirror" @selected="setSelectedObject" />
   <undo-redo />
   <import />
 </template>
@@ -62,6 +62,7 @@ export default {
       mirror: "x",
       quaternion: undefined,
       cameraResetDisabled: false,
+      selected: undefined,
     };
   },
   methods: {
@@ -192,6 +193,9 @@ export default {
     },
     setSelectedTool: function (val) {
       this.tool = val;
+    },
+    setSelectedObject: function (val) {
+      this.selected = val;
     },
   },
   mounted() {

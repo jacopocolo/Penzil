@@ -15,6 +15,7 @@
 <script>
 import { line } from "./line.js";
 import { select } from "./select.js";
+import { scene } from "../App.vue";
 
 export default {
   name: "Canvas",
@@ -34,6 +35,7 @@ export default {
     selectedTool: String,
     mirror: [Boolean, String],
   },
+  emits: ["selected"],
   methods: {
     updateMouseCoordinates: function (event) {
       if (event.touches) {
@@ -116,6 +118,9 @@ export default {
             break;
           case "select":
             select.onEnd(this.mouse.tx, this.mouse.ty);
+            if (scene.userData.controls != undefined) {
+              this.$emit("selected", scene.userData.controls.object);
+            }
             break;
           default:
             break;
