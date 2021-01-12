@@ -1,5 +1,8 @@
 <template>
-  <div>
+  <div
+    v-bind:style="{ top: x + 'px', left: y + 'px' }"
+    v-bind:class="{ hide: !display }"
+  >
     <span>
       <span>
         <input
@@ -30,16 +33,18 @@
         <div></div>
       </span>
     </span>
-    <button v-if="selectedTool === 'select'" id="duplicate" class="button">
+    <!-- <button v-if="selectedTool === 'select'" id="duplicate" class="button">
       Duplicate
-    </button>
+    </button> -->
   </div>
 </template>
 
 <script>
+//
+
 export default {
   name: "TransformToolbar",
-  props: {},
+  props: { x: Number, y: Number, display: Boolean },
   data() {
     return {};
   },
@@ -49,5 +54,14 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
+div {
+  position: absolute;
+  z-index: 2;
+  background-color: white;
+}
+
+.hide {
+  display: none;
+}
 </style>

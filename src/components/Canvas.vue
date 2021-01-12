@@ -15,7 +15,7 @@
 <script>
 import { line } from "./line.js";
 import { select } from "./select.js";
-import { scene } from "../App.vue";
+import { camera } from "../App.vue";
 
 export default {
   name: "Canvas",
@@ -35,7 +35,7 @@ export default {
     selectedTool: String,
     mirror: [Boolean, String],
   },
-  emits: ["selected"],
+  emits: ["setTransformToolbarDisplay", "setTransformToolbarPosition"],
   methods: {
     updateMouseCoordinates: function (event) {
       if (event.touches) {
@@ -101,6 +101,9 @@ export default {
             break;
           case "select":
             select.onMove(this.mouse.cx, this.mouse.cy);
+            if (select.dragged == true) {
+              this.$emit("setTransformToolbarDisplay", !select.dragged);
+            }
             break;
           default:
             break;
@@ -118,8 +121,19 @@ export default {
             break;
           case "select":
             select.onEnd(this.mouse.tx, this.mouse.ty);
-            if (scene.userData.controls != undefined) {
-              this.$emit("selected", scene.userData.controls.object);
+
+            //doesn't work but we are getting there?
+            if (select.s.controls != undefined) {
+              this.$emit("setTransformToolbarDisplay", true);
+              let position = select.s.controls.userData.helper.geometry.boundingSphere.center.project(
+                camera
+              );
+              this.$emit("setTransformToolbarPosition", {
+                y: ((position.x + 1) * window.innerWidth) / 2,
+                x: (-(position.y - 1) * window.innerHeight) / 2,
+              });
+            } else {
+              this.$emit("setTransformToolbarDisplay", false);
             }
             break;
           default:

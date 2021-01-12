@@ -4,7 +4,17 @@
     :cameraResetDisabled="cameraResetDisabled"
   />
   <tool-selector @selected-tool="setSelectedTool" />
-  <Canvas :selectedTool="tool" :mirror="mirror" @selected="setSelectedObject" />
+  <transorm-toolbar
+    :x="transformToolbar.x"
+    :y="transformToolbar.y"
+    :display="transformToolbar.display"
+  />
+  <Canvas
+    :selectedTool="tool"
+    :mirror="mirror"
+    @setTransformToolbarDisplay="setTransformToolbarDisplay"
+    @setTransformToolbarPosition="setTransformToolbarPosition"
+  />
   <undo-redo />
   <import />
 </template>
@@ -20,6 +30,7 @@ import ToolSelector from "./components/ToolSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo from "./components/UndoRedo.vue";
 import Import from "./components/Import.vue";
+import TransormToolbar from "./components/TransformToolbar.vue";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
@@ -52,6 +63,7 @@ export default {
     Canvas,
     // LineSettings,
     ToolSelector,
+    TransormToolbar,
     ViewportCube,
     UndoRedo,
     Import,
@@ -59,10 +71,11 @@ export default {
   data() {
     return {
       tool: "draw",
-      mirror: "x",
+      mirror: false,
       quaternion: undefined,
       cameraResetDisabled: false,
       selected: undefined,
+      transformToolbar: { x: 0, y: 0, display: false },
     };
   },
   methods: {
@@ -196,6 +209,14 @@ export default {
     },
     setSelectedObject: function (val) {
       this.selected = val;
+    },
+    setTransformToolbarPosition: function (val) {
+      console.log(val);
+      this.transformToolbar.x = val.x;
+      this.transformToolbar.y = val.y;
+    },
+    setTransformToolbarDisplay: function (val) {
+      this.transformToolbar.display = val;
     },
   },
   mounted() {
