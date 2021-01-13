@@ -5,8 +5,9 @@
   />
   <tool-selector @selected-tool="setSelectedTool" />
   <transorm-toolbar
-    :x="transformToolbar.x"
-    :y="transformToolbar.y"
+    :top="transformToolbar.top"
+    :left="transformToolbar.left"
+    :location="transformToolbar.location"
     :display="transformToolbar.display"
   />
   <Canvas
@@ -31,6 +32,7 @@ import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo from "./components/UndoRedo.vue";
 import Import from "./components/Import.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
+import { select } from "./components/select.js";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
@@ -75,7 +77,7 @@ export default {
       quaternion: undefined,
       cameraResetDisabled: false,
       selected: undefined,
-      transformToolbar: { x: 0, y: 0, display: false },
+      transformToolbar: { top: 0, left: 0, location: "above", display: false },
     };
   },
   methods: {
@@ -144,9 +146,29 @@ export default {
             camera.quaternion.w,
           ];
         }
+
+        //hide the contextual transformControls while we adjust the camera is something is selected
+        if (select.s && select.s.controls != undefined) {
+          this.transformToolbar.display = false;
+        }
+
+        select.s.controls.userData.helper.update();
       });
 
       cameraControls.addEventListener("sleep", () => {
+        //reposition the contextual transformControls after we adjusted the camera is something is selected
+        if (select.s && select.s.controls != undefined) {
+          select.s.controls.userData.helper.update();
+
+          let position = select.s.calculateTransfromToolbarPosition();
+
+          this.transformToolbar.left = position.x;
+          this.transformToolbar.top = position.y;
+          this.transformToolbar.location = position.location;
+          this.transformToolbar.display = true;
+        }
+
+        //set if the camera is resettable after we adjusted the camera
         let target = new THREE.Vector3();
         target = cameraControls.getTarget(target);
         var x = target.x;
@@ -211,9 +233,9 @@ export default {
       this.selected = val;
     },
     setTransformToolbarPosition: function (val) {
-      console.log(val);
-      this.transformToolbar.x = val.x;
-      this.transformToolbar.y = val.y;
+      this.transformToolbar.top = val.top;
+      this.transformToolbar.left = val.left;
+      this.transformToolbar.location = val.location;
     },
     setTransformToolbarDisplay: function (val) {
       this.transformToolbar.display = val;

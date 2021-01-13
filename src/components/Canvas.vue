@@ -15,7 +15,6 @@
 <script>
 import { line } from "./line.js";
 import { select } from "./select.js";
-import { camera } from "../App.vue";
 
 export default {
   name: "Canvas",
@@ -125,12 +124,11 @@ export default {
             //doesn't work but we are getting there?
             if (select.s.controls != undefined) {
               this.$emit("setTransformToolbarDisplay", true);
-              let position = select.s.controls.userData.helper.geometry.boundingSphere.center.project(
-                camera
-              );
+              let position = select.s.calculateTransfromToolbarPosition();
               this.$emit("setTransformToolbarPosition", {
-                y: ((position.x + 1) * window.innerWidth) / 2,
-                x: (-(position.y - 1) * window.innerHeight) / 2,
+                left: position.x,
+                top: position.y,
+                location: position.location,
               });
             } else {
               this.$emit("setTransformToolbarDisplay", false);

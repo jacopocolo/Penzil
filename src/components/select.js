@@ -61,6 +61,7 @@ let select = {
             points.forEach((point) => {
                 point.applyMatrix4(object.matrix);
                 point.project(camera);
+
             });
 
             return points;
@@ -205,6 +206,7 @@ let select = {
                 this.controls.attach(selection[0]);
                 this.controls.addEventListener("change", function () {
                     renderer.render(scene, camera)
+                    this.userData.helper.update();
                 })
                 this.controls.addEventListener("objectChange", function () {
                     mirror.updateMirrorOf(this.object, scene);
@@ -217,6 +219,7 @@ let select = {
                 );
                 scene.add(this.controls);
                 scene.add(this.controls.userData.helper);
+                this.controls.userData.helper.geometry.computeBoundingBox();
                 this.controls.userData.helper.update();
             }
             //It's a group
@@ -244,6 +247,7 @@ let select = {
                 this.controls.attach(this.group);
                 this.controls.addEventListener("change", function () {
                     renderer.render(scene, camera)
+                    this.userData.helper.update();
                 })
                 this.controls.addEventListener("objectChange", function () {
                     this.userData.helper.update();
@@ -274,6 +278,7 @@ let select = {
                     new THREE.Color(this.color)
                 );
                 scene.add(this.controls.userData.helper);
+                this.controls.userData.helper.geometry.computeBoundingBox();
                 this.controls.userData.helper.update();
             }
             this.selected = new Array();
@@ -315,6 +320,45 @@ let select = {
                 }
 
                 renderer.render(scene, camera)
+            }
+        }
+        calculateTransfromToolbarPosition() {
+
+            //find the center 
+            let position = this.controls.userData.helper.geometry.boundingSphere.center;
+            position = position.project(camera);
+
+            //find the min and max vertical distance
+            let buffArray = this.controls.userData.helper.geometry.attributes.position.array;
+            let vectors = [];
+            for (let i = 0; i < buffArray.length; i = i + 3) {
+                vectors.push(new THREE.Vector3().fromArray(buffArray, i));
+            }
+            let vectorsY = [];
+            vectors.forEach(v => {
+                v.project(camera);
+                let y = (-(v.y - 1) * window.innerHeight) / 2;
+                vectorsY.push(y)
+            });
+            let minY = Math.min(...vectorsY);
+            let maxY = Math.max(...vectorsY);
+
+            let location;
+
+            if (
+                this.controls.children[0].gizmo.translate.children[5].visible
+            ) {
+                position.y = maxY;
+                location = "below";
+            } else {
+                position.y = minY;
+                location = "above";
+            }
+
+            return {
+                x: ((position.x + 1) * window.innerWidth) / 2,
+                y: position.y,
+                location: location
             }
         }
     },

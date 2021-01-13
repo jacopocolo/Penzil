@@ -1,6 +1,16 @@
 <template>
   <div
-    v-bind:style="{ top: x + 'px', left: y + 'px' }"
+    v-bind:style="[
+      location == 'above'
+        ? {
+            top: 'calc(' + top + 'px - 60px',
+            left: 'calc(' + left + 'px - 110px)',
+          }
+        : {
+            top: 'calc(' + top + 'px + 10px',
+            left: 'calc(' + left + 'px - 110px)',
+          },
+    ]"
     v-bind:class="{ hide: !display }"
   >
     <span>
@@ -10,6 +20,7 @@
           id="translate"
           name="transformations"
           value="translate"
+          v-model="selectedTransformation"
           checked
         /><label for="translate"> Move</label>
         <div></div>
@@ -20,6 +31,7 @@
           id="rotate"
           name="transformations"
           value="rotate"
+          v-model="selectedTransformation"
         /><label for="rotate"> Rotate</label>
         <div></div>
       </span>
@@ -29,27 +41,44 @@
           id="scale"
           name="transformations"
           value="scale"
+          v-model="selectedTransformation"
         /><label for="scale"> Scale</label>
         <div></div>
       </span>
     </span>
-    <!-- <button v-if="selectedTool === 'select'" id="duplicate" class="button">
-      Duplicate
-    </button> -->
+
+    <button>Duplicate</button>
   </div>
 </template>
 
 <script>
-//
+import { select } from "./select.js";
 
 export default {
   name: "TransformToolbar",
-  props: { x: Number, y: Number, display: Boolean },
+  props: { top: Number, left: Number, location: String, display: Boolean },
   data() {
-    return {};
+    return {
+      selectedTransformation: "translate",
+    };
   },
   methods: {},
-  watch: {},
+  watch: {
+    selectedTransformation: function (val) {
+      select.s.controls.mode = val;
+      //this maintains the selection from the last used transformation
+      this.selectedTransformation = val;
+    },
+    display: function (val) {
+      if (val) {
+        //this maintains the selection from the last used transformation
+        select.s.controls.mode = this.selectedTransformation;
+      }
+    },
+    location: function (val) {
+      console.log(val);
+    },
+  },
   mounted() {},
 };
 </script>
@@ -58,7 +87,15 @@ export default {
 div {
   position: absolute;
   z-index: 2;
-  background-color: white;
+  background-color: black;
+  color: white;
+  width: 220px;
+  border-radius: 5px;
+  align-content: center;
+}
+
+button {
+  width: 100%;
 }
 
 .hide {
