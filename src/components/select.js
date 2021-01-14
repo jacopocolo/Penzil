@@ -205,22 +205,22 @@ let select = {
                 this.controls = new TransformControls(camera, document.getElementById("app"));
                 this.controls.attach(selection[0]);
                 this.controls.addEventListener("change", function () {
-                    renderer.render(scene, camera)
-                    this.userData.helper.update();
+                    renderer.render(scene, camera);
+                    select.s.helper.update();
                 })
                 this.controls.addEventListener("objectChange", function () {
                     mirror.updateMirrorOf(this.object, scene);
-                    this.userData.helper.update();
+                    select.s.helper.update();
                     renderer.render(scene, camera)
                 });
-                this.controls.userData.helper = new THREE.BoxHelper(
+                this.helper = new THREE.BoxHelper(
                     selection[0],
                     new THREE.Color(this.color)
                 );
                 scene.add(this.controls);
-                scene.add(this.controls.userData.helper);
-                this.controls.userData.helper.geometry.computeBoundingBox();
-                this.controls.userData.helper.update();
+                scene.add(this.helper);
+                this.helper.geometry.computeBoundingBox();
+                this.helper.update();
             }
             //It's a group
             else {
@@ -242,15 +242,14 @@ let select = {
                     clone.userData.uuid = element.uuid;
                     clone.visible = false;
                 });
-                scene.userData.controls = new TransformControls(camera, document.getElementById("app"));
-                this.controls = scene.userData.controls;
+                this.controls = new TransformControls(camera, document.getElementById("app"));
                 this.controls.attach(this.group);
                 this.controls.addEventListener("change", function () {
                     renderer.render(scene, camera)
-                    this.userData.helper.update();
+                    select.s.helper.update();
                 })
                 this.controls.addEventListener("objectChange", function () {
-                    this.userData.helper.update();
+                    select.s.helper.update();
                     this.object.children.forEach((obj) => {
                         var position = new THREE.Vector3();
                         obj.getWorldPosition(position);
@@ -273,13 +272,13 @@ let select = {
                     renderer.render(scene, camera)
                 });
                 scene.add(this.controls);
-                this.controls.userData.helper = new THREE.BoxHelper(
+                this.helper = new THREE.BoxHelper(
                     this.group,
                     new THREE.Color(this.color)
                 );
-                scene.add(this.controls.userData.helper);
-                this.controls.userData.helper.geometry.computeBoundingBox();
-                this.controls.userData.helper.update();
+                scene.add(this.helper);
+                this.helper.geometry.computeBoundingBox();
+                this.helper.update();
             }
             this.selected = new Array();
         }
@@ -298,22 +297,24 @@ let select = {
                         this.toggleSelectionColor(this.controls.object, false);
                         //clear references to controls and helper
                         scene.remove(this.controls);
-                        scene.remove(this.controls.userData.helper);
+                        scene.remove(this.helper);
                         this.controls.detach();
                         this.controls.dispose();
                         this.controls = undefined;
+                        this.helper = undefined;
                         break;
-                    case scene.userData.controls.object.type == "Group":
+                    case this.controls.object.type == "Group":
                         for (var i = 0; i < this.controls.object.children.length; i++) {
                             this.toggleSelectionColor(this.controls.object.children[i], false);
                         }
                         scene.remove(this.group);
                         //clear references to controls and helper
                         scene.remove(this.controls);
-                        scene.remove(this.controls.userData.helper);
+                        scene.remove(this.helper);
                         this.controls.detach();
                         this.controls.dispose();
                         this.controls = undefined;
+                        this.helper = undefined;
                         break;
                     default:
                     //do nothing, nothing is selected
@@ -325,11 +326,11 @@ let select = {
         calculateTransfromToolbarPosition() {
 
             //find the center 
-            let position = this.controls.userData.helper.geometry.boundingSphere.center;
+            let position = this.helper.geometry.boundingSphere.center;
             position = position.project(camera);
 
             //find the min and max vertical distance
-            let buffArray = this.controls.userData.helper.geometry.attributes.position.array;
+            let buffArray = this.helper.geometry.attributes.position.array;
             let vectors = [];
             for (let i = 0; i < buffArray.length; i = i + 3) {
                 vectors.push(new THREE.Vector3().fromArray(buffArray, i));

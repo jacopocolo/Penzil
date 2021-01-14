@@ -151,14 +151,15 @@ export default {
         if (select.s && select.s.controls != undefined) {
           this.transformToolbar.display = false;
         }
-
-        select.s.controls.userData.helper.update();
+        if (select.s && select.s.controls != undefined) {
+          select.s.helper.update();
+        }
       });
 
       cameraControls.addEventListener("sleep", () => {
         //reposition the contextual transformControls after we adjusted the camera is something is selected
         if (select.s && select.s.controls != undefined) {
-          select.s.controls.userData.helper.update();
+          select.s.helper.update();
 
           let position = select.s.calculateTransfromToolbarPosition();
 

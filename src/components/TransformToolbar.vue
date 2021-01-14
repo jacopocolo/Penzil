@@ -75,9 +75,6 @@ export default {
         select.s.controls.mode = this.selectedTransformation;
       }
     },
-    location: function (val) {
-      console.log(val);
-    },
   },
   mounted() {},
 };
