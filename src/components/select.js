@@ -351,7 +351,7 @@ let select = {
                     var duplicateMaterial = new MeshLineMaterial({
                         lineWidth: duplicate.material.lineWidth,
                         sizeAttenuation: 1,
-                        color: object.userData.lineColor,
+                        color: duplicate.userData.lineColor,
                         side: THREE.DoubleSide,
                         fog: false,
                     });
@@ -374,7 +374,7 @@ let select = {
                         var duplicateMaterial = new MeshLineMaterial({
                             lineWidth: duplicate.material.lineWidth,
                             sizeAttenuation: 1,
-                            color: object.userData.lineColor,
+                            color: duplicate.userData.lineColor,
                             side: THREE.DoubleSide,
                             fog: false,
                         });
