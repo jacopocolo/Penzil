@@ -2,10 +2,13 @@ import * as THREE from "three";
 import { scene, renderer, camera, context } from "../App.vue";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { mirror } from "./mirror.js"
+import { MeshLineMaterial, MeshLineRaycast } from "three.meshline";
+import { startAnimating, stopAnimating, loop } from "./animate.js"
 
 let select = {
     s: undefined,
     dragged: false,
+    transformMode: "translate",
     vertexSelection: class {
         constructor() {
             this.start = new THREE.Vector2();
@@ -203,16 +206,25 @@ let select = {
                 this.toggleSelectionColor(selection[0], true);
 
                 this.controls = new TransformControls(camera, document.getElementById("app"));
+                this.controls.mode = select.transformMode;
                 this.controls.attach(selection[0]);
+                this.controls.addEventListener("mouseDown", function () {
+                    startAnimating();
+                })
                 this.controls.addEventListener("change", function () {
-                    renderer.render(scene, camera);
-                    select.s.helper.update();
+                    if (!loop) {
+                        select.s.helper.update();
+                        renderer.render(scene, camera);
+                    }
                 })
                 this.controls.addEventListener("objectChange", function () {
                     mirror.updateMirrorOf(this.object, scene);
                     select.s.helper.update();
-                    renderer.render(scene, camera)
                 });
+                this.controls.addEventListener("mouseUp", function () {
+                    stopAnimating();
+                    renderer.render(scene, camera);
+                })
                 this.helper = new THREE.BoxHelper(
                     selection[0],
                     new THREE.Color(this.color)
@@ -243,10 +255,16 @@ let select = {
                     clone.visible = false;
                 });
                 this.controls = new TransformControls(camera, document.getElementById("app"));
+                this.controls.mode = select.transformMode;
                 this.controls.attach(this.group);
+                this.controls.addEventListener("mouseDown", function () {
+                    startAnimating();
+                })
                 this.controls.addEventListener("change", function () {
-                    renderer.render(scene, camera)
-                    select.s.helper.update();
+                    if (!loop) {
+                        select.s.helper.update();
+                        renderer.render(scene, camera);
+                    }
                 })
                 this.controls.addEventListener("objectChange", function () {
                     select.s.helper.update();
@@ -267,10 +285,12 @@ let select = {
                         );
                         selectedObj.scale.set(scale.x, scale.y, scale.z);
                         mirror.updateMirrorOf(selectedObj, scene);
-                        renderer.render(scene, camera)
                     });
-                    renderer.render(scene, camera)
                 });
+                this.controls.addEventListener("mouseUp", function () {
+                    stopAnimating();
+                    renderer.render(scene, camera);
+                })
                 scene.add(this.controls);
                 this.helper = new THREE.BoxHelper(
                     this.group,
@@ -322,6 +342,65 @@ let select = {
 
                 renderer.render(scene, camera)
             }
+        }
+        duplicate() {
+            let duplicateArray = new Array();
+            switch (true) {
+                case this.controls.object.type == "Mesh":
+                    var duplicate = this.controls.object.clone();
+                    var duplicateMaterial = new MeshLineMaterial({
+                        lineWidth: duplicate.material.lineWidth,
+                        sizeAttenuation: 1,
+                        color: object.userData.lineColor,
+                        side: THREE.DoubleSide,
+                        fog: false,
+                    });
+                    duplicate.material = duplicateMaterial;
+                    scene.add(duplicate);
+                    duplicate.raycast = MeshLineRaycast;
+                    if (duplicate.userData.mirrorAxis) {
+                        mirror.object(duplicate, duplicate.userData.mirrorAxis, scene);
+                    }
+                    duplicateArray.push(duplicate);
+                    this.deselect();
+                    this.select(duplicateArray);
+                    break;
+                case this.controls.object.type == "Group":
+                    this.controls.object.children.forEach((object) => {
+                        //Here we are picking the original hidden object that we use for working around the grouping and ungrouping issues
+                        let originalObject = scene.getObjectByProperty("uuid", object.userData.uuid);
+                        var duplicate = originalObject.clone();
+                        duplicate.layers.set(1);
+                        var duplicateMaterial = new MeshLineMaterial({
+                            lineWidth: duplicate.material.lineWidth,
+                            sizeAttenuation: 1,
+                            color: object.userData.lineColor,
+                            side: THREE.DoubleSide,
+                            fog: false,
+                        });
+                        duplicate.material = duplicateMaterial;
+                        duplicate.raycast = MeshLineRaycast;
+                        duplicateArray.push(duplicate);
+                        scene.add(duplicate);
+                        if (duplicate.userData.mirrorAxis) {
+                            mirror.object(duplicate, duplicate.userData.mirrorAxis, scene);
+                        }
+                    });
+                    //deselect selected group
+                    this.deselect();
+
+                    this.selected = duplicateArray;
+                    this.selected.forEach((element) => {
+                        this.toggleSelectionColor(element, true);
+                    });
+                    this.select(this.selected);
+                    this.helper.update();
+                    mirror.updateMirrorOf(this.group, scene);
+                    break;
+                default:
+                //do nothing, nothing is selected
+            }
+            renderer.render(scene, camera)
         }
         calculateTransfromToolbarPosition() {
 

@@ -47,12 +47,13 @@
       </span>
     </span>
 
-    <button>Duplicate</button>
+    <button @click="duplicate">Duplicate</button>
   </div>
 </template>
 
 <script>
 import { select } from "./select.js";
+import { scene, renderer, camera } from "../App.vue";
 
 export default {
   name: "TransformToolbar",
@@ -62,12 +63,19 @@ export default {
       selectedTransformation: "translate",
     };
   },
-  methods: {},
+  methods: {
+    duplicate: function () {
+      select.s.duplicate();
+    },
+  },
   watch: {
     selectedTransformation: function (val) {
       select.s.controls.mode = val;
       //this maintains the selection from the last used transformation
       this.selectedTransformation = val;
+      select.transformMode = val;
+      select.s.helper.update();
+      renderer.render(scene, camera);
     },
     display: function (val) {
       if (val) {

@@ -1506,7 +1506,6 @@ app.selection = {
     if (this.selected.length > 1) {
       //var sourcePosition = this.group.position;
       var duplicateArray = [];
-      console.log(app.selection.selection);
       this.selected.forEach((object) => {
         var duplicate = object.clone();
         duplicate.layers.set(1);

@@ -6,7 +6,7 @@ let mirror = {
     updateMirrorOf: function (obj, activeScene) {
         if (obj.type === "Group") {
             obj.children.forEach((obj) => {
-                mirror.updateMirrorOf(obj);
+                mirror.updateMirrorOf(obj, activeScene);
             });
         } else if (obj.userData.mirror) {
             //let's check if there's a matching mirror object otherwise we do nothing
@@ -75,6 +75,9 @@ let mirror = {
             case "z":
                 clone.applyMatrix4(obj.matrixWorld.makeScale(1, 1, -1));
                 break;
+            default:
+                //if it's false do nothing
+                return
         }
         activeScene.add(clone);
         //clone.updateMatrix();

@@ -62,7 +62,6 @@ export default {
     onStart: function (event) {
       if (event.button == 0 || event.touches.length == 1) {
         this.mouse.down = true;
-
         switch (this.selectedTool) {
           case "draw":
             line.onStart(this.mirror);
@@ -107,6 +106,8 @@ export default {
           default:
             break;
         }
+      } else {
+        return;
       }
     },
     onEnd: function () {
