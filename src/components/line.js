@@ -3,10 +3,10 @@ import * as THREE from "three";
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
 import { mirror } from "./mirror.js"
+import { undoManager } from "./UndoRedo.vue"
 
 let line = {
     l: undefined,
-    uuid: null,
     draw: class {
         constructor() {
             this.line = new MeshLine();
@@ -52,7 +52,6 @@ let line = {
                 v3.unproject(camera);
             }
             var v4 = new THREE.Vector4(v3.x, v3.y, v3.z, force);
-
             if (unproject) {
                 this.appendToBuffer(v4);
                 let pt = this.getAveragePoint(0);
@@ -63,24 +62,14 @@ let line = {
                 }
             } else {
                 this.mesh.geometry.userData.force.push(force);
-                this.geometry.vertices.push.push(v3);
+                this.geometry.vertices.push(v3);
             }
-
-            // const geometry = new THREE.SphereGeometry(0.01, 32, 32);
-            // const material = new THREE.MeshBasicMaterial({ color: 0x000000 });
-            // const sphere = new THREE.Mesh(geometry, material);
-            // scene.add(sphere);
-            // sphere.position.set(v3.x, v3.y, v3.z);
-
             this.setGeometry();
-
             renderer.autoClear = false;
             renderer.clearDepth();
             renderer.render(drawingScene, camera);
-
         }
         end(mirrorOn) {
-
             scene.add(this.mesh);
             drawingScene.clear();
             renderer.autoClear = true;
@@ -116,31 +105,41 @@ let line = {
                 default:
                 //it's false, do nothing
             }
-
-            //Still undecided on this, might be useful for performance
-            // this.mesh.matrixAutoUpdate = false;
-
-            // let helper = new THREE.BoxHelper(
-            //     this.mesh,
-            //     new THREE.Color(0x000000)
-            // );
-            // scene.add(helper);
-
-            // let transformControls = new TransformControls(camera, document.getElementById("app"));
-
-            // transformControls.addEventListener("change", function () {
-            //     renderer.render(scene, camera)
-            // });
-            // transformControls.addEventListener("objectChange", function () {
-            //     transformControls.object.updateMatrix();
-            //     helper.update();
-            // });
-
-            // transformControls.attach(this.mesh);
-            // transformControls.setMode("rotate")
-            // scene.add(transformControls);
-
             renderer.render(scene, camera);
+
+            let uuid = this.uuid;
+            let vertices = this.geometry.vertices;
+            let force = this.mesh.geometry.userData.force;
+            let width = this.material.lineWidth;
+            let position = this.mesh.position;
+            let quaternion = this.mesh.quaternion;
+            let scale = this.mesh.scale;
+
+            undoManager.add({
+                undo: function () {
+                    console.log("deleting " + uuid)
+                    scene.remove(scene.getObjectByProperty(
+                        "uuid",
+                        uuid
+                    ));
+                    renderer.render(scene, camera);
+                },
+                redo: function () {
+                    console.log("redrawing " + uuid)
+                    line.fromVertices(
+                        vertices,
+                        force,
+                        //color,
+                        width,
+                        mirrorOn,
+                        uuid,
+                        //true
+                        position,
+                        quaternion,
+                        scale
+                    );
+                }
+            });
 
         }
         appendToBuffer(pt) {
@@ -229,9 +228,15 @@ let line = {
     },
     onEnd: function (mirrorOn) {
         this.l.end(mirrorOn);
+        console.log(this.l.uuid);
     },
-    fromVertices(vertices, lineWidth, mirrorOn) {
+    fromVertices(vertices, force, lineWidth, mirrorOn, uuid, position, quaternion, scale) {
         this.l = new this.draw();
+        this.l.material.lineWidth = lineWidth;
+        this.l.geometry.vertices = vertices;
+        this.l.mesh.geometry.userData.force = force;
+        this.l.mesh.uuid = uuid;
+
         switch (mirrorOn) {
             case "x":
                 mirror.object(this.l.mesh, "x", scene);
@@ -246,18 +251,45 @@ let line = {
             //It's false, do nothing
         }
 
-        scene.add(this.l.mesh)
-        //this.l.material.color = lineColor;
-        this.l.material.lineWidth = lineWidth / 1000;
-        for (let i = 0; i < vertices.length; i++) {
-            let v3 = new THREE.Vector3(vertices[i].x, vertices[i].y, vertices[i].z);
-            let force = vertices[i].w;
-            this.l.mesh.geometry.userData.force.push(force);
-            this.l.geometry.vertices.push(v3);
-        }
-        this.l.setGeometry("tail");
+        this.l.setGeometry();
+        this.l.geometry.verticesNeedsUpdate = true;
+        renderer.render(scene, camera);
 
-        return this.l.mesh
+        this.l.mesh.position.set(
+            this.l.mesh.geometry.boundingSphere.center.x,
+            this.l.mesh.geometry.boundingSphere.center.y,
+            this.l.mesh.geometry.boundingSphere.center.z
+        );
+        renderer.render(scene, camera);
+
+        this.l.geometry.center();
+        renderer.render(scene, camera);
+        this.l.setGeometry("tail");
+        renderer.render(scene, camera);
+        this.l.geometry.needsUpdate = true;
+        renderer.render(scene, camera);
+
+        this.l.mesh.position.set(
+            position.x,
+            position.y,
+            position.z
+        );
+        this.l.mesh.quaternion.set(
+            quaternion._x,
+            quaternion._y,
+            quaternion._z,
+            quaternion._w
+        );
+        this.l.mesh.scale.set(
+            scale.x,
+            scale.y,
+            scale.z
+        );
+
+        scene.add(this.l.mesh)
+        renderer.render(scene, camera)
+        //return this.l.mesh
+
     }
 }
 

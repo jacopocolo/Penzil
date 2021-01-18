@@ -79,28 +79,11 @@ export default {
                   vertices,
                   //color,
                   importedLine.w,
-                  importedLine.a
-                  //true
+                  importedLine.a,
+                  importedLine.p,
+                  importedLine.q,
+                  importedLine.s
                 );
-
-                l.position.set(
-                  importedLine.p.x,
-                  importedLine.p.y,
-                  importedLine.p.z
-                );
-                l.quaternion.set(
-                  importedLine.q._x,
-                  importedLine.q._y,
-                  importedLine.q._z,
-                  importedLine.q._w
-                );
-                l.scale.set(
-                  importedLine.s.x,
-                  importedLine.s.y,
-                  importedLine.s.z
-                );
-
-                //l.updateMatrix();
 
                 mirror.updateMirrorOf(l, scene);
               }

@@ -10,19 +10,18 @@
     :location="transformToolbar.location"
     :display="transformToolbar.display"
   />
+  <undo-redo />
+  <import />
   <Canvas
     :selectedTool="tool"
     :mirror="mirror"
     @setTransformToolbarDisplay="setTransformToolbarDisplay"
     @setTransformToolbarPosition="setTransformToolbarPosition"
   />
-  <undo-redo />
-  <import />
 </template>
 
 <script>
 import * as THREE from "three";
-//import { TransformControls } from "three";
 import CameraControls from "camera-controls";
 CameraControls.install({ THREE: THREE });
 
@@ -73,7 +72,7 @@ export default {
   data() {
     return {
       tool: "draw",
-      mirror: "x",
+      mirror: false,
       quaternion: undefined,
       cameraResetDisabled: false,
       selected: undefined,
