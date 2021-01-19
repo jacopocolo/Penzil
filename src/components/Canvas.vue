@@ -14,6 +14,7 @@
 
 <script>
 import { line } from "./line.js";
+import { erase } from "./erase.js";
 import { select } from "./select.js";
 
 export default {
@@ -67,7 +68,7 @@ export default {
             line.onStart(this.mirror);
             break;
           case "erase":
-            //
+            erase.onStart(this.mouse.cx, this.mouse.cy);
             break;
           case "select":
             select.onStart(
@@ -95,7 +96,7 @@ export default {
             );
             break;
           case "erase":
-            //
+            erase.onMove(this.mouse.cx, this.mouse.cy);
             break;
           case "select":
             select.onMove(this.mouse.cx, this.mouse.cy);
@@ -117,7 +118,7 @@ export default {
             line.onEnd(this.mirror);
             break;
           case "erase":
-            //
+            erase.onEnd();
             break;
           case "select":
             select.onEnd(this.mouse.tx, this.mouse.ty);

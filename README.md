@@ -7,6 +7,7 @@ This project is a work in progress and an almost complete re-write of the [greas
 Todo:
 
 - [ ] Undo-redo
+- [ ] Small parser for displaying updates (see: https://www.w3schools.com/xml/xml_parser.asp)
 - [ ] Eraser
 - [ ] Draw preferences UI: width, color, mirror
 - [ ] Export to video

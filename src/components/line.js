@@ -2,6 +2,7 @@ import * as THREE from "three";
 
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
+import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager } from "./UndoRedo.vue"
 
@@ -12,7 +13,7 @@ let line = {
             this.line = new MeshLine();
             this.geometry = new THREE.Geometry();
             this.material = new MeshLineMaterial({
-                lineWidth: 0.01,
+                lineWidth: 0.1,
                 sizeAttenuation: 1,
                 color: new THREE.Color("black"),
                 side: THREE.DoubleSide,
@@ -117,15 +118,13 @@ let line = {
 
             undoManager.add({
                 undo: function () {
-                    console.log("deleting " + uuid)
-                    scene.remove(scene.getObjectByProperty(
+                    erase.deleteObject(scene.getObjectByProperty(
                         "uuid",
                         uuid
-                    ));
+                    ))
                     renderer.render(scene, camera);
                 },
                 redo: function () {
-                    console.log("redrawing " + uuid)
                     line.fromVertices(
                         vertices,
                         force,
@@ -235,7 +234,11 @@ let line = {
         this.l.material.lineWidth = lineWidth;
         this.l.geometry.vertices = vertices;
         this.l.mesh.geometry.userData.force = force;
-        this.l.mesh.uuid = uuid;
+        if (uuid) {
+            this.l.mesh.uuid = uuid;
+        } else {
+            this.l.mesh.uuid = this.l.uuid;
+        }
 
         switch (mirrorOn) {
             case "x":
