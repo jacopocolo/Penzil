@@ -4,6 +4,7 @@ import { TransformControls } from "three/examples/jsm/controls/TransformControls
 import { mirror } from "./mirror.js"
 import { MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { startAnimating, stopAnimating, loop } from "./animate.js"
+import { undoManager } from "./UndoRedo.vue"
 
 let select = {
     s: undefined,
@@ -210,6 +211,19 @@ let select = {
                 this.controls.attach(selection[0]);
                 this.controls.addEventListener("mouseDown", function () {
                     startAnimating();
+
+                    var position = new THREE.Vector3();
+                    this.object.getWorldPosition(position);
+                    var quaternion = new THREE.Quaternion();
+                    this.object.getWorldQuaternion(quaternion);
+                    var scale = new THREE.Vector3();
+                    this.object.getWorldScale(scale);
+
+                    this.userData.startingTransform = {
+                        position: position,
+                        quaternion: quaternion,
+                        scale: scale
+                    }
                 })
                 this.controls.addEventListener("change", function () {
                     if (!loop) {
@@ -223,6 +237,36 @@ let select = {
                 });
                 this.controls.addEventListener("mouseUp", function () {
                     stopAnimating();
+                    var endPosition = new THREE.Vector3();
+                    this.object.getWorldPosition(endPosition);
+                    var endQuaternion = new THREE.Quaternion();
+                    this.object.getWorldQuaternion(endQuaternion);
+                    var endScale = new THREE.Vector3();
+                    this.object.getWorldScale(endScale);
+
+                    let startPosition = this.userData.startingTransform.position;
+                    let startQuaternion = this.userData.startingTransform.quaternion;
+                    let startScale = this.userData.startingTransform.scale;
+
+                    if (!startPosition.equals(endPosition) || !startQuaternion.equals(endQuaternion) || !startScale.equals(endScale)) {
+                        undoManager.add({
+                            undo: function () {
+                                select.s.controls.object.position.copy(startPosition);
+                                select.s.controls.object.quaternion.copy(startQuaternion);
+                                select.s.controls.object.scale.copy(startScale);
+                                select.s.helper.update();
+                                renderer.render(scene, camera);
+                            },
+                            redo: function () {
+                                select.s.controls.object.position.copy(endPosition);
+                                select.s.controls.object.quaternion.copy(endQuaternion);
+                                select.s.controls.object.scale.copy(endScale)
+                                select.s.helper.update();
+                                renderer.render(scene, camera);
+                            }
+                        });
+                    }
+
                     renderer.render(scene, camera);
                 })
                 this.helper = new THREE.BoxHelper(
@@ -252,13 +296,27 @@ let select = {
                     scene.add(clone);
                     this.group.attach(clone);
                     clone.userData.uuid = element.uuid;
-                    clone.visible = false;
+                    clone.visible = true;
                 });
                 this.controls = new TransformControls(camera, document.getElementById("app"));
                 this.controls.mode = select.transformMode;
                 this.controls.attach(this.group);
                 this.controls.addEventListener("mouseDown", function () {
                     startAnimating();
+                    this.userData.startingTransform = [];
+                    this.object.children.forEach((obj) => {
+                        var position = new THREE.Vector3();
+                        obj.getWorldPosition(position);
+                        var quaternion = new THREE.Quaternion();
+                        obj.getWorldQuaternion(quaternion);
+                        var scale = new THREE.Vector3();
+                        obj.getWorldScale(scale);
+                        this.userData.startingTransform.push({
+                            position: position,
+                            quaternion: quaternion,
+                            scale: scale
+                        })
+                    });
                 })
                 this.controls.addEventListener("change", function () {
                     if (!loop) {
@@ -276,19 +334,82 @@ let select = {
                         var scale = new THREE.Vector3();
                         obj.getWorldScale(scale);
                         var selectedObj = scene.getObjectByProperty("uuid", obj.userData.uuid);
-                        selectedObj.position.set(position.x, position.y, position.z);
-                        selectedObj.quaternion.set(
-                            quaternion.x,
-                            quaternion.y,
-                            quaternion.z,
-                            quaternion.w
-                        );
-                        selectedObj.scale.set(scale.x, scale.y, scale.z);
+                        selectedObj.position.copy(position);
+                        selectedObj.quaternion.copy(quaternion);
+                        selectedObj.scale.copy(scale);
                         mirror.updateMirrorOf(selectedObj, scene);
                     });
                 });
                 this.controls.addEventListener("mouseUp", function () {
                     stopAnimating();
+                    this.userData.endingTransform = [];
+                    this.object.children.forEach((obj) => {
+                        var position = new THREE.Vector3();
+                        obj.getWorldPosition(position);
+                        var quaternion = new THREE.Quaternion();
+                        obj.getWorldQuaternion(quaternion);
+                        var scale = new THREE.Vector3();
+                        obj.getWorldScale(scale);
+                        this.userData.endingTransform.push({
+                            position: position,
+                            quaternion: quaternion,
+                            scale: scale
+                        })
+                    });
+
+                    let start = this.userData.startingTransform;
+                    let end = this.userData.endingTransform
+
+                    //checking only the first object in the array should be fine. If one changed they all changed
+                    if (!start[0].position.equals(end[0].position) || !start[0].quaternion.equals(end[0].quaternion) || !start[0].scale.equals(end[0].scale)) {
+                        undoManager.add({
+                            undo: function () {
+                                for (let i = 0; i < start.length; i++) {
+                                    select.s.controls.object.children[i].position.copy(start[i].position)
+                                    select.s.controls.object.children[i].quaternion.copy(start[i].quaternion)
+                                    select.s.controls.object.children[i].scale.copy(start[i].scale)
+                                }
+                                // select.s.controls.object.children.forEach((obj) => {
+                                //     var position = new THREE.Vector3();
+                                //     obj.getWorldPosition(position);
+                                //     var quaternion = new THREE.Quaternion();
+                                //     obj.getWorldQuaternion(quaternion);
+                                //     var scale = new THREE.Vector3();
+                                //     obj.getWorldScale(scale);
+                                //     var selectedObj = scene.getObjectByProperty("uuid", obj.userData.uuid);
+                                //     selectedObj.position.copy(position);
+                                //     selectedObj.quaternion.copy(quaternion);
+                                //     selectedObj.scale.copy(scale);
+                                //     mirror.updateMirrorOf(selectedObj, scene);
+                                // });
+                                select.s.helper.update();
+                                renderer.render(scene, camera);
+                            },
+                            redo: function () {
+                                for (let i = 0; i < start.length; i++) {
+                                    select.s.controls.object.children[i].position.copy(end[i].position)
+                                    select.s.controls.object.children[i].quaternion.copy(end[i].quaternion)
+                                    select.s.controls.object.children[i].scale.copy(end[i].scale)
+                                }
+                                // select.s.controls.object.children.forEach((obj) => {
+                                //     var position = new THREE.Vector3();
+                                //     obj.getWorldPosition(position);
+                                //     var quaternion = new THREE.Quaternion();
+                                //     obj.getWorldQuaternion(quaternion);
+                                //     var scale = new THREE.Vector3();
+                                //     obj.getWorldScale(scale);
+                                //     var selectedObj = scene.getObjectByProperty("uuid", obj.userData.uuid);
+                                //     selectedObj.position.copy(position);
+                                //     selectedObj.quaternion.copy(quaternion);
+                                //     selectedObj.scale.copy(scale);
+                                //     mirror.updateMirrorOf(selectedObj, scene);
+                                // });
+                                select.s.helper.update();
+                                renderer.render(scene, camera);
+                            }
+                        });
+                    }
+
                     renderer.render(scene, camera);
                 })
                 scene.add(this.controls);
@@ -300,6 +421,30 @@ let select = {
                 this.helper.geometry.computeBoundingBox();
                 this.helper.update();
             }
+
+            let selectedArray = [];
+            this.selected.forEach(object => {
+                selectedArray.push(object.uuid)
+            })
+
+            undoManager.add({
+                undo: function () {
+                    select.s.deselect();
+                    renderer.render(scene, camera);
+                },
+                redo: function () {
+                    let selection = [];
+                    selectedArray.forEach(uuid => {
+                        selection.push(scene.getObjectByProperty(
+                            "uuid",
+                            uuid
+                        ))
+                    })
+                    select.s.select(selection);
+                    renderer.render(scene, camera);
+                }
+            });
+
             this.selected = new Array();
         }
         toggleSelectionColor(object, bool) {
@@ -312,8 +457,11 @@ let select = {
         deselect() {
             if (this.controls != undefined) {
 
+                let selectedArray = [];
+
                 switch (true) {
                     case this.controls.object.type == "Mesh":
+                        selectedArray.push(this.controls.object.uuid); //for undo
                         this.toggleSelectionColor(this.controls.object, false);
                         //clear references to controls and helper
                         scene.remove(this.controls);
@@ -324,7 +472,9 @@ let select = {
                         this.helper = undefined;
                         break;
                     case this.controls.object.type == "Group":
+                        this.controls.object.children.forEach;
                         for (var i = 0; i < this.controls.object.children.length; i++) {
+                            selectedArray.push(this.controls.object.children[i].userData.uuid)
                             this.toggleSelectionColor(this.controls.object.children[i], false);
                         }
                         scene.remove(this.group);
@@ -339,6 +489,28 @@ let select = {
                     default:
                     //do nothing, nothing is selected
                 }
+
+                //TODO: deselect should update setTransformationToolbar on its own
+                undoManager.add({
+                    undo: function () {
+                        let selection = [];
+                        selectedArray.forEach(uuid => {
+                            selection.push(scene.getObjectByProperty(
+                                "uuid",
+                                uuid
+                            ))
+                        })
+                        select.s = new select.selection();
+
+                        select.s.select(selection);
+
+                        renderer.render(scene, camera);
+                    },
+                    redo: function () {
+                        select.s.deselect()
+                        renderer.render(scene, camera);
+                    }
+                });
 
                 renderer.render(scene, camera)
             }
