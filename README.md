@@ -7,6 +7,14 @@ This project is a work in progress and an almost complete re-write of the [greas
 Todo:
 
 - [ ] Undo-redo
+    - [x] Draw
+    - [x] Erase
+    - [x] Select
+    - [x] Deselect
+    - [x] Transform single and group
+    - [ ] Mirror elements
+    - [ ] Duplicate
+    - [ ] Selected tool
 - [ ] Small parser for displaying updates (see: https://www.w3schools.com/xml/xml_parser.asp)
 - [ ] Eraser
 - [ ] Draw preferences UI: width, color, mirror

@@ -35,17 +35,44 @@
 </template>
 
 <script>
+import { undoManager } from "./UndoRedo.vue";
+
 export default {
   name: "ToolSelector",
   data() {
     return {
       selectedTool: "draw",
+      history: ["draw"], //start with default
     };
   },
   watch: {
     selectedTool: function (val) {
+      this.history.push(val);
+      if (this.history.length > 2) {
+        this.history.shift();
+      }
       this.$emit("selected-tool", val);
+      //needs doing, watch doesn't allow pre value tracking so this needs to be split out
+
+      let current = val;
+      let previous = this.history[0];
+
+      console.log(this.history);
+
+      undoManager.add({
+        undo: function () {
+          this.selectedTool = current;
+          this.$emit("selected-tool", current);
+        },
+        redo: function () {
+          this.selectedTool = previous;
+          this.$emit("selected-tool", previous);
+        },
+      });
     },
+  },
+  methods: {
+    //https://reactgo.com/vue-call-component-outside/
   },
 };
 </script>

@@ -200,7 +200,7 @@ let select = {
             }
             renderer.render(scene, camera)
         }
-        select(selection) {
+        select(selection, matrix) {
             //selection can not be zero so it's either 1 or more than 1
             //It's a single element
             if (selection.length == 1) {
@@ -282,6 +282,12 @@ let select = {
             else {
                 this.group = new THREE.Group();
                 scene.add(this.group);
+                //we pass a matrix into the selection only to restore the group matrix properly on undo. This way worldTransformations can be applied in referse efficiently 
+                if (matrix) {
+                    this.group.applyMatrix4(matrix);
+                }
+
+
                 //calculate where is the center for the selected objects so we can set the center of the group before we attach objects to it;
                 var center = new THREE.Vector3();
                 selection.forEach((obj) => {
@@ -296,27 +302,25 @@ let select = {
                     scene.add(clone);
                     this.group.attach(clone);
                     clone.userData.uuid = element.uuid;
-                    clone.visible = true;
+                    clone.visible = false;
                 });
                 this.controls = new TransformControls(camera, document.getElementById("app"));
                 this.controls.mode = select.transformMode;
                 this.controls.attach(this.group);
                 this.controls.addEventListener("mouseDown", function () {
                     startAnimating();
-                    this.userData.startingTransform = [];
-                    this.object.children.forEach((obj) => {
-                        var position = new THREE.Vector3();
-                        obj.getWorldPosition(position);
-                        var quaternion = new THREE.Quaternion();
-                        obj.getWorldQuaternion(quaternion);
-                        var scale = new THREE.Vector3();
-                        obj.getWorldScale(scale);
-                        this.userData.startingTransform.push({
-                            position: position,
-                            quaternion: quaternion,
-                            scale: scale
-                        })
-                    });
+                    var position = new THREE.Vector3();
+                    this.object.getWorldPosition(position);
+                    var quaternion = new THREE.Quaternion();
+                    this.object.getWorldQuaternion(quaternion);
+                    var scale = new THREE.Vector3();
+                    this.object.getWorldScale(scale);
+
+                    this.userData.startingTransform = {
+                        position: position,
+                        quaternion: quaternion,
+                        scale: scale
+                    }
                 })
                 this.controls.addEventListener("change", function () {
                     if (!loop) {
@@ -342,69 +346,70 @@ let select = {
                 });
                 this.controls.addEventListener("mouseUp", function () {
                     stopAnimating();
-                    this.userData.endingTransform = [];
-                    this.object.children.forEach((obj) => {
-                        var position = new THREE.Vector3();
-                        obj.getWorldPosition(position);
-                        var quaternion = new THREE.Quaternion();
-                        obj.getWorldQuaternion(quaternion);
-                        var scale = new THREE.Vector3();
-                        obj.getWorldScale(scale);
-                        this.userData.endingTransform.push({
-                            position: position,
-                            quaternion: quaternion,
-                            scale: scale
-                        })
-                    });
 
-                    let start = this.userData.startingTransform;
-                    let end = this.userData.endingTransform
+                    var endPosition = new THREE.Vector3();
+                    this.object.getWorldPosition(endPosition);
+                    var endQuaternion = new THREE.Quaternion();
+                    this.object.getWorldQuaternion(endQuaternion);
+                    var endScale = new THREE.Vector3();
+                    this.object.getWorldScale(endScale);
 
-                    //checking only the first object in the array should be fine. If one changed they all changed
-                    if (!start[0].position.equals(end[0].position) || !start[0].quaternion.equals(end[0].quaternion) || !start[0].scale.equals(end[0].scale)) {
+                    let startPosition = this.userData.startingTransform.position;
+                    let startQuaternion = this.userData.startingTransform.quaternion;
+                    let startScale = this.userData.startingTransform.scale;
+
+                    var delta = endQuaternion.clone().invert();
+                    delta.multiply(startQuaternion);
+
+                    if (!startPosition.equals(endPosition) || !startQuaternion.equals(endQuaternion) || !startScale.equals(endScale)) {
+
+                        //There is a problem when we are coming back from a deselect because the object position, scale, quaternion is reset. I think it's possible to adjust these to be deltas
                         undoManager.add({
                             undo: function () {
-                                for (let i = 0; i < start.length; i++) {
-                                    select.s.controls.object.children[i].position.copy(start[i].position)
-                                    select.s.controls.object.children[i].quaternion.copy(start[i].quaternion)
-                                    select.s.controls.object.children[i].scale.copy(start[i].scale)
-                                }
-                                // select.s.controls.object.children.forEach((obj) => {
-                                //     var position = new THREE.Vector3();
-                                //     obj.getWorldPosition(position);
-                                //     var quaternion = new THREE.Quaternion();
-                                //     obj.getWorldQuaternion(quaternion);
-                                //     var scale = new THREE.Vector3();
-                                //     obj.getWorldScale(scale);
-                                //     var selectedObj = scene.getObjectByProperty("uuid", obj.userData.uuid);
-                                //     selectedObj.position.copy(position);
-                                //     selectedObj.quaternion.copy(quaternion);
-                                //     selectedObj.scale.copy(scale);
-                                //     mirror.updateMirrorOf(selectedObj, scene);
-                                // });
+
+                                select.s.controls.object.position.copy(startPosition);
+
+                                //select.s.controls.object.applyQuaternion(delta);
+                                select.s.controls.object.quaternion.copy(startQuaternion);
+                                select.s.controls.object.scale.copy(startScale);
                                 select.s.helper.update();
+
+                                select.s.controls.object.children.forEach((obj) => {
+                                    var position = new THREE.Vector3();
+                                    obj.getWorldPosition(position);
+                                    var quaternion = new THREE.Quaternion();
+                                    obj.getWorldQuaternion(quaternion);
+                                    var scale = new THREE.Vector3();
+                                    obj.getWorldScale(scale);
+                                    var selectedObj = scene.getObjectByProperty("uuid", obj.userData.uuid);
+                                    selectedObj.position.copy(position);
+                                    selectedObj.quaternion.copy(quaternion);
+                                    selectedObj.scale.copy(scale);
+                                    mirror.updateMirrorOf(selectedObj, scene);
+                                });
+
                                 renderer.render(scene, camera);
                             },
                             redo: function () {
-                                for (let i = 0; i < start.length; i++) {
-                                    select.s.controls.object.children[i].position.copy(end[i].position)
-                                    select.s.controls.object.children[i].quaternion.copy(end[i].quaternion)
-                                    select.s.controls.object.children[i].scale.copy(end[i].scale)
-                                }
-                                // select.s.controls.object.children.forEach((obj) => {
-                                //     var position = new THREE.Vector3();
-                                //     obj.getWorldPosition(position);
-                                //     var quaternion = new THREE.Quaternion();
-                                //     obj.getWorldQuaternion(quaternion);
-                                //     var scale = new THREE.Vector3();
-                                //     obj.getWorldScale(scale);
-                                //     var selectedObj = scene.getObjectByProperty("uuid", obj.userData.uuid);
-                                //     selectedObj.position.copy(position);
-                                //     selectedObj.quaternion.copy(quaternion);
-                                //     selectedObj.scale.copy(scale);
-                                //     mirror.updateMirrorOf(selectedObj, scene);
-                                // });
+                                select.s.controls.object.position.copy(endPosition);
+                                select.s.controls.object.quaternion.copy(endQuaternion).multiply(endQuaternion.clone().invert());
+                                select.s.controls.object.scale.copy(endScale)
                                 select.s.helper.update();
+
+                                select.s.controls.object.children.forEach((obj) => {
+                                    var position = new THREE.Vector3();
+                                    obj.getWorldPosition(position);
+                                    var quaternion = new THREE.Quaternion();
+                                    obj.getWorldQuaternion(quaternion);
+                                    var scale = new THREE.Vector3();
+                                    obj.getWorldScale(scale);
+                                    var selectedObj = scene.getObjectByProperty("uuid", obj.userData.uuid);
+                                    selectedObj.position.copy(position);
+                                    selectedObj.quaternion.copy(quaternion);
+                                    selectedObj.scale.copy(scale);
+                                    mirror.updateMirrorOf(selectedObj, scene);
+                                });
+
                                 renderer.render(scene, camera);
                             }
                         });
@@ -458,6 +463,7 @@ let select = {
             if (this.controls != undefined) {
 
                 let selectedArray = [];
+                let transformMatrix = undefined;
 
                 switch (true) {
                     case this.controls.object.type == "Mesh":
@@ -472,6 +478,7 @@ let select = {
                         this.helper = undefined;
                         break;
                     case this.controls.object.type == "Group":
+                        transformMatrix = this.controls.object.matrix;
                         this.controls.object.children.forEach;
                         for (var i = 0; i < this.controls.object.children.length; i++) {
                             selectedArray.push(this.controls.object.children[i].userData.uuid)
@@ -501,9 +508,7 @@ let select = {
                             ))
                         })
                         select.s = new select.selection();
-
-                        select.s.select(selection);
-
+                        select.s.select(selection, transformMatrix);
                         renderer.render(scene, camera);
                     },
                     redo: function () {
