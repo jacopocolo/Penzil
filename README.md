@@ -13,10 +13,11 @@ Todo:
     - [x] Deselect
     - [x] Transform single and group
     - [ ] Mirror elements
-    - [ ] Duplicate
-    - [ ] Selected tool
+    - [ ] Duplicate (still has a bug when reselecting)
+    - [x] Selected tool
 - [ ] Small parser for displaying updates (see: https://www.w3schools.com/xml/xml_parser.asp)
-- [ ] Eraser
+- [x] Eraser
+- [ ] Two finger camera controls: rotate and zoom
 - [ ] Draw preferences UI: width, color, mirror
 - [ ] Export to video
 - [ ] Export geometry

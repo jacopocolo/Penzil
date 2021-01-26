@@ -2,6 +2,7 @@ import * as THREE from "three";
 import { scene, renderer, camera, context } from "../App.vue";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { mirror } from "./mirror.js"
+import { erase } from "./erase.js"
 import { MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { startAnimating, stopAnimating, loop } from "./animate.js"
 import { undoManager } from "./UndoRedo.vue"
@@ -137,6 +138,8 @@ let select = {
     selection: class {
         constructor() {
             this.selected = new Array();
+            this.undoRedoSelection = new Array();
+            this.undoRedoMatrix = undefined;
             this.selector = new select.vertexSelection()
             this.helper = undefined;
             this.controls = undefined;
@@ -201,6 +204,35 @@ let select = {
             renderer.render(scene, camera)
         }
         select(selection, matrix) {
+            this.select_internal(selection, matrix)
+
+            let previouslySelected = this.undoRedoSelection;
+            this.selected.forEach(object => {
+                previouslySelected.push(object.uuid)
+            })
+
+            undoManager.add({
+                undo: function () {
+                    console.log("undoing select")
+                    select.s.deselect();
+                    renderer.render(scene, camera);
+                },
+                redo: function () {
+                    console.log("redoing select")
+                    let selection = [];
+                    previouslySelected.forEach(uuid => {
+                        selection.push(scene.getObjectByProperty(
+                            "uuid",
+                            uuid
+                        ))
+                    })
+                    select.s.select(selection);
+                    renderer.render(scene, camera);
+                }
+            });
+            this.selected = new Array();
+        }
+        select_internal(selection, matrix) {
             //selection can not be zero so it's either 1 or more than 1
             //It's a single element
             if (selection.length == 1) {
@@ -426,31 +458,6 @@ let select = {
                 this.helper.geometry.computeBoundingBox();
                 this.helper.update();
             }
-
-            let selectedArray = [];
-            this.selected.forEach(object => {
-                selectedArray.push(object.uuid)
-            })
-
-            undoManager.add({
-                undo: function () {
-                    select.s.deselect();
-                    renderer.render(scene, camera);
-                },
-                redo: function () {
-                    let selection = [];
-                    selectedArray.forEach(uuid => {
-                        selection.push(scene.getObjectByProperty(
-                            "uuid",
-                            uuid
-                        ))
-                    })
-                    select.s.select(selection);
-                    renderer.render(scene, camera);
-                }
-            });
-
-            this.selected = new Array();
         }
         toggleSelectionColor(object, bool) {
             if (bool) {
@@ -462,56 +469,36 @@ let select = {
         deselect() {
             if (this.controls != undefined) {
 
-                let selectedArray = [];
-                let transformMatrix = undefined;
+                this.deselect_internal();
 
-                switch (true) {
-                    case this.controls.object.type == "Mesh":
-                        selectedArray.push(this.controls.object.uuid); //for undo
-                        this.toggleSelectionColor(this.controls.object, false);
-                        //clear references to controls and helper
-                        scene.remove(this.controls);
-                        scene.remove(this.helper);
-                        this.controls.detach();
-                        this.controls.dispose();
-                        this.controls = undefined;
-                        this.helper = undefined;
-                        break;
-                    case this.controls.object.type == "Group":
-                        transformMatrix = this.controls.object.matrix;
-                        this.controls.object.children.forEach;
-                        for (var i = 0; i < this.controls.object.children.length; i++) {
-                            selectedArray.push(this.controls.object.children[i].userData.uuid)
-                            this.toggleSelectionColor(this.controls.object.children[i], false);
-                        }
-                        scene.remove(this.group);
-                        //clear references to controls and helper
-                        scene.remove(this.controls);
-                        scene.remove(this.helper);
-                        this.controls.detach();
-                        this.controls.dispose();
-                        this.controls = undefined;
-                        this.helper = undefined;
-                        break;
-                    default:
-                    //do nothing, nothing is selected
-                }
+                console.log(this.undoRedoSelection)
+
+                let previouslySelected = this.undoRedoSelection;
+                this.selected.forEach(object => {
+                    previouslySelected.push(object.uuid)
+                })
+                let previousMatrix = this.undoRedoMatrix;
 
                 //TODO: deselect should update setTransformationToolbar on its own
                 undoManager.add({
                     undo: function () {
+
+                        console.log("undoing deselect")
                         let selection = [];
-                        selectedArray.forEach(uuid => {
+                        previouslySelected.forEach(uuid => {
                             selection.push(scene.getObjectByProperty(
                                 "uuid",
                                 uuid
                             ))
                         })
                         select.s = new select.selection();
-                        select.s.select(selection, transformMatrix);
+                        select.s.select(selection, previousMatrix);
                         renderer.render(scene, camera);
                     },
                     redo: function () {
+
+                        console.log("redo deselect")
+
                         select.s.deselect()
                         renderer.render(scene, camera);
                     }
@@ -520,10 +507,49 @@ let select = {
                 renderer.render(scene, camera)
             }
         }
-        duplicate() {
-            let duplicateArray = new Array();
+        deselect_internal() {
             switch (true) {
                 case this.controls.object.type == "Mesh":
+                    this.undoRedoSelection = new Array();
+                    this.undoRedoSelection.push(this.controls.object.uuid); //for undo
+                    this.toggleSelectionColor(this.controls.object, false);
+                    //clear references to controls and helper
+                    scene.remove(this.controls);
+                    scene.remove(this.helper);
+                    this.controls.detach();
+                    this.controls.dispose();
+                    this.controls = undefined;
+                    this.helper = undefined;
+                    break;
+                case this.controls.object.type == "Group":
+                    this.undoRedoSelection = new Array();
+                    this.undoRedoMatrix = this.controls.object.matrix;
+                    this.controls.object.children.forEach;
+                    for (var i = 0; i < this.controls.object.children.length; i++) {
+                        this.undoRedoSelection.push(this.controls.object.children[i].userData.uuid)
+                        this.toggleSelectionColor(this.controls.object.children[i], false);
+                    }
+                    scene.remove(this.group);
+                    //clear references to controls and helper
+                    scene.remove(this.controls);
+                    scene.remove(this.helper);
+                    this.controls.detach();
+                    this.controls.dispose();
+                    this.controls = undefined;
+                    this.helper = undefined;
+                    break;
+                default:
+                //do nothing, nothing is selected
+            }
+        }
+        duplicate() {
+            let duplicateArray = new Array();
+            let previousSelectedArray = new Array();
+            let transformMatrix = undefined;
+
+            switch (true) {
+                case this.controls.object.type == "Mesh":
+                    previousSelectedArray.push(this.controls.object.uuid);
                     var duplicate = this.controls.object.clone();
                     var duplicateMaterial = new MeshLineMaterial({
                         lineWidth: duplicate.material.lineWidth,
@@ -539,13 +565,17 @@ let select = {
                         mirror.object(duplicate, duplicate.userData.mirrorAxis, scene);
                     }
                     duplicateArray.push(duplicate);
-                    this.deselect();
-                    this.select(duplicateArray);
+                    this.deselect_internal();
+                    this.select_internal(duplicateArray);
                     break;
                 case this.controls.object.type == "Group":
+                    transformMatrix = this.controls.object.matrix;
+
                     this.controls.object.children.forEach((object) => {
                         //Here we are picking the original hidden object that we use for working around the grouping and ungrouping issues
                         let originalObject = scene.getObjectByProperty("uuid", object.userData.uuid);
+                        previousSelectedArray.push(object.userData.uuid);
+
                         var duplicate = originalObject.clone();
                         duplicate.layers.set(1);
                         var duplicateMaterial = new MeshLineMaterial({
@@ -564,20 +594,51 @@ let select = {
                         }
                     });
                     //deselect selected group
-                    this.deselect();
+                    this.deselect_internal();
 
                     this.selected = duplicateArray;
                     this.selected.forEach((element) => {
                         this.toggleSelectionColor(element, true);
                     });
-                    this.select(this.selected);
+                    this.select_internal(this.selected);
                     this.helper.update();
                     mirror.updateMirrorOf(this.group, scene);
                     break;
                 default:
                 //do nothing, nothing is selected
             }
+
+            this.undoRedoSelection = new Array();
             renderer.render(scene, camera)
+
+            undoManager.add({
+                undo: function () {
+                    console.log("undoing duplicate")
+                    //deselect the current selection
+                    select.s.deselect_internal();
+                    duplicateArray.forEach(object => {
+                        erase.deleteObject(object)
+                    })
+                    let selection = [];
+                    console.log(previousSelectedArray)
+                    previousSelectedArray.forEach(uuid => {
+                        selection.push(scene.getObjectByProperty(
+                            "uuid",
+                            uuid
+                        ))
+                    })
+                    select.s = new select.selection();
+                    select.s.select_internal(selection, transformMatrix);
+                    renderer.render(scene, camera);
+                },
+                redo: function () {
+
+                    console.log("redoing duplicate")
+
+                    select.s.duplicate();
+                    renderer.render(scene, camera);
+                }
+            });
         }
         calculateTransfromToolbarPosition() {
 

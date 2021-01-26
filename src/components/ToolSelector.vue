@@ -2,31 +2,31 @@
 <template>
   <div class="mainToolbar">
     <div class="toolSelection">
-      <span>
+      <span @click="setTool('draw', true)">
         <input
           type="radio"
           id="toolDraw"
           name="tools"
           value="draw"
-          v-model="selectedTool"
+          v-model="tool"
         /><label for="toolDraw"> Draw </label>
         <div></div> </span
-      ><span>
+      ><span @click="setTool('erase', true)">
         <input
           type="radio"
           id="toolEraser"
           name="tools"
           value="erase"
-          v-model="selectedTool"
+          v-model="tool"
         /><label for="toolEraser"> Erase </label>
         <div></div> </span
-      ><span>
+      ><span @click="setTool('select', true)">
         <input
           type="radio"
           id="toolSelect"
           name="tools"
           value="select"
-          v-model="selectedTool"
+          v-model="tool"
         /><label for="toolSelect"> Select </label>
         <div></div>
       </span>
@@ -35,44 +35,34 @@
 </template>
 
 <script>
-import { undoManager } from "./UndoRedo.vue";
+//the way this is handled is a bit ridicolous but I'm not sure if I can do it in another way. selectedTool is passed as a prop from the App and then is watched by the component to reset the checked radio. The setTool function sets the tool in the App that then is passed back into the component and loops again.
 
 export default {
   name: "ToolSelector",
   data() {
     return {
-      selectedTool: "draw",
-      history: ["draw"], //start with default
+      tool: undefined,
     };
+  },
+  props: {
+    selectedTool: String,
   },
   watch: {
     selectedTool: function (val) {
-      this.history.push(val);
-      if (this.history.length > 2) {
-        this.history.shift();
-      }
-      this.$emit("selected-tool", val);
-      //needs doing, watch doesn't allow pre value tracking so this needs to be split out
-
-      let current = val;
-      let previous = this.history[0];
-
-      console.log(this.history);
-
-      undoManager.add({
-        undo: function () {
-          this.selectedTool = current;
-          this.$emit("selected-tool", current);
-        },
-        redo: function () {
-          this.selectedTool = previous;
-          this.$emit("selected-tool", previous);
-        },
-      });
+      this.tool = val;
     },
   },
   methods: {
     //https://reactgo.com/vue-call-component-outside/
+    setTool: function (val, emit) {
+      this.tool = val;
+      if (emit) {
+        this.$emit("selected-tool", val);
+      }
+    },
+  },
+  mounted() {
+    this.setTool(this.selectedTool);
   },
 };
 </script>

@@ -228,7 +228,6 @@ let erase = {
         }
     },
     deleteObject: function (object) {
-
         //ignore triggers for objects already deleted
         if (scene.getObjectByProperty(
             "uuid",
@@ -240,9 +239,12 @@ let erase = {
         let force = object.geometry.userData.force;
         let mirrorOn = object.userData.mirror;
         let width = object.material.lineWidth;
-        let position = object.position;
-        let quaternion = object.quaternion;
-        let scale = object.scale;
+        let position = new THREE.Vector3();
+        object.getWorldPosition(position);
+        let quaternion = new THREE.Quaternion();
+        object.getWorldQuaternion(quaternion);
+        let scale = new THREE.Vector3();
+        object.getWorldScale(scale);
 
         scene.remove(object);
         mirror.eraseMirrorOf(object);

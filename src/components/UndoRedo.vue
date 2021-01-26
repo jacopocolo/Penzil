@@ -8,6 +8,7 @@
 
 <script>
 import UndoManager from "undo-manager";
+import { scene } from "../App.vue";
 
 export let undoManager = new UndoManager();
 
@@ -19,12 +20,14 @@ export default {
   },
   methods: {
     undo: function () {
-      console.log("undo");
       undoManager.undo();
+      console.log(scene);
     },
     redo: function () {
-      console.log("redo");
       undoManager.redo();
+    },
+    setTool: function (val) {
+      this.$emit("selected-tool", val);
     },
   },
   watch: {},

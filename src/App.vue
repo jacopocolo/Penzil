@@ -3,14 +3,14 @@
     :quaternion="quaternion"
     :cameraResetDisabled="cameraResetDisabled"
   />
-  <tool-selector @selected-tool="setSelectedTool" />
+  <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
   <transorm-toolbar
     :top="transformToolbar.top"
     :left="transformToolbar.left"
     :location="transformToolbar.location"
     :display="transformToolbar.display"
   />
-  <undo-redo />
+  <undo-redo @selected-tool="setSelectedTool" />
   <import />
   <Canvas
     :selectedTool="tool"
@@ -28,7 +28,7 @@ CameraControls.install({ THREE: THREE });
 import Canvas from "./components/Canvas.vue";
 import ToolSelector from "./components/ToolSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
-import UndoRedo from "./components/UndoRedo.vue";
+import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
 import Import from "./components/Import.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
@@ -51,7 +51,7 @@ export let camera = new THREE.OrthographicCamera(
   0,
   20
 );
-export let scene, drawingScene, cameraControls, context;
+export let scene, drawingScene, cameraControls, context, vm;
 
 var main, drawingCanvas, clock;
 
@@ -72,6 +72,7 @@ export default {
   data() {
     return {
       tool: "draw",
+      toolHistory: ["draw"],
       mirror: false,
       quaternion: undefined,
       cameraResetDisabled: false,
@@ -228,6 +229,23 @@ export default {
     },
     setSelectedTool: function (val) {
       this.tool = val;
+      this.toolHistory.push(val);
+      if (this.toolHistory.length > 2) {
+        this.toolHistory.shift();
+      }
+
+      let current = val;
+      let previous = this.toolHistory[0];
+
+      undoManager.add({
+        undo: function () {
+          console.log(vm);
+          vm.setSelectedTool(previous);
+        },
+        redo: function () {
+          vm.setSelectedTool(current);
+        },
+      });
     },
     setSelectedObject: function (val) {
       this.selected = val;
@@ -244,6 +262,7 @@ export default {
   mounted() {
     this.init();
     this.animate();
+    vm = this;
   },
 };
 </script>

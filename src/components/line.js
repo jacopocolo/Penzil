@@ -13,7 +13,7 @@ let line = {
             this.line = new MeshLine();
             this.geometry = new THREE.Geometry();
             this.material = new MeshLineMaterial({
-                lineWidth: 0.1,
+                lineWidth: 0.01,
                 sizeAttenuation: 1,
                 color: new THREE.Color("black"),
                 side: THREE.DoubleSide,
@@ -112,9 +112,12 @@ let line = {
             let vertices = this.geometry.vertices;
             let force = this.mesh.geometry.userData.force;
             let width = this.material.lineWidth;
-            let position = this.mesh.position;
-            let quaternion = this.mesh.quaternion;
-            let scale = this.mesh.scale;
+            let position = new THREE.Vector3();
+            this.mesh.getWorldPosition(position);
+            let quaternion = new THREE.Quaternion();
+            this.mesh.getWorldQuaternion(quaternion);
+            let scale = new THREE.Vector3();
+            this.mesh.getWorldScale(scale);
 
             undoManager.add({
                 undo: function () {
@@ -227,7 +230,6 @@ let line = {
     },
     onEnd: function (mirrorOn) {
         this.l.end(mirrorOn);
-        console.log(this.l.uuid);
     },
     fromVertices(vertices, force, lineWidth, mirrorOn, uuid, position, quaternion, scale) {
         this.l = new this.draw();
