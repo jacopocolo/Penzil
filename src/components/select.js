@@ -207,6 +207,7 @@ let select = {
             this.select_internal(selection, matrix)
 
             let previouslySelected = this.undoRedoSelection;
+            let originalMatrix = this.undoRedoMatrix;
             this.selected.forEach(object => {
                 previouslySelected.push(object.uuid)
             })
@@ -226,7 +227,7 @@ let select = {
                             uuid
                         ))
                     })
-                    select.s.select(selection);
+                    select.s.select(selection, originalMatrix);
                     renderer.render(scene, camera);
                 }
             });
@@ -317,6 +318,8 @@ let select = {
                 //we pass a matrix into the selection only to restore the group matrix properly on undo. This way worldTransformations can be applied in referse efficiently 
                 if (matrix) {
                     this.group.applyMatrix4(matrix);
+                } else {
+                    this.undoRedoMatrix = this.group.matrix
                 }
 
 
