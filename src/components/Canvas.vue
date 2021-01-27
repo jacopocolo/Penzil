@@ -13,7 +13,7 @@
 </template>
 
 <script>
-import { line } from "./line.js";
+import { draw } from "./draw.js";
 import { erase } from "./erase.js";
 import { select } from "./select.js";
 
@@ -65,7 +65,7 @@ export default {
         this.mouse.down = true;
         switch (this.selectedTool) {
           case "draw":
-            line.onStart(this.mirror);
+            draw.onStart(this.mirror);
             break;
           case "erase":
             erase.onStart(this.mouse.cx, this.mouse.cy);
@@ -87,7 +87,7 @@ export default {
       if (this.mouse.down && (event.button == 0 || event.touches.length == 1)) {
         switch (this.selectedTool) {
           case "draw":
-            line.onMove(
+            draw.onMove(
               this.mouse.tx,
               this.mouse.ty,
               0,
@@ -115,7 +115,7 @@ export default {
       if (this.mouse.down) {
         switch (this.selectedTool) {
           case "draw":
-            line.onEnd(this.mirror);
+            draw.onEnd(this.mirror);
             break;
           case "erase":
             erase.onEnd();

@@ -2,7 +2,7 @@ import * as THREE from "three";
 import { scene, renderer, camera, context } from "../App.vue";
 import { mirror } from "./mirror.js"
 import { MeshLineMaterial } from "three.meshline";
-import { line } from "./line.js";
+import { draw } from "./draw.js";
 import { undoManager } from "./UndoRedo.vue"
 
 let erase = {
@@ -246,13 +246,15 @@ let erase = {
         let scale = new THREE.Vector3();
         object.getWorldScale(scale);
 
+        let matrix = object.matrix;
+
         scene.remove(object);
         mirror.eraseMirrorOf(object);
         object.material.dispose();
 
         undoManager.add({
             undo: function () {
-                line.fromVertices(
+                draw.fromVertices(
                     vertices,
                     force,
                     //color,
@@ -262,7 +264,8 @@ let erase = {
                     //true
                     position,
                     quaternion,
-                    scale
+                    scale,
+                    matrix
                 );
                 renderer.render(scene, camera);
             },

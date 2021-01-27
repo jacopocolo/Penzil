@@ -13,8 +13,10 @@ Todo:
     - [x] Deselect
     - [x] Transform single and group
     - [ ] Mirror elements
-    - [ ] Duplicate (still has a bug when reselecting)
+    - [x] Duplicate
     - [x] Selected tool
+    - [ ] Display state in the UI
+- [ ] Cancel event for Line, Erase, Select
 - [ ] Small parser for displaying updates (see: https://www.w3schools.com/xml/xml_parser.asp)
 - [x] Eraser
 - [ ] Two finger camera controls: rotate and zoom
@@ -26,6 +28,10 @@ Todo:
 - [ ] Load
 - [ ] Drawing plane
 - [ ] CSS and styling
+
+Notable bugs:
+- [ ] Clean up ghost strokes
+- [ ] Adjust visibility of transformToolbar when undoing/redoing
 
 
 ## Project setup

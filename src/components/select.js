@@ -204,10 +204,13 @@ let select = {
             renderer.render(scene, camera)
         }
         select(selection, matrix) {
+
+            //this.undoRedoMatrix = undefined;
+
             this.select_internal(selection, matrix)
 
             let previouslySelected = this.undoRedoSelection;
-            let originalMatrix = this.undoRedoMatrix;
+            //let originalMatrix = this.undoRedoMatrix;
             this.selected.forEach(object => {
                 previouslySelected.push(object.uuid)
             })
@@ -227,7 +230,7 @@ let select = {
                             uuid
                         ))
                     })
-                    select.s.select(selection, originalMatrix);
+                    select.s.select(selection);
                     renderer.render(scene, camera);
                 }
             });
@@ -238,7 +241,6 @@ let select = {
             //It's a single element
             if (selection.length == 1) {
                 this.toggleSelectionColor(selection[0], true);
-
                 this.controls = new TransformControls(camera, document.getElementById("app"));
                 this.controls.mode = select.transformMode;
                 this.controls.attach(selection[0]);
@@ -318,6 +320,7 @@ let select = {
                 //we pass a matrix into the selection only to restore the group matrix properly on undo. This way worldTransformations can be applied in referse efficiently 
                 if (matrix) {
                     this.group.applyMatrix4(matrix);
+                    this.undoRedoMatrix = this.group.matrix
                 } else {
                     this.undoRedoMatrix = this.group.matrix
                 }
@@ -403,8 +406,6 @@ let select = {
                             undo: function () {
 
                                 select.s.controls.object.position.copy(startPosition);
-
-                                //select.s.controls.object.applyQuaternion(delta);
                                 select.s.controls.object.quaternion.copy(startQuaternion);
                                 select.s.controls.object.scale.copy(startScale);
                                 select.s.helper.update();
@@ -427,7 +428,8 @@ let select = {
                             },
                             redo: function () {
                                 select.s.controls.object.position.copy(endPosition);
-                                select.s.controls.object.quaternion.copy(endQuaternion).multiply(endQuaternion.clone().invert());
+                                select.s.controls.object.quaternion.copy(endQuaternion);
+                                //select.s.controls.object.quaternion.copy(endQuaternion).multiply(endQuaternion.clone().invert());
                                 select.s.controls.object.scale.copy(endScale)
                                 select.s.helper.update();
 
@@ -474,8 +476,6 @@ let select = {
 
                 this.deselect_internal();
 
-                console.log(this.undoRedoSelection)
-
                 let previouslySelected = this.undoRedoSelection;
                 this.selected.forEach(object => {
                     previouslySelected.push(object.uuid)
@@ -485,7 +485,6 @@ let select = {
                 //TODO: deselect should update setTransformationToolbar on its own
                 undoManager.add({
                     undo: function () {
-
                         console.log("undoing deselect")
                         let selection = [];
                         previouslySelected.forEach(uuid => {
@@ -623,7 +622,6 @@ let select = {
                         erase.deleteObject(object)
                     })
                     let selection = [];
-                    console.log(previousSelectedArray)
                     previousSelectedArray.forEach(uuid => {
                         selection.push(scene.getObjectByProperty(
                             "uuid",
@@ -720,6 +718,8 @@ let select = {
             this.s.end(tx, ty);
         }
         this.dragged = false;
+
+        console.log(scene)
     }
 }
 

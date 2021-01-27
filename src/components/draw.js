@@ -6,7 +6,7 @@ import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager } from "./UndoRedo.vue"
 
-let line = {
+let draw = {
     l: undefined,
     draw: class {
         constructor() {
@@ -119,6 +119,8 @@ let line = {
             let scale = new THREE.Vector3();
             this.mesh.getWorldScale(scale);
 
+            let matrix = this.mesh.matrix;
+
             undoManager.add({
                 undo: function () {
                     erase.deleteObject(scene.getObjectByProperty(
@@ -128,7 +130,7 @@ let line = {
                     renderer.render(scene, camera);
                 },
                 redo: function () {
-                    line.fromVertices(
+                    draw.fromVertices2(
                         vertices,
                         force,
                         //color,
@@ -138,7 +140,8 @@ let line = {
                         //true
                         position,
                         quaternion,
-                        scale
+                        scale,
+                        matrix
                     );
                 }
             });
@@ -231,7 +234,7 @@ let line = {
     onEnd: function (mirrorOn) {
         this.l.end(mirrorOn);
     },
-    fromVertices(vertices, force, lineWidth, mirrorOn, uuid, position, quaternion, scale) {
+    fromVertices(vertices, force, lineWidth, mirrorOn, uuid, position, quaternion, scale, matrix) {
         this.l = new this.draw();
         this.l.material.lineWidth = lineWidth;
         this.l.geometry.vertices = vertices;
@@ -274,28 +277,80 @@ let line = {
         this.l.geometry.needsUpdate = true;
         renderer.render(scene, camera);
 
-        this.l.mesh.position.set(
-            position.x,
-            position.y,
-            position.z
-        );
-        this.l.mesh.quaternion.set(
-            quaternion._x,
-            quaternion._y,
-            quaternion._z,
-            quaternion._w
-        );
-        this.l.mesh.scale.set(
-            scale.x,
-            scale.y,
-            scale.z
-        );
+        if (matrix) {
+            console.log(matrix)
+            this.l.mesh.applyMatrix4(matrix)
+        }
+
+        if (position) {
+            this.l.mesh.position.set(
+                position.x,
+                position.y,
+                position.z
+            );
+        }
+        if (quaternion) {
+            this.l.mesh.quaternion.set(
+                quaternion._x,
+                quaternion._y,
+                quaternion._z,
+                quaternion._w
+            );
+        }
+        if (scale) {
+            this.l.mesh.scale.set(
+                scale.x,
+                scale.y,
+                scale.z
+            );
+        }
 
         scene.add(this.l.mesh)
         renderer.render(scene, camera)
         //return this.l.mesh
 
+    },
+    fromVertices2(vertices, force, lineWidth, mirrorOn, uuid, position, quaternion, scale, matrix) {
+        this.onStart(mirrorOn);
+        this.l.lineWidth = lineWidth;
+        for (let i = 0; i < vertices.length; i++) {
+            this.onMove(vertices[i].x, vertices[i].y, vertices[i].z, force[i], false)
+        }
+        this.onEnd(mirrorOn);
+
+        this.l.mesh.uuid = uuid;
+
+        if (matrix) {
+            console.log(matrix)
+            this.l.mesh.applyMatrix4(matrix)
+        }
+
+        if (position) {
+            this.l.mesh.position.set(
+                position.x,
+                position.y,
+                position.z
+            );
+        }
+        if (quaternion) {
+            this.l.mesh.quaternion.set(
+                quaternion._x,
+                quaternion._y,
+                quaternion._z,
+                quaternion._w
+            );
+        }
+        if (scale) {
+            this.l.mesh.scale.set(
+                scale.x,
+                scale.y,
+                scale.z
+            );
+        }
+
+        scene.add(this.l.mesh)
+        renderer.render(scene, camera)
     }
 }
 
-export { line }
+export { draw }

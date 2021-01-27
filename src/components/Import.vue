@@ -6,7 +6,7 @@
 
 <script>
 import * as THREE from "three";
-import { line } from "./line.js";
+import { draw } from "./draw.js";
 import { mirror } from "./mirror.js";
 import { scene, renderer, camera } from "../App.vue";
 
