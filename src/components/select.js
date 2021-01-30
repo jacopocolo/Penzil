@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { scene, renderer, camera, context } from "../App.vue";
+import { scene, renderer, camera, context, vm } from "../App.vue";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { mirror } from "./mirror.js"
 import { erase } from "./erase.js"
@@ -452,6 +452,16 @@ let select = {
                 this.helper.geometry.computeBoundingBox();
                 this.helper.update();
             }
+            vm.$.ctx.setTransformToolbarDisplay(true)
+            let position = this.calculateTransfromToolbarPosition();
+            vm.$.ctx.setTransformToolbarPosition({
+                left: position.x,
+                top: position.y,
+                location: position.location,
+            })
+            this.helper.update();
+            renderer.render(scene, camera)
+
         }
         toggleSelectionColor(object, bool) {
             if (bool) {
@@ -532,6 +542,7 @@ let select = {
                 default:
                 //do nothing, nothing is selected
             }
+            vm.$.ctx.setTransformToolbarDisplay(false)
         }
         duplicate() {
             let duplicateArray = new Array();

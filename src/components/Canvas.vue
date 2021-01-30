@@ -129,9 +129,7 @@ export default {
             break;
           case "select":
             select.onEnd(this.mouse.tx, this.mouse.ty);
-
-            //doesn't work but we are getting there?
-            if (select.s.controls != undefined) {
+            /*if (select.s.controls != undefined) {
               this.$emit("setTransformToolbarDisplay", true);
               let position = select.s.calculateTransfromToolbarPosition();
               this.$emit("setTransformToolbarPosition", {
@@ -141,7 +139,7 @@ export default {
               });
             } else {
               this.$emit("setTransformToolbarDisplay", false);
-            }
+            }*/
             break;
           default:
             break;

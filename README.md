@@ -22,6 +22,7 @@ Todo:
     - [x] Duplicate
     - [x] Selected tool
     - [ ] Display state in the UI
+    - [x] Display trasformToolbar appropriately
 - [ ] Cancel event for Line, Erase, Select
 - [ ] Small parser for displaying updates (see: https://www.w3schools.com/xml/xml_parser.asp)
 - [x] Eraser
