@@ -6,6 +6,8 @@ This project is a work in progress and an almost complete re-write of the [greas
 
 Todo:
 
+- [ ] Draw
+    - [ ] Transition Geometry to BufferGeometry. [See this](https://stackoverflow.com/questions/41177425/three-js-dynamically-add-points-to-a-points-geometry-does-not-render) and [this thread](https://discourse.threejs.org/t/three-geometry-will-be-removed-from-core-with-r125/22401/5).
 - [ ] Undo-redo
     - [x] Draw
     - [x] Erase
