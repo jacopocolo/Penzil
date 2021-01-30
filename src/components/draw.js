@@ -11,7 +11,9 @@ let draw = {
     draw: class {
         constructor() {
             this.line = new MeshLine();
-            this.geometry = new THREE.Geometry();
+            this.geometry = new THREE.BufferGeometry();
+            this.vertices = new Float32Array([]);
+            this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
             this.material = new MeshLineMaterial({
                 lineWidth: 0.01,
                 sizeAttenuation: 1,
@@ -30,9 +32,8 @@ let draw = {
             this.bufferPoints = new Array();
             this.size = 4;
         }
-        start(mirrorOn) {
+        start(x, y, z, force, unproject, mirrorOn) {
             drawingScene.add(this.mesh);
-
             switch (mirrorOn) {
                 case "x":
                     mirror.object(this.mesh, "x", drawingScene);
@@ -46,29 +47,11 @@ let draw = {
                 default:
                 //it's false, do nothing
             }
+            console.log(x, y, z, force, unproject)
+            //this.addVertex(x, y, z, force, unproject)
         }
         move(x, y, z, force, unproject) {
-            var v3 = new THREE.Vector3(x, y, z);
-            if (unproject) {
-                v3.unproject(camera);
-            }
-            var v4 = new THREE.Vector4(v3.x, v3.y, v3.z, force);
-            if (unproject) {
-                this.appendToBuffer(v4);
-                let pt = this.getAveragePoint(0);
-                if (pt) {
-                    v3 = new THREE.Vector3(pt.x, pt.y, pt.z);
-                    this.mesh.geometry.userData.force.push(pt.w);
-                    this.geometry.vertices.push(v3);
-                }
-            } else {
-                this.mesh.geometry.userData.force.push(force);
-                this.geometry.vertices.push(v3);
-            }
-            this.setGeometry();
-            renderer.autoClear = false;
-            renderer.clearDepth();
-            renderer.render(drawingScene, camera);
+            this.addVertex(x, y, z, force, unproject)
         }
         end(mirrorOn) {
             scene.add(this.mesh);
@@ -109,7 +92,7 @@ let draw = {
             renderer.render(scene, camera);
 
             let uuid = this.uuid;
-            let vertices = this.geometry.vertices;
+            let vertices = this.geometry.attributes.position.array;
             let force = this.mesh.geometry.userData.force;
             let width = this.material.lineWidth;
             let position = new THREE.Vector3();
@@ -130,7 +113,7 @@ let draw = {
                     renderer.render(scene, camera);
                 },
                 redo: function () {
-                    draw.fromVertices2(
+                    draw.fromVertices(
                         vertices,
                         force,
                         //color,
@@ -146,6 +129,42 @@ let draw = {
                 }
             });
 
+        }
+        addVertex(x, y, z, force, unproject) {
+            var v3 = new THREE.Vector3(x, y, z);
+            if (unproject) {
+                v3.unproject(camera);
+            }
+            var v4 = new THREE.Vector4(v3.x, v3.y, v3.z, force);
+            if (unproject) {
+                this.appendToBuffer(v4);
+                let pt = this.getAveragePoint(0);
+                if (pt) {
+                    this.mesh.geometry.userData.force.push(pt.w);
+
+                    this.geometry.attributes.position.array = this.Float32Concat(this.geometry.attributes.position.array, new Float32Array([pt.x, pt.y, pt.z]));
+                    this.geometry.attributes.position.count = this.geometry.attributes.position.count + 3
+                    this.geometry.attributes.position.needsUpdate = true;
+                }
+            } else {
+                this.mesh.geometry.userData.force.push(force);
+                this.geometry.attributes.position.array = this.Float32Concat(this.geometry.attributes.position.array, new Float32Array([v3.x, v3.y, v3.z]));
+                this.geometry.attributes.position.count = this.geometry.attributes.position.count + 3
+                this.geometry.attributes.position.needsUpdate = true;
+            }
+            this.setGeometry();
+            renderer.autoClear = false;
+            renderer.clearDepth();
+            renderer.render(drawingScene, camera);
+        }
+        Float32Concat(first, second) {
+            var firstLength = first.length,
+                result = new Float32Array(firstLength + second.length);
+
+            result.set(first);
+            result.set(second, firstLength);
+
+            return result;
         }
         appendToBuffer(pt) {
             this.bufferPoints.push(pt);
@@ -181,16 +200,16 @@ let draw = {
         }
         setGeometry(end) {
             this.line.setPoints(
-                this.geometry.vertices,
+                this.geometry.attributes.position.array,
                 (p) => {
-                    let points = this.geometry.vertices;
+                    let length = this.geometry.attributes.position.array.length / 3;
                     let force = this.mesh.geometry.userData.force;
                     function map(n, start1, stop1, start2, stop2) {
                         return (
                             ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2
                         );
                     }
-                    let index = Math.round(p * (points.length - 1));
+                    let index = Math.round(p * (length - 1));
                     let minWidth = 0;
                     let baseWidth = 3;
                     let width = force[index] * 16;
@@ -207,11 +226,11 @@ let draw = {
                         ); //+ width
                     }
                     //End of the line
-                    else if (index > points.length - tipLength && end == "tail") {
+                    else if (index > length - tipLength && end == "tail") {
                         return map(
                             index,
-                            points.length - tipLength,
-                            points.length - 1,
+                            length - tipLength,
+                            length - 1,
                             baseWidth + width,
                             minWidth
                         );
@@ -224,7 +243,7 @@ let draw = {
             );
         }
     },
-    onStart: function (mirrorOn) {
+    onStart: function (x, y, z, force, unproject, mirrorOn) {
         this.l = new this.draw();
         this.l.start(mirrorOn);
     },
@@ -235,96 +254,22 @@ let draw = {
         this.l.end(mirrorOn);
     },
     fromVertices(vertices, force, lineWidth, mirrorOn, uuid, position, quaternion, scale, matrix) {
-        this.l = new this.draw();
-        this.l.material.lineWidth = lineWidth;
-        this.l.geometry.vertices = vertices;
-        this.l.mesh.geometry.userData.force = force;
-        if (uuid) {
-            this.l.mesh.uuid = uuid;
-        } else {
-            this.l.mesh.uuid = this.l.uuid;
-        }
-
-        switch (mirrorOn) {
-            case "x":
-                mirror.object(this.l.mesh, "x", scene);
-                break;
-            case "y":
-                mirror.object(this.l.mesh, "y", scene);
-                break;
-            case "z":
-                mirror.object(this.l.mesh, "z", scene);
-                break;
-            default:
-            //It's false, do nothing
-        }
-
-        this.l.setGeometry();
-        this.l.geometry.verticesNeedsUpdate = true;
-        renderer.render(scene, camera);
-
-        this.l.mesh.position.set(
-            this.l.mesh.geometry.boundingSphere.center.x,
-            this.l.mesh.geometry.boundingSphere.center.y,
-            this.l.mesh.geometry.boundingSphere.center.z
-        );
-        renderer.render(scene, camera);
-
-        this.l.geometry.center();
-        renderer.render(scene, camera);
-        this.l.setGeometry("tail");
-        renderer.render(scene, camera);
-        this.l.geometry.needsUpdate = true;
-        renderer.render(scene, camera);
-
-        if (matrix) {
-            console.log(matrix)
-            this.l.mesh.applyMatrix4(matrix)
-        }
-
-        if (position) {
-            this.l.mesh.position.set(
-                position.x,
-                position.y,
-                position.z
-            );
-        }
-        if (quaternion) {
-            this.l.mesh.quaternion.set(
-                quaternion._x,
-                quaternion._y,
-                quaternion._z,
-                quaternion._w
-            );
-        }
-        if (scale) {
-            this.l.mesh.scale.set(
-                scale.x,
-                scale.y,
-                scale.z
-            );
-        }
-
-        scene.add(this.l.mesh)
-        renderer.render(scene, camera)
-        //return this.l.mesh
-
-    },
-    fromVertices2(vertices, force, lineWidth, mirrorOn, uuid, position, quaternion, scale, matrix) {
-        this.onStart(mirrorOn);
+        this.onStart(0, 0, 0, 0, false, mirrorOn);
         this.l.lineWidth = lineWidth;
-        for (let i = 0; i < vertices.length; i++) {
-            this.onMove(vertices[i].x, vertices[i].y, vertices[i].z, force[i], false)
-        }
+        this.l.geometry.attributes.position.array = vertices;
+        this.l.geometry.attributes.position.count = vertices.length / 3;
+        this.l.geometry.attributes.position.needsUpdate = true;
+        this.l.mesh.geometry.userData.force = force;
+        this.l.setGeometry();
+        renderer.autoClear = false;
+        renderer.clearDepth();
+        renderer.render(drawingScene, camera);
         this.onEnd(mirrorOn);
-
         this.l.mesh.uuid = uuid;
-
         if (matrix) {
             console.log(matrix)
             this.l.mesh.applyMatrix4(matrix)
         }
-
         if (position) {
             this.l.mesh.position.set(
                 position.x,

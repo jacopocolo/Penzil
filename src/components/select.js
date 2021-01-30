@@ -78,16 +78,6 @@ let select = {
                 if (object.layers.mask == 2) {
                     //get the projected bounding points of the rectangle
                     let boundingBoxPoints = this.getObjectBoundingBoxPoints(object)
-
-                    // boundingBoxPoints.forEach((point) => {
-                    //     const geometry = new THREE.SphereGeometry(0.1, 3, 3);
-                    //     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-                    //     const sphere = new THREE.Mesh(geometry, material);
-                    //     scene.add(sphere);
-                    //     sphere.position.set(point.x, point.y, point.z)
-                    // })
-                    // renderer.render(scene, camera);
-
                     if (boundingBoxPoints != undefined) {
                         for (var j = boundingBoxPoints.length; j--;) {
                             //check if any of the points is part of the selection
@@ -131,7 +121,6 @@ let select = {
                     }
                 }
             });
-
             return selectedObjects;
         }
     },
