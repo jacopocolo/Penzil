@@ -75,7 +75,7 @@ export default {
 
                 //console.log(color);
 
-                var l = line.fromVertices(
+                var l = draw.fromVertices(
                   vertices,
                   //color,
                   importedLine.w,

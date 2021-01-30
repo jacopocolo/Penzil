@@ -239,7 +239,6 @@ export default {
 
       undoManager.add({
         undo: function () {
-          console.log(vm);
           vm.setSelectedTool(previous);
         },
         redo: function () {

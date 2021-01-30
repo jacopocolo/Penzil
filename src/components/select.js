@@ -707,8 +707,6 @@ let select = {
             this.s.end(tx, ty);
         }
         this.dragged = false;
-
-        console.log(scene)
     }
 }
 
