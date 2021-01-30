@@ -6,6 +6,12 @@ This project is a work in progress and an almost complete re-write of the [greas
 
 Todo:
 
+- [ ] Draw
+    - [X] Transition Geometry to BufferGeometry. [See this](https://stackoverflow.com/questions/41177425/
+    three-js-dynamically-add-points-to-a-points-geometry-does-not-render) and [this thread](https://discourse.threejs.org/t/three-geometry-will-be-removed-from-core-with-r125/22401/5).
+    - [ ] Line width
+    - [ ] Line color
+    - [ ] Line mirror
 - [ ] Undo-redo
     - [x] Draw
     - [x] Erase
@@ -16,11 +22,11 @@ Todo:
     - [x] Duplicate
     - [x] Selected tool
     - [ ] Display state in the UI
+    - [x] Display trasformToolbar appropriately
 - [ ] Cancel event for Line, Erase, Select
 - [ ] Small parser for displaying updates (see: https://www.w3schools.com/xml/xml_parser.asp)
 - [x] Eraser
 - [ ] Two finger camera controls: rotate and zoom
-- [ ] Draw preferences UI: width, color, mirror
 - [ ] Export to video
 - [ ] Export geometry
 - [ ] Save

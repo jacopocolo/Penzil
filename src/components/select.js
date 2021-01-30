@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { scene, renderer, camera, context } from "../App.vue";
+import { scene, renderer, camera, context, vm } from "../App.vue";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { mirror } from "./mirror.js"
 import { erase } from "./erase.js"
@@ -78,16 +78,6 @@ let select = {
                 if (object.layers.mask == 2) {
                     //get the projected bounding points of the rectangle
                     let boundingBoxPoints = this.getObjectBoundingBoxPoints(object)
-
-                    // boundingBoxPoints.forEach((point) => {
-                    //     const geometry = new THREE.SphereGeometry(0.1, 3, 3);
-                    //     const material = new THREE.MeshBasicMaterial({ color: 0xff0000 });
-                    //     const sphere = new THREE.Mesh(geometry, material);
-                    //     scene.add(sphere);
-                    //     sphere.position.set(point.x, point.y, point.z)
-                    // })
-                    // renderer.render(scene, camera);
-
                     if (boundingBoxPoints != undefined) {
                         for (var j = boundingBoxPoints.length; j--;) {
                             //check if any of the points is part of the selection
@@ -131,7 +121,6 @@ let select = {
                     }
                 }
             });
-
             return selectedObjects;
         }
     },
@@ -463,6 +452,16 @@ let select = {
                 this.helper.geometry.computeBoundingBox();
                 this.helper.update();
             }
+            vm.$.ctx.setTransformToolbarDisplay(true)
+            let position = this.calculateTransfromToolbarPosition();
+            vm.$.ctx.setTransformToolbarPosition({
+                left: position.x,
+                top: position.y,
+                location: position.location,
+            })
+            this.helper.update();
+            renderer.render(scene, camera)
+
         }
         toggleSelectionColor(object, bool) {
             if (bool) {
@@ -543,6 +542,7 @@ let select = {
                 default:
                 //do nothing, nothing is selected
             }
+            vm.$.ctx.setTransformToolbarDisplay(false)
         }
         duplicate() {
             let duplicateArray = new Array();
@@ -718,8 +718,6 @@ let select = {
             this.s.end(tx, ty);
         }
         this.dragged = false;
-
-        console.log(scene)
     }
 }
 

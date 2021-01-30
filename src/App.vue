@@ -239,7 +239,6 @@ export default {
 
       undoManager.add({
         undo: function () {
-          console.log(vm);
           vm.setSelectedTool(previous);
         },
         redo: function () {
@@ -256,7 +255,9 @@ export default {
       this.transformToolbar.location = val.location;
     },
     setTransformToolbarDisplay: function (val) {
+      console.log("called");
       this.transformToolbar.display = val;
+      console.log(this.transformToolbar.display);
     },
   },
   mounted() {

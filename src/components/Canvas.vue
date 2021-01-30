@@ -23,10 +23,10 @@ export default {
     return {
       mouse: {
         down: false,
-        tx: 0, //x coord for threejs
-        ty: 0, //y coord for threejs
-        cx: 0, //x coord for canvas
-        cy: 0, //y coord for canvas
+        tx: undefined, //x coord for threejs
+        ty: undefined, //y coord for threejs
+        cx: undefined, //x coord for canvas
+        cy: undefined, //y coord for canvas
         force: 0,
       },
     };
@@ -65,7 +65,14 @@ export default {
         this.mouse.down = true;
         switch (this.selectedTool) {
           case "draw":
-            draw.onStart(this.mirror);
+            draw.onStart(
+              this.mouse.tx,
+              this.mouse.ty,
+              0,
+              this.mouse.force,
+              true,
+              this.mirror
+            );
             break;
           case "erase":
             erase.onStart(this.mouse.cx, this.mouse.cy);
@@ -122,9 +129,7 @@ export default {
             break;
           case "select":
             select.onEnd(this.mouse.tx, this.mouse.ty);
-
-            //doesn't work but we are getting there?
-            if (select.s.controls != undefined) {
+            /*if (select.s.controls != undefined) {
               this.$emit("setTransformToolbarDisplay", true);
               let position = select.s.calculateTransfromToolbarPosition();
               this.$emit("setTransformToolbarPosition", {
@@ -134,7 +139,7 @@ export default {
               });
             } else {
               this.$emit("setTransformToolbarDisplay", false);
-            }
+            }*/
             break;
           default:
             break;
