@@ -4,7 +4,7 @@ import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
 import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
-import { undoManager } from "./UndoRedo.vue"
+import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 
 let draw = {
     l: undefined,
@@ -129,6 +129,8 @@ let draw = {
                 }
             });
 
+            undoRedoComponent.$.ctx.updateUi();
+
         }
         addVertex(x, y, z, force, unproject) {
             var v3 = new THREE.Vector3(x, y, z);
@@ -213,23 +215,23 @@ let draw = {
                     let minWidth = 0;
                     let baseWidth = 3;
                     let width = force[index] * 16;
-                    let tipLength = 5;
+                    let tailLength = 3;
 
                     //Beginning of the line
-                    if (index < tipLength) {
+                    if (index < tailLength) {
                         return map(
                             index,
                             minWidth,
-                            tipLength,
+                            tailLength,
                             minWidth,
                             baseWidth + width
                         ); //+ width
                     }
                     //End of the line
-                    else if (index > length - tipLength && end == "tail") {
+                    else if (index > length - tailLength && end == "tail") {
                         return map(
                             index,
-                            length - tipLength,
+                            length - tailLength,
                             length - 1,
                             baseWidth + width,
                             minWidth
@@ -267,7 +269,6 @@ let draw = {
         this.onEnd(mirrorOn);
         this.l.mesh.uuid = uuid;
         if (matrix) {
-            console.log(matrix)
             this.l.mesh.applyMatrix4(matrix)
         }
         if (position) {

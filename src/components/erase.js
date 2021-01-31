@@ -3,7 +3,7 @@ import { scene, renderer, camera, context } from "../App.vue";
 import { mirror } from "./mirror.js"
 import { MeshLineMaterial } from "three.meshline";
 import { draw } from "./draw.js";
-import { undoManager } from "./UndoRedo.vue"
+import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 
 let erase = {
     e: undefined,
@@ -277,6 +277,8 @@ let erase = {
                 renderer.render(scene, camera);
             }
         });
+
+        undoRedoComponent.$.ctx.updateUi();
 
     },
     onStart: function (cx, cy) {
