@@ -18,11 +18,13 @@ Todo:
     - [x] Select
     - [x] Deselect
     - [x] Transform single and group
-    - [ ] Mirror elements
     - [x] Duplicate
     - [x] Selected tool
-    - [ ] Display state in the UI
+    - [x] Display state in the UI
     - [x] Display trasformToolbar appropriately
+    - [ ] Two tap to undo
+    - [ ] Visual notifications
+    - [ ] Mirror elements
 - [ ] Cancel event for Line, Erase, Select
 - [ ] Small parser for displaying updates (see: https://www.w3schools.com/xml/xml_parser.asp)
 - [x] Eraser
@@ -36,9 +38,8 @@ Todo:
 - [ ] CSS and styling
 
 Notable bugs:
-- [ ] Clean up ghost strokes
+- [ ] Clean up ghost strokes (may be solved by cancel events)
 - [ ] Adjust visibility of transformToolbar when undoing/redoing
-
 
 ## Project setup
 

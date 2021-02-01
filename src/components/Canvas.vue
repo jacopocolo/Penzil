@@ -35,7 +35,6 @@ export default {
     selectedTool: String,
     mirror: [Boolean, String],
   },
-  emits: ["setTransformToolbarDisplay", "setTransformToolbarPosition"],
   methods: {
     updateMouseCoordinates: function (event) {
       if (event.touches) {
@@ -107,9 +106,6 @@ export default {
             break;
           case "select":
             select.onMove(this.mouse.cx, this.mouse.cy);
-            if (select.dragged == true) {
-              this.$emit("setTransformToolbarDisplay", !select.dragged);
-            }
             break;
           default:
             break;
@@ -129,17 +125,6 @@ export default {
             break;
           case "select":
             select.onEnd(this.mouse.tx, this.mouse.ty);
-            /*if (select.s.controls != undefined) {
-              this.$emit("setTransformToolbarDisplay", true);
-              let position = select.s.calculateTransfromToolbarPosition();
-              this.$emit("setTransformToolbarPosition", {
-                left: position.x,
-                top: position.y,
-                location: position.location,
-              });
-            } else {
-              this.$emit("setTransformToolbarDisplay", false);
-            }*/
             break;
           default:
             break;

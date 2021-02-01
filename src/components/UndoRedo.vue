@@ -1,8 +1,8 @@
 
 <template>
   <div>
-    <button @click="undo">Undo</button>
-    <button @click="redo">Redo</button>
+    <button @click="undo" :disabled="undoDisabled">Undo</button>
+    <button @click="redo" :disabled="redoDisabled">Redo</button>
   </div>
 </template>
 
@@ -10,26 +10,38 @@
 import UndoManager from "undo-manager";
 
 export let undoManager = new UndoManager();
+export let undoRedoComponent;
 
 export default {
   name: "UndoRedo",
   props: {},
   data() {
-    return {};
+    return {
+      undoDisabled: true,
+      redoDisabled: true,
+    };
   },
   methods: {
     undo: function () {
       undoManager.undo();
+      this.updateUi();
     },
     redo: function () {
       undoManager.redo();
+      this.updateUi();
     },
     setTool: function (val) {
       this.$emit("selected-tool", val);
     },
+    updateUi: function () {
+      this.undoDisabled = !undoManager.hasUndo();
+      this.redoDisabled = !undoManager.hasRedo();
+    },
   },
   watch: {},
-  mounted() {},
+  mounted() {
+    undoRedoComponent = this;
+  },
 };
 </script>
 

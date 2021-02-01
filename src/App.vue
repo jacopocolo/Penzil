@@ -10,14 +10,9 @@
     :location="transformToolbar.location"
     :display="transformToolbar.display"
   />
-  <undo-redo @selected-tool="setSelectedTool" />
+  <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
   <import />
-  <Canvas
-    :selectedTool="tool"
-    :mirror="mirror"
-    @setTransformToolbarDisplay="setTransformToolbarDisplay"
-    @setTransformToolbarPosition="setTransformToolbarPosition"
-  />
+  <Canvas :selectedTool="tool" :mirror="mirror" />
 </template>
 
 <script>
@@ -245,6 +240,8 @@ export default {
           vm.setSelectedTool(current);
         },
       });
+
+      this.$.refs.undoRedo.updateUi();
     },
     setSelectedObject: function (val) {
       this.selected = val;
@@ -255,9 +252,7 @@ export default {
       this.transformToolbar.location = val.location;
     },
     setTransformToolbarDisplay: function (val) {
-      console.log("called");
       this.transformToolbar.display = val;
-      console.log(this.transformToolbar.display);
     },
   },
   mounted() {

@@ -5,7 +5,7 @@ import { mirror } from "./mirror.js"
 import { erase } from "./erase.js"
 import { MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { startAnimating, stopAnimating, loop } from "./animate.js"
-import { undoManager } from "./UndoRedo.vue"
+import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 
 let select = {
     s: undefined,
@@ -223,6 +223,8 @@ let select = {
                     renderer.render(scene, camera);
                 }
             });
+            undoRedoComponent.$.ctx.updateUi();
+
             this.selected = new Array();
         }
         select_internal(selection, matrix) {
@@ -235,19 +237,20 @@ let select = {
                 this.controls.attach(selection[0]);
                 this.controls.addEventListener("mouseDown", function () {
                     startAnimating();
-
                     var position = new THREE.Vector3();
                     this.object.getWorldPosition(position);
                     var quaternion = new THREE.Quaternion();
                     this.object.getWorldQuaternion(quaternion);
                     var scale = new THREE.Vector3();
                     this.object.getWorldScale(scale);
-
                     this.userData.startingTransform = {
                         position: position,
                         quaternion: quaternion,
                         scale: scale
                     }
+
+                    vm.$.ctx.setTransformToolbarDisplay(false);
+
                 })
                 this.controls.addEventListener("change", function () {
                     if (!loop) {
@@ -279,6 +282,14 @@ let select = {
                                 select.s.controls.object.quaternion.copy(startQuaternion);
                                 select.s.controls.object.scale.copy(startScale);
                                 select.s.helper.update();
+                                vm.$.ctx.setTransformToolbarDisplay(true)
+                                let transfromToolbarPosition = select.s.calculateTransfromToolbarPosition();
+                                vm.$.ctx.setTransformToolbarPosition({
+                                    left: transfromToolbarPosition.x,
+                                    top: transfromToolbarPosition.y,
+                                    location: transfromToolbarPosition.location,
+                                })
+                                select.s.helper.update();
                                 renderer.render(scene, camera);
                             },
                             redo: function () {
@@ -286,10 +297,27 @@ let select = {
                                 select.s.controls.object.quaternion.copy(endQuaternion);
                                 select.s.controls.object.scale.copy(endScale)
                                 select.s.helper.update();
+                                vm.$.ctx.setTransformToolbarDisplay(true)
+                                let transfromToolbarPosition = select.s.calculateTransfromToolbarPosition();
+                                vm.$.ctx.setTransformToolbarPosition({
+                                    left: transfromToolbarPosition.x,
+                                    top: transfromToolbarPosition.y,
+                                    location: transfromToolbarPosition.location,
+                                })
+                                select.s.helper.update();
                                 renderer.render(scene, camera);
                             }
                         });
                     }
+
+                    vm.$.ctx.setTransformToolbarDisplay(true);
+                    let position = select.s.calculateTransfromToolbarPosition();
+                    vm.$.ctx.setTransformToolbarPosition({
+                        left: position.x,
+                        top: position.y,
+                        location: position.location,
+                    })
+                    select.s.helper.update();
 
                     renderer.render(scene, camera);
                 })
@@ -313,8 +341,6 @@ let select = {
                 } else {
                     this.undoRedoMatrix = this.group.matrix
                 }
-
-
                 //calculate where is the center for the selected objects so we can set the center of the group before we attach objects to it;
                 var center = new THREE.Vector3();
                 selection.forEach((obj) => {
@@ -348,6 +374,9 @@ let select = {
                         quaternion: quaternion,
                         scale: scale
                     }
+
+                    vm.$.ctx.setTransformToolbarDisplay(false);
+
                 })
                 this.controls.addEventListener("change", function () {
                     if (!loop) {
@@ -397,6 +426,17 @@ let select = {
                                 select.s.controls.object.position.copy(startPosition);
                                 select.s.controls.object.quaternion.copy(startQuaternion);
                                 select.s.controls.object.scale.copy(startScale);
+
+                                select.s.helper.update();
+
+                                vm.$.ctx.setTransformToolbarDisplay(true)
+                                let transfromToolbarPosition = select.s.calculateTransfromToolbarPosition();
+                                vm.$.ctx.setTransformToolbarPosition({
+                                    left: transfromToolbarPosition.x,
+                                    top: transfromToolbarPosition.y,
+                                    location: transfromToolbarPosition.location,
+                                })
+
                                 select.s.helper.update();
 
                                 select.s.controls.object.children.forEach((obj) => {
@@ -418,8 +458,18 @@ let select = {
                             redo: function () {
                                 select.s.controls.object.position.copy(endPosition);
                                 select.s.controls.object.quaternion.copy(endQuaternion);
-                                //select.s.controls.object.quaternion.copy(endQuaternion).multiply(endQuaternion.clone().invert());
                                 select.s.controls.object.scale.copy(endScale)
+
+                                select.s.helper.update();
+
+                                vm.$.ctx.setTransformToolbarDisplay(true)
+                                let transfromToolbarPosition = select.s.calculateTransfromToolbarPosition();
+                                vm.$.ctx.setTransformToolbarPosition({
+                                    left: transfromToolbarPosition.x,
+                                    top: transfromToolbarPosition.y,
+                                    location: transfromToolbarPosition.location,
+                                })
+
                                 select.s.helper.update();
 
                                 select.s.controls.object.children.forEach((obj) => {
@@ -441,6 +491,15 @@ let select = {
                         });
                     }
 
+                    vm.$.ctx.setTransformToolbarDisplay(true)
+                    let transfromToolbarPosition = select.s.calculateTransfromToolbarPosition();
+                    vm.$.ctx.setTransformToolbarPosition({
+                        left: transfromToolbarPosition.x,
+                        top: transfromToolbarPosition.y,
+                        location: transfromToolbarPosition.location,
+                    })
+                    select.s.helper.update();
+
                     renderer.render(scene, camera);
                 })
                 scene.add(this.controls);
@@ -452,6 +511,7 @@ let select = {
                 this.helper.geometry.computeBoundingBox();
                 this.helper.update();
             }
+
             vm.$.ctx.setTransformToolbarDisplay(true)
             let position = this.calculateTransfromToolbarPosition();
             vm.$.ctx.setTransformToolbarPosition({
@@ -504,6 +564,8 @@ let select = {
                         renderer.render(scene, camera);
                     }
                 });
+
+                undoRedoComponent.$.ctx.updateUi();
 
                 renderer.render(scene, camera)
             }
