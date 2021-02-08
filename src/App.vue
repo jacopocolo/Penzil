@@ -11,7 +11,7 @@
     :display="transformToolbar.display"
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
-  <import />
+  <!-- <import /> -->
   <Canvas :selectedTool="tool" :mirror="mirror" />
 </template>
 
@@ -24,7 +24,7 @@ import Canvas from "./components/Canvas.vue";
 import ToolSelector from "./components/ToolSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
-import Import from "./components/Import.vue";
+// import Import from "./components/Import.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
 
@@ -62,7 +62,7 @@ export default {
     TransormToolbar,
     ViewportCube,
     UndoRedo,
-    Import,
+    //Import,
   },
   data() {
     return {
@@ -129,8 +129,10 @@ export default {
       cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
       cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
       cameraControls.touches.one = CameraControls.ACTION.NONE;
-      cameraControls.touches.two = CameraControls.ACTION.TOUCH_ROTATE;
+      cameraControls.touches.two = CameraControls.ACTION.ROTATE;
       cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
+      cameraControls.maxZoom = 4000;
+      cameraControls.minZoom = 100;
 
       cameraControls.addEventListener("update", () => {
         if (cameraControls.enabled == true) {

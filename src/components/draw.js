@@ -244,6 +244,17 @@ let draw = {
                 }
             );
         }
+        cancel() {
+            drawingScene.remove(this.mesh);
+            mirror.eraseMirrorOf(this.mesh);
+            this.mesh.material.dispose();
+            draw.l = undefined;
+            draw.l = new draw.draw();
+            drawingScene.clear();
+            renderer.render(drawingScene, camera);
+            renderer.autoClear = true;
+            renderer.render(scene, camera);
+        }
     },
     onStart: function (x, y, z, force, unproject, mirrorOn) {
         this.l = new this.draw();
@@ -254,6 +265,9 @@ let draw = {
     },
     onEnd: function (mirrorOn) {
         this.l.end(mirrorOn);
+    },
+    onCancel: function () {
+        this.l ? this.l.cancel() : null;
     },
     fromVertices(vertices, force, lineWidth, mirrorOn, uuid, position, quaternion, scale, matrix) {
         this.onStart(0, 0, 0, 0, false, mirrorOn);

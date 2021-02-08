@@ -226,6 +226,15 @@ let erase = {
             context.clearRect(0, 0, window.innerWidth, window.innerHeight);
             //actually nothing here
         }
+        cancel() {
+            // context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            // for (let i = 0; i < this.numberOfErasedObjects; i++) {
+            //     undoManager.undo();
+            // }
+            // erase.e = undefined;
+            // erase.e = new erase.eraser();
+            // renderer.render(scene, camera)
+        }
     },
     deleteObject: function (object) {
         //ignore triggers for objects already deleted
@@ -293,6 +302,9 @@ let erase = {
     onEnd: function () {
         this.e.end();
         this.e.resetPicking();
+    },
+    onCancel: function () {
+        //this.e ? this.e.cancel() : null;
     }
 }
 
