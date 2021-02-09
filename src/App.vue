@@ -124,7 +124,8 @@ export default {
       clock = new THREE.Clock();
 
       cameraControls = new CameraControls(camera, drawingCanvas);
-      cameraControls.dampingFactor = 10;
+      cameraControls.dampingFactor = 20;
+      cameraControls.draggingDampingFactor = 200;
       cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
       cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
       cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
@@ -143,6 +144,10 @@ export default {
             camera.quaternion.w,
           ];
         }
+
+        let target = new THREE.Vector3();
+        target = cameraControls.getTarget(target);
+        targetSphere.position.set(target.x, target.y, target.z);
 
         //hide the contextual transformControls while we adjust the camera is something is selected
         if (select.s && select.s.controls != undefined) {
@@ -187,7 +192,7 @@ export default {
       });
 
       var geometry = new THREE.SphereBufferGeometry(0.025, 32, 32);
-      var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+      var material = new THREE.MeshBasicMaterial({ color: 0xffc75f });
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
 

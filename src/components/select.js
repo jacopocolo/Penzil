@@ -742,6 +742,11 @@ let select = {
                 location: location
             }
         }
+        cancel() {
+            context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            this.s = undefined;
+            return;
+        }
     },
     transforming: function () {
         if (this.s != undefined) {
@@ -780,6 +785,9 @@ let select = {
             this.s.end(tx, ty);
         }
         this.dragged = false;
+    },
+    onCancel: function () {
+        this.s ? this.s.cancel() : null;
     }
 }
 

@@ -34,6 +34,7 @@ export default {
         cy: undefined, //y coord for canvas
         force: 0,
         touchLengthHistory: [0, 0],
+        multiTouched: false,
         eventCancelled: false,
         distance: 0,
       },
@@ -74,6 +75,7 @@ export default {
       if (event.button == 0 || event.touches.length == 1) {
         this.mouse.down = true;
         this.mouse.eventCancelled = false;
+        this.mouse.multiTouched = false;
         switch (this.selectedTool) {
           case "draw":
             draw.onStart(
@@ -101,6 +103,7 @@ export default {
         }
       } else {
         //this means that we are escalating from a single touch to a multitouch and then we should cancel whatever input we started
+        this.mouse.multiTouched = true;
         if (
           this.mouse.touchLengthHistory[0] === 1 &&
           this.mouse.touchLengthHistory[1] === 2
@@ -144,13 +147,17 @@ export default {
             default:
               break;
           }
-        } else if (this.mouse.touchLengthHistory[1] > 1) {
+        } else if (
+          this.mouse.touchLengthHistory[1] > 1 &&
+          event.touches.length < 3
+        ) {
+          //this is for zooming manually without relying on cameraControls
           var dx = event.touches[0].clientX - event.touches[1].clientX;
           var dy = event.touches[1].clientY - event.touches[1].clientY;
           var distance = Math.sqrt(dx * dx + dy * dy);
           var zoom = distance - this.mouse.distance;
 
-          if (zoom > 1 || zoom < -1) {
+          if (zoom > 10 || zoom < -10) {
             console.log(zoom);
             zoom > 0
               ? (zoom = camera.zoom + zoom)
@@ -158,21 +165,15 @@ export default {
           } else {
             return;
           }
-
-          cameraControls.zoom(zoom / 10, true);
-          //renderer.render(scene, camera);
+          cameraControls.zoom(zoom / 5, true);
           this.mouse.distance = distance;
-          //cameraControls.zoom(camera.zoom(-zoom / 10), false);
-          //do whatever you want with multitouch events
-          //rotate and zoom
         }
       }
     },
     onEnd: function () {
-      if (this.mouse.touchLengthHistory[0] > 1 || this.mouse.eventCancelled) {
+      if (this.mouse.multiTouched || this.mouse.eventCancelled) {
         return;
       } else {
-        console.log("onend fired");
         switch (this.selectedTool) {
           case "draw":
             draw.onEnd(this.mirror);
