@@ -16,11 +16,6 @@
 import { draw } from "./draw.js";
 import { erase } from "./erase.js";
 import { select } from "./select.js";
-import {
-  //renderer, scene,
-  camera,
-  cameraControls,
-} from "../App";
 
 export default {
   name: "Canvas",
@@ -36,7 +31,6 @@ export default {
         touchLengthHistory: [0, 0],
         multiTouched: false,
         eventCancelled: false,
-        distance: 0,
       },
     };
   },
@@ -147,26 +141,8 @@ export default {
             default:
               break;
           }
-        } else if (
-          this.mouse.touchLengthHistory[1] > 1 &&
-          event.touches.length < 3
-        ) {
-          //this is for zooming manually without relying on cameraControls
-          var dx = event.touches[0].clientX - event.touches[1].clientX;
-          var dy = event.touches[1].clientY - event.touches[1].clientY;
-          var distance = Math.sqrt(dx * dx + dy * dy);
-          var zoom = distance - this.mouse.distance;
-
-          if (zoom > 10 || zoom < -10) {
-            console.log(zoom);
-            zoom > 0
-              ? (zoom = camera.zoom + zoom)
-              : (zoom = -camera.zoom - zoom);
-          } else {
-            return;
-          }
-          cameraControls.zoom(zoom / 5, true);
-          this.mouse.distance = distance;
+        } else {
+          //cameraControls handle the multitouch
         }
       }
     },

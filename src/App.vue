@@ -130,7 +130,7 @@ export default {
       cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
       cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
       cameraControls.touches.one = CameraControls.ACTION.NONE;
-      cameraControls.touches.two = CameraControls.ACTION.ROTATE;
+      cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
       cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
       cameraControls.maxZoom = 4000;
       cameraControls.minZoom = 100;
@@ -296,6 +296,7 @@ html,
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  touch-action: manipulation;
 }
 
 #app {
