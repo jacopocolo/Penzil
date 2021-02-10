@@ -2,6 +2,16 @@
 <template>
   <div class="mainToolbar">
     <div class="toolSelection">
+      <span @click="setTool('center', true)">
+        <input
+          type="radio"
+          id="setCenter"
+          name="tools"
+          value="center"
+          v-model="tool"
+        /><label for="setCenter"> set • </label>
+        <div></div>
+      </span>
       <span @click="setTool('draw', true)">
         <input
           type="radio"
@@ -79,7 +89,11 @@ export default {
   padding-left: 6px;
   white-space: discard;
   display: flex;
-  width: 300px;
+  width: 400px;
   float: left;
+}
+
+#setCenter + label {
+  margin-right: 50px;
 }
 </style>

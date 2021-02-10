@@ -231,6 +231,11 @@ export default {
     },
     setSelectedTool: function (val) {
       this.tool = val;
+
+      if (val == "center") {
+        return;
+      }
+
       this.toolHistory.push(val);
       if (this.toolHistory.length > 2) {
         this.toolHistory.shift();
@@ -249,6 +254,16 @@ export default {
       });
 
       this.$.refs.undoRedo.updateUi();
+    },
+    setSelectedTool_internal: function (val) {
+      //this is a version without undo so that it can be called by the setCenter tool
+      this.tool = val;
+    },
+    setPreviouslySelectedTool: function () {
+      //this is used by setCenter.js to set the tool back to its previus config after setting the center
+      this.setSelectedTool_internal(
+        this.toolHistory[this.toolHistory.length - 1]
+      );
     },
     setSelectedObject: function (val) {
       this.selected = val;

@@ -16,6 +16,7 @@
 import { draw } from "./draw.js";
 import { erase } from "./erase.js";
 import { select } from "./select.js";
+import { setCenter } from "./setCenter.js";
 
 export default {
   name: "Canvas",
@@ -92,6 +93,9 @@ export default {
               this.mouse.cy
             );
             break;
+          case "center":
+            //setCenter.set(this.mouse.tx, this.mouse.ty);
+            break;
           default:
             break;
         }
@@ -112,6 +116,9 @@ export default {
               break;
             case "select":
               select.onCancel();
+              break;
+            case "center":
+              //setCenter.set(this.mouse.tx, this.mouse.ty);
               break;
             default:
               break;
@@ -138,6 +145,9 @@ export default {
             case "select":
               select.onMove(this.mouse.cx, this.mouse.cy);
               break;
+            case "center":
+              //setCenter.set(this.mouse.tx, this.mouse.ty);
+              break;
             default:
               break;
           }
@@ -159,6 +169,9 @@ export default {
             break;
           case "select":
             select.onEnd(this.mouse.tx, this.mouse.ty);
+            break;
+          case "center":
+            setCenter.set(this.mouse.tx, this.mouse.ty);
             break;
           default:
             break;
@@ -193,16 +206,6 @@ export default {
         //nothing;
       }
     },
-    // rotateAndZoomCamera(x1, y1, x2, y2) {
-    //   let deltaX;
-    //   let deltaY;
-    //   let w = 150;
-    //   var PI_2 = Math.PI * 2;
-    //   var speed = 0.5;
-    //   var theta = (PI_2 * speed * deltaX) / w;
-    //   var phi = (PI_2 * speed * deltaY) / w;
-    //   cameraControls.rotate(theta, phi, false);
-    // },
   },
   watch: {},
   mounted() {},
