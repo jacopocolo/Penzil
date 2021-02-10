@@ -124,12 +124,13 @@ export default {
       clock = new THREE.Clock();
 
       cameraControls = new CameraControls(camera, drawingCanvas);
-      cameraControls.dampingFactor = 10;
+      cameraControls.dampingFactor = 20;
+      cameraControls.draggingDampingFactor = 200;
       cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
       cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
       cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
       cameraControls.touches.one = CameraControls.ACTION.NONE;
-      cameraControls.touches.two = CameraControls.ACTION.ROTATE;
+      cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
       cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
       cameraControls.maxZoom = 4000;
       cameraControls.minZoom = 100;
@@ -143,6 +144,10 @@ export default {
             camera.quaternion.w,
           ];
         }
+
+        let target = new THREE.Vector3();
+        target = cameraControls.getTarget(target);
+        targetSphere.position.set(target.x, target.y, target.z);
 
         //hide the contextual transformControls while we adjust the camera is something is selected
         if (select.s && select.s.controls != undefined) {
@@ -187,7 +192,7 @@ export default {
       });
 
       var geometry = new THREE.SphereBufferGeometry(0.025, 32, 32);
-      var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+      var material = new THREE.MeshBasicMaterial({ color: 0xffc75f });
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
 
@@ -226,6 +231,11 @@ export default {
     },
     setSelectedTool: function (val) {
       this.tool = val;
+
+      if (val == "center") {
+        return;
+      }
+
       this.toolHistory.push(val);
       if (this.toolHistory.length > 2) {
         this.toolHistory.shift();
@@ -244,6 +254,16 @@ export default {
       });
 
       this.$.refs.undoRedo.updateUi();
+    },
+    setSelectedTool_internal: function (val) {
+      //this is a version without undo so that it can be called by the setCenter tool
+      this.tool = val;
+    },
+    setPreviouslySelectedTool: function () {
+      //this is used by setCenter.js to set the tool back to its previus config after setting the center
+      this.setSelectedTool_internal(
+        this.toolHistory[this.toolHistory.length - 1]
+      );
     },
     setSelectedObject: function (val) {
       this.selected = val;
@@ -291,6 +311,7 @@ html,
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  touch-action: manipulation;
 }
 
 #app {

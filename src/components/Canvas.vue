@@ -16,11 +16,7 @@
 import { draw } from "./draw.js";
 import { erase } from "./erase.js";
 import { select } from "./select.js";
-import {
-  //renderer, scene,
-  camera,
-  cameraControls,
-} from "../App";
+import { setCenter } from "./setCenter.js";
 
 export default {
   name: "Canvas",
@@ -34,8 +30,8 @@ export default {
         cy: undefined, //y coord for canvas
         force: 0,
         touchLengthHistory: [0, 0],
+        multiTouched: false,
         eventCancelled: false,
-        distance: 0,
       },
     };
   },
@@ -74,6 +70,7 @@ export default {
       if (event.button == 0 || event.touches.length == 1) {
         this.mouse.down = true;
         this.mouse.eventCancelled = false;
+        this.mouse.multiTouched = false;
         switch (this.selectedTool) {
           case "draw":
             draw.onStart(
@@ -96,11 +93,15 @@ export default {
               this.mouse.cy
             );
             break;
+          case "center":
+            //setCenter.set(this.mouse.tx, this.mouse.ty);
+            break;
           default:
             break;
         }
       } else {
         //this means that we are escalating from a single touch to a multitouch and then we should cancel whatever input we started
+        this.mouse.multiTouched = true;
         if (
           this.mouse.touchLengthHistory[0] === 1 &&
           this.mouse.touchLengthHistory[1] === 2
@@ -115,6 +116,9 @@ export default {
               break;
             case "select":
               select.onCancel();
+              break;
+            case "center":
+              //setCenter.set(this.mouse.tx, this.mouse.ty);
               break;
             default:
               break;
@@ -141,38 +145,21 @@ export default {
             case "select":
               select.onMove(this.mouse.cx, this.mouse.cy);
               break;
+            case "center":
+              //setCenter.set(this.mouse.tx, this.mouse.ty);
+              break;
             default:
               break;
           }
-        } else if (this.mouse.touchLengthHistory[1] > 1) {
-          var dx = event.touches[0].clientX - event.touches[1].clientX;
-          var dy = event.touches[1].clientY - event.touches[1].clientY;
-          var distance = Math.sqrt(dx * dx + dy * dy);
-          var zoom = distance - this.mouse.distance;
-
-          if (zoom > 1 || zoom < -1) {
-            console.log(zoom);
-            zoom > 0
-              ? (zoom = camera.zoom + zoom)
-              : (zoom = -camera.zoom - zoom);
-          } else {
-            return;
-          }
-
-          cameraControls.zoom(zoom / 10, true);
-          //renderer.render(scene, camera);
-          this.mouse.distance = distance;
-          //cameraControls.zoom(camera.zoom(-zoom / 10), false);
-          //do whatever you want with multitouch events
-          //rotate and zoom
+        } else {
+          //cameraControls handle the multitouch
         }
       }
     },
     onEnd: function () {
-      if (this.mouse.touchLengthHistory[0] > 1 || this.mouse.eventCancelled) {
+      if (this.mouse.multiTouched || this.mouse.eventCancelled) {
         return;
       } else {
-        console.log("onend fired");
         switch (this.selectedTool) {
           case "draw":
             draw.onEnd(this.mirror);
@@ -182,6 +169,9 @@ export default {
             break;
           case "select":
             select.onEnd(this.mouse.tx, this.mouse.ty);
+            break;
+          case "center":
+            setCenter.set(this.mouse.tx, this.mouse.ty);
             break;
           default:
             break;
@@ -216,16 +206,6 @@ export default {
         //nothing;
       }
     },
-    // rotateAndZoomCamera(x1, y1, x2, y2) {
-    //   let deltaX;
-    //   let deltaY;
-    //   let w = 150;
-    //   var PI_2 = Math.PI * 2;
-    //   var speed = 0.5;
-    //   var theta = (PI_2 * speed * deltaX) / w;
-    //   var phi = (PI_2 * speed * deltaY) / w;
-    //   cameraControls.rotate(theta, phi, false);
-    // },
   },
   watch: {},
   mounted() {},
