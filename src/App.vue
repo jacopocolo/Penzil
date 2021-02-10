@@ -27,6 +27,7 @@ import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
 // import Import from "./components/Import.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
+import { drawingPlane } from "./components/drawingPlane.js";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
@@ -159,6 +160,9 @@ export default {
       });
 
       cameraControls.addEventListener("sleep", () => {
+        //reposition the drawingPlane
+        drawingPlane.updatePosition();
+
         //reposition the contextual transformControls after we adjusted the camera is something is selected
         if (select.s && select.s.controls != undefined) {
           select.s.helper.update();
@@ -195,6 +199,8 @@ export default {
       var material = new THREE.MeshBasicMaterial({ color: 0xffc75f });
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
+
+      drawingPlane.setUp();
 
       window.addEventListener("resize", this.onWindowResize);
       window.addEventListener("orientationchange", this.onWindowResize);
