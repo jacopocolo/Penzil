@@ -153,6 +153,8 @@ export default {
           }
         } else {
           //cameraControls handle the multitouch
+          //this is the way to handl multi-touch events in a way that allows for multitouch fires and not misfires
+          //https://stackoverflow.com/questions/45108732/drawing-on-html5-canvas-with-support-for-multitouch-pinch-pan-and-zoom
         }
       }
     },

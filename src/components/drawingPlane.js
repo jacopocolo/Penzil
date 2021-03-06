@@ -7,11 +7,12 @@ let drawingPlane = {
     setUp: function () {
         var geometry = new THREE.PlaneGeometry(4, 4, 4);
         var grid = new THREE.TextureLoader().load(require("@/assets/drawingPlane/grid.png"));
+        var alphaGrid = new THREE.TextureLoader().load(require("@/assets/drawingPlane/amap.png"));
         var material = new THREE.MeshBasicMaterial({
             map: grid,
+            alphaMap: alphaGrid,
             transparent: true,
             side: THREE.DoubleSide,
-            opacity: 1,
             fog: false,
         });
         var planeBg = new THREE.Mesh(geometry, material);
@@ -34,8 +35,8 @@ let drawingPlane = {
             drawingPlane.updateSlerp();
         }
         //the issue is in the amount of frames. 60 was kind of eyeballing and basically a way to make sure that we have enough time to slerp the two quaternion together but it keeps the engine busy for too long. I need to figure out a way to say: if the plane is in position, stop
-        if (this.count < 60) {
-            this.plane.quaternion.slerp(camera.quaternion, 0.1);
+        if (this.count < 12) {
+            this.plane.quaternion.slerp(camera.quaternion, 1 / 6);
             this.count++
             requestAnimationFrame(animate);
             renderer.render(scene, camera)
