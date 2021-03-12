@@ -1,4 +1,5 @@
 import * as THREE from "three";
+import { Earcut } from 'three/src/extras/Earcut.js';
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
 import { erase } from "./erase.js"
@@ -19,6 +20,7 @@ let draw = {
                 color: new THREE.Color(0x51074a),
                 side: THREE.DoubleSide,
                 fog: false,
+                wireframe: false
             });
             this.mesh = new THREE.Mesh(this.line, this.material);
             this.uuid = this.mesh.uuid;
@@ -105,23 +107,21 @@ let draw = {
 
             renderer.render(scene, camera);
 
-            // let fillGeometryArray = [];
-            // let fillShape = new THREE.Shape();
+            let vert = this.geometry.attributes.position.array;
+            var fillGeometry = new THREE.BufferGeometry();
+            fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
+            let triangles = new THREE.BufferAttribute(new Float32Array(Earcut.triangulate(fillGeometry.attributes.position, null, 3)), 1);
+            fillGeometry.setIndex(triangles);
 
-            // for (let i = 0; i < this.geometry.attributes.position.array.length; i = i + 3) {
-            //     // let vector3 = new THREE.Vector3();
-            //     // vector3.x = this.geometry.attributes.position.array[i];
-            //     // vector3.y = this.geometry.attributes.position.array[i + 1];
-            //     // vector3.z = this.geometry.attributes.position.array[i + 2];
-            //     if (i == 0) { fillShape.moveTo(this.geometry.attributes.position.array[i], this.geometry.attributes.position.array[i + 1]) }
-            //     else { fillShape.lineTo(this.geometry.attributes.position.array[i], this.geometry.attributes.position.array[i + 1]) }
-            // }
+            var mWireframe = new THREE.MeshBasicMaterial({
+                color: 0xff0000,
+                side: THREE.DoubleSide,
+                wireframe: true
+            });
+            fillGeometry.computeBoundingSphere();
 
-            // const extrudeSettings = { amount: 0, bevelEnabled: false };
-            // const geometry = new THREE.ExtrudeGeometry(fillShape, extrudeSettings);
-            // const fillMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: 0xd69cbc, polygonOffset: true, polygonOffsetFactor: 40 }));
-            // console.log(fillMesh)
-            // this.mesh.add(fillMesh)
+            var mesh = new THREE.Mesh(fillGeometry, mWireframe);
+            this.mesh.add(mesh);
 
             renderer.render(scene, camera);
 
