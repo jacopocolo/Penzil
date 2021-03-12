@@ -1,5 +1,4 @@
 import * as THREE from "three";
-
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
 import { erase } from "./erase.js"
@@ -17,23 +16,30 @@ let draw = {
             this.material = new MeshLineMaterial({
                 lineWidth: 0.01,
                 sizeAttenuation: 1,
-                color: new THREE.Color("black"),
+                color: new THREE.Color(0x51074a),
                 side: THREE.DoubleSide,
                 fog: false,
             });
             this.mesh = new THREE.Mesh(this.line, this.material);
-            // this.mesh.matrixAutoUpdate = false;
             this.uuid = this.mesh.uuid;
             this.line.userData.points = new Array();
             this.line.userData.force = new Array();
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
-            this.mesh.userData.lineColor = new THREE.Color("black");
+            this.mesh.userData.lineColor = new THREE.Color(0x51074a);
             this.bufferPoints = new Array();
             this.size = 4;
+
+            // this.fillShape = new THREE.Shape();
+            // this.fillShapeExtrudeSettings = { amount: 0, bevelEnabled: false };
+            // this.fillGeometry = new THREE.ExtrudeGeometry(this.fillShape, this.fillShapeExtrudeSettings)
+            // this.fillMeshMaterial = new THREE.MeshBasicMaterial({ color: 0xd69cbc, polygonOffset: true, polygonOffsetFactor: 40 });
+            // this.fill = new THREE.Mesh(this.fillGeometry, this.fillMeshMaterial);
+            // this.mesh.add(this.fill)
         }
         start(x, y, z, force, unproject, mirrorOn) {
             drawingScene.add(this.mesh);
+
             switch (mirrorOn) {
                 case "x":
                     mirror.object(this.mesh, "x", drawingScene);
@@ -47,8 +53,15 @@ let draw = {
                 default:
                 //it's false, do nothing
             }
-            console.log(x, y, z, force, unproject)
-            //this.addVertex(x, y, z, force, unproject)
+            console.log(x, y, z, unproject, force)
+            // var v3 = new THREE.Vector3(x, y, z);
+            // if (unproject) {
+            //     v3.unproject(camera);
+            //     this.fillShape.moveTo(v3.x, v3.y)
+            // } else {
+            //     this.fillShape.moveTo(v3.x, v3.y)
+            // }
+
         }
         move(x, y, z, force, unproject) {
             this.addVertex(x, y, z, force, unproject)
@@ -89,6 +102,27 @@ let draw = {
                 default:
                 //it's false, do nothing
             }
+
+            renderer.render(scene, camera);
+
+            // let fillGeometryArray = [];
+            // let fillShape = new THREE.Shape();
+
+            // for (let i = 0; i < this.geometry.attributes.position.array.length; i = i + 3) {
+            //     // let vector3 = new THREE.Vector3();
+            //     // vector3.x = this.geometry.attributes.position.array[i];
+            //     // vector3.y = this.geometry.attributes.position.array[i + 1];
+            //     // vector3.z = this.geometry.attributes.position.array[i + 2];
+            //     if (i == 0) { fillShape.moveTo(this.geometry.attributes.position.array[i], this.geometry.attributes.position.array[i + 1]) }
+            //     else { fillShape.lineTo(this.geometry.attributes.position.array[i], this.geometry.attributes.position.array[i + 1]) }
+            // }
+
+            // const extrudeSettings = { amount: 0, bevelEnabled: false };
+            // const geometry = new THREE.ExtrudeGeometry(fillShape, extrudeSettings);
+            // const fillMesh = new THREE.Mesh(geometry, new THREE.MeshBasicMaterial({ color: 0xd69cbc, polygonOffset: true, polygonOffsetFactor: 40 }));
+            // console.log(fillMesh)
+            // this.mesh.add(fillMesh)
+
             renderer.render(scene, camera);
 
             let uuid = this.uuid;
@@ -142,17 +176,25 @@ let draw = {
                 this.appendToBuffer(v4);
                 let pt = this.getAveragePoint(0);
                 if (pt) {
+                    //stroke
                     this.mesh.geometry.userData.force.push(pt.w);
-
                     this.geometry.attributes.position.array = this.Float32Concat(this.geometry.attributes.position.array, new Float32Array([pt.x, pt.y, pt.z]));
                     this.geometry.attributes.position.count = this.geometry.attributes.position.count + 3
                     this.geometry.attributes.position.needsUpdate = true;
+
+                    //fill
+                    // this.fillShape.lineTo(pt.x, pt.y)
+                    // console.log(this.fillShape)
+                    // this.fillGeometry = new THREE.ExtrudeGeometry(this.fillShape, this.fillShapeExtrudeSettings)
                 }
             } else {
                 this.mesh.geometry.userData.force.push(force);
                 this.geometry.attributes.position.array = this.Float32Concat(this.geometry.attributes.position.array, new Float32Array([v3.x, v3.y, v3.z]));
                 this.geometry.attributes.position.count = this.geometry.attributes.position.count + 3
                 this.geometry.attributes.position.needsUpdate = true;
+
+                // this.fillShape.lineTo(v3.x, v3.y, v3.z)
+                // this.fillGeometry.verticesNeedUpdate = true;
             }
             this.setGeometry();
             renderer.autoClear = false;
