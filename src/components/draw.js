@@ -15,7 +15,7 @@ let draw = {
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
             this.material = new MeshLineMaterial({
-                lineWidth: 0.01,
+                lineWidth: 0.001,
                 sizeAttenuation: 1,
                 color: new THREE.Color(0x51074a),
                 side: THREE.DoubleSide,
@@ -110,17 +110,18 @@ let draw = {
             let vert = this.geometry.attributes.position.array;
             var fillGeometry = new THREE.BufferGeometry();
             fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
-            let triangles = new THREE.BufferAttribute(new Float32Array(Earcut.triangulate(fillGeometry.attributes.position, null, 3)), 1);
+            let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(fillGeometry.attributes.position.array, null, 3)), 1);
             fillGeometry.setIndex(triangles);
-
-            var mWireframe = new THREE.MeshBasicMaterial({
+            var fillMaterial = new THREE.MeshBasicMaterial({
                 color: 0xff0000,
                 side: THREE.DoubleSide,
-                wireframe: true
+                polygonOffset: 5000,
+                polygonOffsetFactor: 100,
+                polygonOffsetUnits: 2
             });
             fillGeometry.computeBoundingSphere();
-
-            var mesh = new THREE.Mesh(fillGeometry, mWireframe);
+            console.log(fillGeometry)
+            var mesh = new THREE.Mesh(fillGeometry, fillMaterial);
             this.mesh.add(mesh);
 
             renderer.render(scene, camera);

@@ -93,7 +93,7 @@ export default {
       //Set the background based on the css variable;
       var bgCol = 0xffffff;
       scene.background = new THREE.Color(bgCol);
-      // scene.fog = new THREE.Fog(bgCol, 9, 13);
+      //scene.fog = new THREE.Fog(0xffffff, 9, 13);
 
       drawingScene = new THREE.Scene(); //this scene is only used for rendering lines as they are being drawn. Lines are then moved to the main scene.
 
