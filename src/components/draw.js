@@ -15,7 +15,7 @@ let draw = {
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
             this.material = new MeshLineMaterial({
-                lineWidth: 0.001,
+                lineWidth: 0.01,
                 sizeAttenuation: 1,
                 color: new THREE.Color(0x51074a),
                 side: THREE.DoubleSide,
@@ -32,15 +32,24 @@ let draw = {
             this.bufferPoints = new Array();
             this.size = 4;
 
-            // this.fillShape = new THREE.Shape();
-            // this.fillShapeExtrudeSettings = { amount: 0, bevelEnabled: false };
-            // this.fillGeometry = new THREE.ExtrudeGeometry(this.fillShape, this.fillShapeExtrudeSettings)
-            // this.fillMeshMaterial = new THREE.MeshBasicMaterial({ color: 0xd69cbc, polygonOffset: true, polygonOffsetFactor: 40 });
-            // this.fill = new THREE.Mesh(this.fillGeometry, this.fillMeshMaterial);
-            // this.mesh.add(this.fill)
+            this.fillGeometry = new THREE.BufferGeometry();
+            this.fillVertices = new Float32Array([]);
+            this.fillGeometry.setAttribute("position", new THREE.BufferAttribute(this.fillVertices, 3));
+            this.triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
+            this.fillGeometry.setIndex(this.triangles);
+            this.fillMaterial = new THREE.MeshBasicMaterial({
+                color: 0xff0000,
+                side: THREE.DoubleSide,
+                wireframe: false,
+                polygonOffset: true,
+                polygonOffsetFactor: 100,
+                polygonOffsetUnits: 2
+            });
+            this.fill = new THREE.Mesh(this.fillGeometry, this.fillMaterial);
         }
         start(x, y, z, force, unproject, mirrorOn) {
             drawingScene.add(this.mesh);
+            this.mesh.add(this.fill)
 
             switch (mirrorOn) {
                 case "x":
@@ -108,21 +117,29 @@ let draw = {
             renderer.render(scene, camera);
 
             let vert = this.geometry.attributes.position.array;
-            var fillGeometry = new THREE.BufferGeometry();
-            fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
-            let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(fillGeometry.attributes.position.array, null, 3)), 1);
-            fillGeometry.setIndex(triangles);
-            var fillMaterial = new THREE.MeshBasicMaterial({
-                color: 0xff0000,
-                side: THREE.DoubleSide,
-                polygonOffset: 5000,
-                polygonOffsetFactor: 100,
-                polygonOffsetUnits: 2
-            });
-            fillGeometry.computeBoundingSphere();
-            console.log(fillGeometry)
-            var mesh = new THREE.Mesh(fillGeometry, fillMaterial);
-            this.mesh.add(mesh);
+            this.fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
+            let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
+            this.fillGeometry.setIndex(triangles);
+            this.fillGeometry.computeBoundingSphere();
+
+            // this.fillGeometry.computeBoundingSphere();
+
+            // let vert = this.geometry.attributes.position.array;
+            // var fillGeometry = new THREE.BufferGeometry();
+            // fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
+            // let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(fillGeometry.attributes.position.array, null, 3)), 1);
+            // fillGeometry.setIndex(triangles);
+            // var fillMaterial = new THREE.MeshBasicMaterial({
+            //     color: 0xff0000,
+            //     side: THREE.DoubleSide,
+            //     polygonOffset: 5000,
+            //     polygonOffsetFactor: 100,
+            //     polygonOffsetUnits: 2
+            // });
+            // fillGeometry.computeBoundingSphere();
+            // console.log(fillGeometry)
+            // var mesh = new THREE.Mesh(fillGeometry, fillMaterial);
+            // this.mesh.add(mesh);
 
             renderer.render(scene, camera);
 
@@ -173,20 +190,44 @@ let draw = {
                 v3.unproject(camera);
             }
             var v4 = new THREE.Vector4(v3.x, v3.y, v3.z, force);
+
             if (unproject) {
                 this.appendToBuffer(v4);
                 let pt = this.getAveragePoint(0);
                 if (pt) {
                     //stroke
                     this.mesh.geometry.userData.force.push(pt.w);
+
                     this.geometry.attributes.position.array = this.Float32Concat(this.geometry.attributes.position.array, new Float32Array([pt.x, pt.y, pt.z]));
                     this.geometry.attributes.position.count = this.geometry.attributes.position.count + 3
                     this.geometry.attributes.position.needsUpdate = true;
 
-                    //fill
-                    // this.fillShape.lineTo(pt.x, pt.y)
-                    // console.log(this.fillShape)
-                    // this.fillGeometry = new THREE.ExtrudeGeometry(this.fillShape, this.fillShapeExtrudeSettings)
+                    if (this.geometry.attributes.position.count > 3) {
+
+                        console.log("called")
+                        //this.fillGeometry = new THREE.BufferGeometry();
+                        let vert = this.geometry.attributes.position.array;
+                        this.fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
+                        this.fillGeometry.attributes.position.needsUpdate = true;
+                        this.fillGeometry.computeBoundingSphere();
+
+                        let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
+                        this.fillGeometry.index = triangles;
+                        this.fillGeometry.index.needsUpdate = true;
+
+                        this.fillGeometry.needsUpdate = true;
+                    }
+
+                    // this.fillGeometry.setIndex(triangles);
+
+                    // this.fillGeometry.attributes.position.array = this.Float32Concat(this.fillGeometry.attributes.position.array, new Float32Array([pt.x, pt.y, pt.z]));
+                    // this.fillGeometry.attributes.position.count = this.fillGeometry.attributes.position.count + 3;
+                    // this.fillGeometry.attributes.position.needsUpdate = true;
+
+                    // this.triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
+                    // this.fillGeometry.setIndex(this.triangles);
+                    // console.log(this.fillGeometry)
+                    // this.fillGeometry.computeBoundingSphere();
                 }
             } else {
                 this.mesh.geometry.userData.force.push(force);
@@ -194,8 +235,6 @@ let draw = {
                 this.geometry.attributes.position.count = this.geometry.attributes.position.count + 3
                 this.geometry.attributes.position.needsUpdate = true;
 
-                // this.fillShape.lineTo(v3.x, v3.y, v3.z)
-                // this.fillGeometry.verticesNeedUpdate = true;
             }
             this.setGeometry();
             renderer.autoClear = false;
