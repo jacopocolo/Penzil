@@ -36,49 +36,30 @@ export default {
   methods: {
     emitStroke: function () {
       this.$emit("stroke", {
+        visible: this.stroke,
         lineWidth: this.strokeWidth / 500,
         color: this.strokeColor,
       });
     },
     emitFill: function () {
-      this.$emit("fill", { color: this.fillColor });
+      this.$emit("fill", { visible: this.fill, color: this.fillColor });
     },
   },
   watch: {
-    stroke: function (val) {
-      if (val == true) {
-        this.emitStroke();
-      } else {
-        this.$emit("stroke", false);
-      }
+    stroke: function () {
+      this.emitStroke();
     },
     strokeWidth: function () {
-      if (this.stroke == true) {
-        this.emitStroke();
-      } else {
-        this.$emit("stroke", false);
-      }
+      this.emitStroke();
     },
     strokeColor: function () {
-      if (this.stroke == true) {
-        this.emitStroke();
-      } else {
-        this.$emit("stroke", false);
-      }
+      this.emitStroke();
     },
-    fill: function (val) {
-      if (val == true) {
-        this.emitFill();
-      } else {
-        this.$emit("fill", false);
-      }
+    fill: function () {
+      this.emitFill();
     },
     fillColor: function () {
-      if (this.fill == true) {
-        this.emitFill();
-      } else {
-        this.$emit("fill", false);
-      }
+      this.emitFill();
     },
   },
   mounted() {

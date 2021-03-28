@@ -38,8 +38,8 @@ export default {
   props: {
     selectedTool: String,
     mirror: [Boolean, String],
-    stroke: [Boolean, Object],
-    fill: [Boolean, Object],
+    stroke: [Object],
+    fill: [Object],
   },
   methods: {
     updateMouseCoordinates: function (event) {

@@ -148,7 +148,7 @@ export default {
       let target = new THREE.Vector3();
       target = cameraControls.getTarget(target);
       //This is a slight hack to allow the triangulate function that generates the fill to work in any scenario. See: https://github.com/mapbox/earcut/issues/21
-      let adj = 0.00001;
+      let adj = 0.0001;
 
       let lookAt = function (x, y, z) {
         cameraControls.dampingFactor = 0.5;

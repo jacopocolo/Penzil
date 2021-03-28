@@ -23,26 +23,29 @@ let draw = {
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
             this.material = new MeshLineMaterial({
-                lineWidth: this.stroke ? this.stroke.lineWidth : 0.01,
+                lineWidth: this.stroke.visible ? this.stroke.lineWidth : 0.001,
                 sizeAttenuation: 1,
-                color: this.stroke.color,
+                color: this.stroke.visible ? this.stroke.color : 0xFFFFFF,
                 side: THREE.DoubleSide,
                 fog: false,
                 wireframe: false,
-                transparent: this.stroke ? false : true,
-                opacity: !this.stroke ? 0 : 1,
+                transparent: this.stroke.visible ? false : true,
+                opacity: !this.stroke.visible ? 1 : 1,
             });
             this.mesh = new THREE.Mesh(this.line, this.material);
             this.uuid = this.mesh.uuid;
-            this.line.userData.points = new Array();
-            this.line.userData.force = new Array();
+            // this.line.userData.points = new Array();
+            // this.line.userData.force = new Array();
+
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
             this.bufferPoints = new Array();
             this.size = 8;
 
-            this.mesh.userData.stroke = stroke;
-            this.mesh.userData.fill = fill;
+            this.mesh.userData.vertices = new Array();
+            this.mesh.userData.stroke = { visible: stroke.visible, color: stroke.color, lineWidth: stroke.lineWidth };
+            this.mesh.userData.stroke.force = new Array();
+            this.mesh.userData.fill = { visible: fill.visible, color: fill.color };
 
             this.fill = fill;
             this.fillGeometry = new THREE.BufferGeometry();
@@ -64,7 +67,8 @@ let draw = {
         }
         start(x, y, z, force, unproject, mirrorOn) {
             drawingScene.add(this.mesh);
-            if (this.fill) {
+
+            if (this.fill.visible) {
                 this.mesh.add(this.fillMesh)
             }
 
@@ -101,6 +105,7 @@ let draw = {
             renderer.render(scene, camera);
 
             this.geometry.verticesNeedsUpdate = true;
+            this.stroke.visible ? '' : this.mesh.material.opacity = 0;
             renderer.render(scene, camera);
 
             this.mesh.position.set(
@@ -138,32 +143,14 @@ let draw = {
             let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
             this.fillGeometry.setIndex(triangles);
             this.fillGeometry.computeBoundingSphere();
-
-            // this.fillGeometry.computeBoundingSphere();
-
-            // let vert = this.geometry.attributes.position.array;
-            // var fillGeometry = new THREE.BufferGeometry();
-            // fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
-            // let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(fillGeometry.attributes.position.array, null, 3)), 1);
-            // fillGeometry.setIndex(triangles);
-            // var fillMaterial = new THREE.MeshBasicMaterial({
-            //     color: 0xff0000,
-            //     side: THREE.DoubleSide,
-            //     polygonOffset: 5000,
-            //     polygonOffsetFactor: 100,
-            //     polygonOffsetUnits: 2
-            // });
-            // fillGeometry.computeBoundingSphere();
-            // console.log(fillGeometry)
-            // var mesh = new THREE.Mesh(fillGeometry, fillMaterial);
-            // this.mesh.add(mesh);
-
             renderer.render(scene, camera);
+
+            console.log(this.mesh.uuid)
 
             let uuid = this.uuid;
             let vertices = this.geometry.attributes.position.array;
-            let force = this.mesh.geometry.userData.force;
-            let width = this.material.lineWidth;
+            let stroke = this.mesh.userData.stroke;
+            let fill = this.mesh.userData.fill;
             let position = new THREE.Vector3();
             this.mesh.getWorldPosition(position);
             let quaternion = new THREE.Quaternion();
@@ -184,9 +171,8 @@ let draw = {
                 redo: function () {
                     draw.fromVertices(
                         vertices,
-                        force,
-                        //color,
-                        width,
+                        stroke,
+                        fill,
                         mirrorOn,
                         uuid,
                         //true
@@ -213,7 +199,7 @@ let draw = {
                 let pt = this.getAveragePoint(0);
                 if (pt) {
                     //stroke
-                    this.mesh.geometry.userData.force.push(pt.w);
+                    this.mesh.userData.stroke.force.push(pt.w);
 
                     this.geometry.attributes.position.array = this.Float32Concat(this.geometry.attributes.position.array, new Float32Array([pt.x, pt.y, pt.z]));
                     this.geometry.attributes.position.count = this.geometry.attributes.position.count + 3
@@ -244,7 +230,7 @@ let draw = {
                     // this.fillGeometry.computeBoundingSphere();
                 }
             } else {
-                this.mesh.geometry.userData.force.push(force);
+                this.mesh.userData.stroke.force.push(force);
                 this.geometry.attributes.position.array = this.Float32Concat(this.geometry.attributes.position.array, new Float32Array([v3.x, v3.y, v3.z]));
                 this.geometry.attributes.position.count = this.geometry.attributes.position.count + 3
                 this.geometry.attributes.position.needsUpdate = true;
@@ -301,7 +287,7 @@ let draw = {
                 this.geometry.attributes.position.array,
                 (p) => {
                     let length = this.geometry.attributes.position.array.length / 3;
-                    let force = this.mesh.geometry.userData.force;
+                    let force = this.mesh.userData.stroke.force;
                     function map(n, start1, stop1, start2, stop2) {
                         return (
                             ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2
@@ -353,14 +339,7 @@ let draw = {
         }
     },
     onStart: function (x, y, z, force, unproject, mirrorOn, stroke, fill) {
-
-        let colorStroke = new THREE.Color(0xffffff);
-        colorStroke.setHex(Math.random() * 0xffffff);
-
-        let colorFill = new THREE.Color(0xffffff);
-        colorFill.setHex(Math.random() * 0xffffff);
-
-        //this draw acceppts two arguments: stroke and fill. They can be objects defining material properties or can be just false
+        //this draw acceppts two arguments: stroke and fill. stroke: { visible: bool, color: 'red', lineWidth: 3 }, fill: { visible: bool, color: 'black' },
         //I should gate the possibility of drawing something without stroke or fill
         this.l = new this.draw(stroke, fill);
         this.l.start(mirrorOn);
@@ -374,19 +353,20 @@ let draw = {
     onCancel: function () {
         this.l ? this.l.cancel() : null;
     },
-    fromVertices(vertices, force, lineWidth, stroke, fill, mirrorOn, uuid, position, quaternion, scale, matrix) {
+    fromVertices(vertices, stroke, fill, mirrorOn, uuid, position, quaternion, scale, matrix) {
+        this.l = new this.draw(stroke, fill);
         this.onStart(0, 0, 0, 0, false, mirrorOn, stroke, fill);
-        this.l.lineWidth = lineWidth;
         this.l.geometry.attributes.position.array = vertices;
         this.l.geometry.attributes.position.count = vertices.length / 3;
         this.l.geometry.attributes.position.needsUpdate = true;
-        this.l.mesh.geometry.userData.force = force;
+        this.l.mesh.userData.stroke.force = stroke.force;
         this.l.setGeometry();
         renderer.autoClear = false;
         renderer.clearDepth();
         renderer.render(drawingScene, camera);
-        this.onEnd(mirrorOn);
         this.l.mesh.uuid = uuid;
+        this.onEnd(mirrorOn);
+
         if (matrix) {
             this.l.mesh.applyMatrix4(matrix)
         }
