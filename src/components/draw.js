@@ -356,6 +356,7 @@ let draw = {
     fromVertices(vertices, stroke, fill, mirrorOn, uuid, position, quaternion, scale, matrix) {
         this.l = new this.draw(stroke, fill);
         this.onStart(0, 0, 0, 0, false, mirrorOn, stroke, fill);
+        console.log(this.l.geometry.attributes.position.array)
         this.l.geometry.attributes.position.array = vertices;
         this.l.geometry.attributes.position.count = vertices.length / 3;
         this.l.geometry.attributes.position.needsUpdate = true;
@@ -364,9 +365,8 @@ let draw = {
         renderer.autoClear = false;
         renderer.clearDepth();
         renderer.render(drawingScene, camera);
-        this.l.mesh.uuid = uuid;
+        if (uuid) { this.l.mesh.uuid = uuid; }
         this.onEnd(mirrorOn);
-
         if (matrix) {
             this.l.mesh.applyMatrix4(matrix)
         }
@@ -392,7 +392,6 @@ let draw = {
                 scale.z
             );
         }
-
         scene.add(this.l.mesh)
         renderer.render(scene, camera)
     }

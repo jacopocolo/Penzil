@@ -14,6 +14,7 @@
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
   <!-- <import /> -->
   <Canvas :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
+  <Menu />
 </template>
 
 <script>
@@ -30,6 +31,7 @@ import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
 import { drawingPlane } from "./components/drawingPlane.js";
 import LineSettings from "./components/LineSettings.vue";
+import Menu from "./components/Menu.vue";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
@@ -65,6 +67,7 @@ export default {
     TransormToolbar,
     ViewportCube,
     UndoRedo,
+    Menu,
     //Import,
   },
   data() {
