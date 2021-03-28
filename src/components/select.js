@@ -527,7 +527,7 @@ let select = {
             if (bool) {
                 object.material.color = new THREE.Color(this.color);
             } else {
-                object.material.color = new THREE.Color(object.userData.lineColor);
+                object.userData.stroke != false ? object.material.color = new THREE.Color(object.userData.stroke.color) : '';
             }
         }
         deselect() {

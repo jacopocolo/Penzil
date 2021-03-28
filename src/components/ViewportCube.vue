@@ -147,6 +147,8 @@ export default {
     evalFaceIndexAndRepositionCamera: function (index) {
       let target = new THREE.Vector3();
       target = cameraControls.getTarget(target);
+      //This is a slight hack to allow the triangulate function that generates the fill to work in any scenario. See: https://github.com/mapbox/earcut/issues/21
+      let adj = 0.00001;
 
       let lookAt = function (x, y, z) {
         cameraControls.dampingFactor = 0.5;
@@ -160,40 +162,40 @@ export default {
 
       switch (index) {
         case 0:
-          lookAt(target.x + 10, target.y, target.z);
+          lookAt(target.x + 10, target.y + adj, target.z + adj);
           break;
         case 1:
-          lookAt(target.x + 10, target.y, target.z);
+          lookAt(target.x + 10, target.y + adj, target.z + adj);
           break;
         case 2:
-          lookAt(target.x - 10, target.y, target.z);
+          lookAt(target.x - 10, target.y + adj, target.z + adj);
           break;
         case 3:
-          lookAt(target.x - 10, target.y, target.z);
+          lookAt(target.x - 10, target.y + adj, target.z + adj);
           break;
         case 4:
-          lookAt(target.x, target.y + 10, target.z);
+          lookAt(target.x, target.y + 10, target.z + adj);
           break;
         case 5:
-          lookAt(target.x, target.y + 10, target.z);
+          lookAt(target.x, target.y + 10, target.z + adj);
           break;
         case 6:
-          lookAt(target.x, target.y - 10, target.z);
+          lookAt(target.x, target.y - 10, target.z + adj);
           break;
         case 7:
-          lookAt(target.x, target.y - 10, target.z);
+          lookAt(target.x, target.y - 10, target.z + adj);
           break;
         case 8:
-          lookAt(target.x, target.y, target.z + 10);
+          lookAt(target.x + adj, target.y, target.z + 10);
           break;
         case 9:
-          lookAt(target.x, target.y, target.z + 10);
+          lookAt(target.x + adj, target.y, target.z + 10);
           break;
         case 10:
-          lookAt(target.x, target.y, target.z - 10);
+          lookAt(target.x + adj, target.y, target.z - 10);
           break;
         case 11:
-          lookAt(target.x, target.y, target.z - 10);
+          lookAt(target.x + adj, target.y, target.z - 10);
           break;
         default:
           console.log(index);

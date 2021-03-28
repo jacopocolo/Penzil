@@ -1,3 +1,9 @@
+// {
+//     vertices: [],
+//     stroke: { visible: true, force: [0], color: 'red', width: 3 },
+//     fill: { visible: false, color: 'black' },
+//   }
+
 import * as THREE from "three";
 import { Earcut } from 'three/src/extras/Earcut.js';
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
@@ -9,18 +15,22 @@ import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 let draw = {
     l: undefined,
     draw: class {
-        constructor() {
+        constructor(stroke, fill) {
+
+            this.stroke = stroke;
             this.line = new MeshLine();
             this.geometry = new THREE.BufferGeometry();
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
             this.material = new MeshLineMaterial({
-                lineWidth: 0.01,
+                lineWidth: this.stroke ? this.stroke.lineWidth : 0.01,
                 sizeAttenuation: 1,
-                color: new THREE.Color(0x51074a),
+                color: this.stroke.color,
                 side: THREE.DoubleSide,
                 fog: false,
-                wireframe: false
+                wireframe: false,
+                transparent: this.stroke ? false : true,
+                opacity: !this.stroke ? 0 : 1,
             });
             this.mesh = new THREE.Mesh(this.line, this.material);
             this.uuid = this.mesh.uuid;
@@ -28,28 +38,35 @@ let draw = {
             this.line.userData.force = new Array();
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
-            this.mesh.userData.lineColor = new THREE.Color(0x51074a);
             this.bufferPoints = new Array();
-            this.size = 4;
+            this.size = 8;
 
+            this.mesh.userData.stroke = stroke;
+            this.mesh.userData.fill = fill;
+
+            this.fill = fill;
             this.fillGeometry = new THREE.BufferGeometry();
             this.fillVertices = new Float32Array([]);
             this.fillGeometry.setAttribute("position", new THREE.BufferAttribute(this.fillVertices, 3));
             this.triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
             this.fillGeometry.setIndex(this.triangles);
             this.fillMaterial = new THREE.MeshBasicMaterial({
-                color: 0xff0000,
+                color: this.fill.color,
                 side: THREE.DoubleSide,
                 wireframe: false,
-                polygonOffset: true,
+                polygonOffset: this.stroke ? true : false,
                 polygonOffsetFactor: 100,
-                polygonOffsetUnits: 2
+                polygonOffsetUnits: 4,
+                transparent: !this.fill,
             });
-            this.fill = new THREE.Mesh(this.fillGeometry, this.fillMaterial);
+            this.fillMesh = new THREE.Mesh(this.fillGeometry, this.fillMaterial);
+
         }
         start(x, y, z, force, unproject, mirrorOn) {
             drawingScene.add(this.mesh);
-            this.mesh.add(this.fill)
+            if (this.fill) {
+                this.mesh.add(this.fillMesh)
+            }
 
             switch (mirrorOn) {
                 case "x":
@@ -202,10 +219,7 @@ let draw = {
                     this.geometry.attributes.position.count = this.geometry.attributes.position.count + 3
                     this.geometry.attributes.position.needsUpdate = true;
 
-                    if (this.geometry.attributes.position.count > 3) {
-
-                        console.log("called")
-                        //this.fillGeometry = new THREE.BufferGeometry();
+                    if (this.geometry.attributes.position.count > 3 && this.fill != false) {
                         let vert = this.geometry.attributes.position.array;
                         this.fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
                         this.fillGeometry.attributes.position.needsUpdate = true;
@@ -338,8 +352,17 @@ let draw = {
             renderer.render(scene, camera);
         }
     },
-    onStart: function (x, y, z, force, unproject, mirrorOn) {
-        this.l = new this.draw();
+    onStart: function (x, y, z, force, unproject, mirrorOn, stroke, fill) {
+
+        let colorStroke = new THREE.Color(0xffffff);
+        colorStroke.setHex(Math.random() * 0xffffff);
+
+        let colorFill = new THREE.Color(0xffffff);
+        colorFill.setHex(Math.random() * 0xffffff);
+
+        //this draw acceppts two arguments: stroke and fill. They can be objects defining material properties or can be just false
+        //I should gate the possibility of drawing something without stroke or fill
+        this.l = new this.draw(stroke, fill);
         this.l.start(mirrorOn);
     },
     onMove: function (x, y, z, force, unproject) {
@@ -351,8 +374,8 @@ let draw = {
     onCancel: function () {
         this.l ? this.l.cancel() : null;
     },
-    fromVertices(vertices, force, lineWidth, mirrorOn, uuid, position, quaternion, scale, matrix) {
-        this.onStart(0, 0, 0, 0, false, mirrorOn);
+    fromVertices(vertices, force, lineWidth, stroke, fill, mirrorOn, uuid, position, quaternion, scale, matrix) {
+        this.onStart(0, 0, 0, 0, false, mirrorOn, stroke, fill);
         this.l.lineWidth = lineWidth;
         this.l.geometry.attributes.position.array = vertices;
         this.l.geometry.attributes.position.count = vertices.length / 3;

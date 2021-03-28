@@ -4,6 +4,7 @@
     :cameraResetDisabled="cameraResetDisabled"
   />
   <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
+  <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
   <transorm-toolbar
     :top="transformToolbar.top"
     :left="transformToolbar.left"
@@ -12,7 +13,7 @@
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
   <!-- <import /> -->
-  <Canvas :selectedTool="tool" :mirror="mirror" />
+  <Canvas :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
 </template>
 
 <script>
@@ -28,6 +29,7 @@ import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
 import { drawingPlane } from "./components/drawingPlane.js";
+import LineSettings from "./components/LineSettings.vue";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
@@ -58,7 +60,7 @@ export default {
     // Toast,
     // ToolSelector,
     Canvas,
-    // LineSettings,
+    LineSettings,
     ToolSelector,
     TransormToolbar,
     ViewportCube,
@@ -69,6 +71,8 @@ export default {
     return {
       tool: "draw",
       toolHistory: ["draw"],
+      stroke: { lineWidth: 0.01, color: 0xff0000 },
+      fill: { color: 0x00ff00 },
       mirror: false,
       quaternion: undefined,
       cameraResetDisabled: false,
@@ -281,6 +285,12 @@ export default {
     },
     setTransformToolbarDisplay: function (val) {
       this.transformToolbar.display = val;
+    },
+    setStroke: function (val) {
+      this.stroke = val;
+    },
+    setFill: function (val) {
+      this.fill = val;
     },
   },
   mounted() {

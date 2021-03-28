@@ -38,6 +38,8 @@ export default {
   props: {
     selectedTool: String,
     mirror: [Boolean, String],
+    stroke: [Boolean, Object],
+    fill: [Boolean, Object],
   },
   methods: {
     updateMouseCoordinates: function (event) {
@@ -79,7 +81,9 @@ export default {
               0,
               this.mouse.force,
               true,
-              this.mirror
+              this.mirror,
+              this.stroke,
+              this.fill
             );
             break;
           case "erase":
