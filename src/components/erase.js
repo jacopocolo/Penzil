@@ -245,10 +245,10 @@ let erase = {
 
         let uuid = object.uuid;
         let vertices = object.geometry.points;
-        let force = object.geometry.userData.force;
-        let mirrorOn = object.userData.mirror;
-        let width = object.material.lineWidth;
+        let stroke = object.userData.stroke;
+        let fill = object.userData.fill;
         let position = new THREE.Vector3();
+        let mirrorOn = false;
         object.getWorldPosition(position);
         let quaternion = new THREE.Quaternion();
         object.getWorldQuaternion(quaternion);
@@ -261,13 +261,16 @@ let erase = {
         mirror.eraseMirrorOf(object);
         object.material.dispose();
 
+        if (object.userData.fill.visible) {
+            object.children[0].material.dispose();
+        }
+
         undoManager.add({
             undo: function () {
                 draw.fromVertices(
                     vertices,
-                    force,
-                    //color,
-                    width,
+                    stroke,
+                    fill,
                     mirrorOn,
                     uuid,
                     //true

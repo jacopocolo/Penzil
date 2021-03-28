@@ -49,7 +49,7 @@ export default {
 div {
   z-index: 2;
   position: absolute;
-  top: 0;
+  bottom: 0;
   right: 10px;
 }
 </style>
