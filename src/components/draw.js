@@ -98,7 +98,7 @@ let draw = {
         move(x, y, z, force, unproject) {
             this.addVertex(x, y, z, force, unproject)
         }
-        end(mirrorOn) {
+        end_internal(mirrorOn) {
             scene.add(this.mesh);
             drawingScene.clear();
             renderer.autoClear = true;
@@ -144,8 +144,10 @@ let draw = {
             this.fillGeometry.setIndex(triangles);
             this.fillGeometry.computeBoundingSphere();
             renderer.render(scene, camera);
+        }
+        end(mirrorOn) {
 
-            console.log(this.mesh.uuid)
+            this.end_internal(mirrorOn);
 
             let uuid = this.uuid;
             let vertices = this.geometry.attributes.position.array;
@@ -350,6 +352,9 @@ let draw = {
     onEnd: function (mirrorOn) {
         this.l.end(mirrorOn);
     },
+    onEnd_internal: function (mirrorOn) {
+        this.l.end_internal(mirrorOn);
+    },
     onCancel: function () {
         this.l ? this.l.cancel() : null;
     },
@@ -366,7 +371,7 @@ let draw = {
         renderer.clearDepth();
         renderer.render(drawingScene, camera);
         if (uuid) { this.l.mesh.uuid = uuid; }
-        this.onEnd(mirrorOn);
+        this.onEnd_internal(mirrorOn);
         if (matrix) {
             this.l.mesh.applyMatrix4(matrix)
         }

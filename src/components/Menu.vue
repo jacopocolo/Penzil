@@ -2,12 +2,14 @@
   <div>
     <Save />
     <Load />
+    <Export />
   </div>
 </template>
 
 <script>
 import Save from "./Save.vue";
 import Load from "./Load.vue";
+import Export from "./Export.vue";
 
 export default {
   name: "Import",
@@ -15,6 +17,7 @@ export default {
   components: {
     Load,
     Save,
+    Export,
   },
   data() {
     return {};
