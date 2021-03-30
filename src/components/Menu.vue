@@ -3,6 +3,7 @@
     <Save />
     <Load />
     <Export />
+    <export-video />
   </div>
 </template>
 
@@ -10,6 +11,7 @@
 import Save from "./Save.vue";
 import Load from "./Load.vue";
 import Export from "./Export.vue";
+import ExportVideo from "./ExportVideo.vue";
 
 export default {
   name: "Import",
@@ -18,6 +20,7 @@ export default {
     Load,
     Save,
     Export,
+    ExportVideo,
   },
   data() {
     return {};

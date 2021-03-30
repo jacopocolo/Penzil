@@ -63,7 +63,7 @@ let draw = {
                 transparent: !this.fill,
             });
             this.fillMesh = new THREE.Mesh(this.fillGeometry, this.fillMaterial);
-
+            this.fillMesh.layers.set(1);
         }
         start(x, y, z, force, unproject, mirrorOn) {
             drawingScene.add(this.mesh);
