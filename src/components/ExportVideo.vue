@@ -1,5 +1,6 @@
 <template>
-  <button @click="exportToMp4">Export video</button>
+  <button @click="exportToMp4('360')">Export 360</button>
+  <button @click="exportToMp4('bf')">Export b&f</button>
 </template>
 
 <script>
@@ -15,7 +16,7 @@ export default {
   },
   methods: {
     //api here: https://github.com/TrevorSundberg/h264-mp4-encoder
-    exportToMp4: function () {
+    exportToMp4: function (loop) {
       const download = (url, filename) => {
         const anchor = document.createElement("a");
         anchor.href = url;
@@ -28,13 +29,55 @@ export default {
         encoder.width = ctx.drawingBufferWidth;
         encoder.height = ctx.drawingBufferHeight;
         encoder.initialize();
-        let length = 119;
+        let length = 240;
         let currentLength = 0;
+        cameraControls.enabled = false;
         camera.layers.disable(0);
+        let startAzimuthAngle = cameraControls.azimuthAngle;
+        let polarAngle = cameraControls.polarAngle;
+        let pos = [];
+
+        function easing(loop) {
+          //easing function: http://gizma.com/easing/
+
+          function easeInOutQuad(t, b, c, d) {
+            t /= d / 2;
+            if (t < 1) return (c / 2) * t * t + b;
+            t--;
+            return (-c / 2) * (t * (t - 2) - 1) + b;
+          }
+
+          function easeInOutQuadYoyo(t, b, c, d) {
+            if (t <= d / 2) {
+              pos.push(easeInOutQuad(t, b, c, d / 2));
+              let v = pos[pos.length - 1];
+              return v;
+            } else {
+              let v = pos.pop();
+              return v;
+            }
+          }
+          if (loop == "360") {
+            return easeInOutQuad(
+              currentLength,
+              startAzimuthAngle,
+              360 * THREE.MathUtils.DEG2RAD,
+              length
+            );
+          } else if (loop == "bf") {
+            return easeInOutQuadYoyo(
+              currentLength,
+              startAzimuthAngle,
+              startAzimuthAngle + 60 * THREE.MathUtils.DEG2RAD,
+              length
+            );
+          }
+        }
 
         function animate() {
           renderer.render(scene, camera);
-          cameraControls.rotate(6 * THREE.MathUtils.DEG2RAD, 0, true);
+          let f = easing(loop);
+          cameraControls.rotateTo(f, polarAngle, false);
           var buf = new Uint8Array(
             ctx.drawingBufferWidth * ctx.drawingBufferHeight * 4
           );
@@ -74,6 +117,7 @@ export default {
             );
             encoder.delete();
             camera.layers.enable(0);
+            cameraControls.enabled = true;
           }
         }
         animate();

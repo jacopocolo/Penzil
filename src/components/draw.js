@@ -58,7 +58,7 @@ let draw = {
                 side: THREE.DoubleSide,
                 wireframe: false,
                 polygonOffset: this.stroke ? true : false,
-                polygonOffsetFactor: 100,
+                polygonOffsetFactor: 10,
                 polygonOffsetUnits: 4,
                 transparent: !this.fill,
             });
