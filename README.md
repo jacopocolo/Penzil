@@ -9,8 +9,8 @@ Todo:
 - [ ] Draw
     - [X] Transition Geometry to BufferGeometry. [See this](https://stackoverflow.com/questions/41177425/
     three-js-dynamically-add-points-to-a-points-geometry-does-not-render) and [this thread](https://discourse.threejs.org/t/three-geometry-will-be-removed-from-core-with-r125/22401/5).
-    - [ ] Line width
-    - [ ] Line color
+    - [X] Line width
+    - [X] Line color
     - [ ] Line mirror
 - [ ] Undo-redo
     - [x] Draw
@@ -28,12 +28,12 @@ Todo:
 - [ ] Cancel event for Line, Erase, Select
 - [ ] Small parser for displaying updates (see: https://www.w3schools.com/xml/xml_parser.asp)
 - [x] Eraser
-- [ ] Two finger camera controls: rotate and zoom
-- [ ] Export to video
-- [ ] Export geometry
-- [ ] Save
+- [X] Two finger camera controls: rotate and zoom
+- [X] Export to video
+- [X] Export geometry
+- [X] Save
 - [ ] Save in local storage
-- [ ] Load
+- [X] Load
 - [ ] Drawing plane
 - [ ] CSS and styling
 
