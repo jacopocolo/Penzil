@@ -7,7 +7,7 @@
 import * as THREE from "three";
 import { Earcut } from 'three/src/extras/Earcut.js';
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
-import { scene, drawingScene, renderer, camera } from "../App.vue";
+import { scene, drawingScene, renderer, camera, sphere } from "../App.vue";
 import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
@@ -193,6 +193,16 @@ let draw = {
                 v3.unproject(camera);
             }
             var v4 = new THREE.Vector4(v3.x, v3.y, v3.z, force);
+            let raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+            try {
+                var intersectedObject = raycaster.intersectObjects([sphere])[0];
+                var nt = intersectedObject.point;
+                v4 = new THREE.Vector4(nt.x, nt.y, nt.z, force);
+            } catch (err) {
+                console.log(err);
+                return
+            }
 
             if (unproject) {
                 this.appendToBuffer(v4);

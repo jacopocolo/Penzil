@@ -49,7 +49,7 @@ export let camera = new THREE.OrthographicCamera(
   0,
   20
 );
-export let scene, drawingScene, cameraControls, context, vm;
+export let scene, drawingScene, cameraControls, context, vm, sphere;
 
 var main, drawingCanvas, clock;
 
@@ -203,6 +203,15 @@ export default {
       var material = new THREE.MeshBasicMaterial({ color: 0xffc75f });
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
+
+      const sgeometry = new THREE.SphereGeometry(1, 22, 22);
+      const smaterial = new THREE.MeshBasicMaterial({
+        color: 0xffff00,
+        transparent: true,
+        opacity: 0.1,
+      });
+      sphere = new THREE.Mesh(sgeometry, smaterial);
+      scene.add(sphere);
 
       drawingPlane.setUp();
 
