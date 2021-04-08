@@ -28,40 +28,56 @@ export default {
     };
   },
   methods: {
+    easeInOutQuad(t, b, c, d) {
+      t /= d / 2;
+      if (t < 1) return (c / 2) * t * t + b;
+      t--;
+      return (-c / 2) * (t * (t - 2) - 1) + b;
+    },
+    easeInOutQuadYoyo(t, b, c, d) {
+      if (t <= d / 2) {
+        this.pos.push(this.easeInOutQuad(t, b, c, d / 2));
+        let v = this.pos[this.pos.length - 1];
+        return v;
+      } else {
+        let v = this.pos.pop();
+        return v;
+      }
+    },
     easing(loop) {
       //easing function: http://gizma.com/easing/
-
-      function easeInOutQuad(t, b, c, d) {
-        t /= d / 2;
-        if (t < 1) return (c / 2) * t * t + b;
-        t--;
-        return (-c / 2) * (t * (t - 2) - 1) + b;
-      }
-
-      function easeInOutQuadYoyo(t, b, c, d) {
-        if (t <= d / 2) {
-          this.pos.push(easeInOutQuad(t, b, c, d / 2));
-          let v = this.pos[this.pos.length - 1];
-          return v;
-        } else {
-          let v = this.pos.pop();
-          return v;
-        }
-      }
       if (loop == "360") {
-        return easeInOutQuad(
+        return this.easeInOutQuad(
           this.currentLength,
           this.startAzimuthAngle,
           360 * THREE.MathUtils.DEG2RAD,
           this.length
         );
       } else if (loop == "bf") {
-        return easeInOutQuadYoyo(
+        return this.easeInOutQuadYoyo(
           this.currentLength,
           this.startAzimuthAngle,
           this.startAzimuthAngle + 60 * THREE.MathUtils.DEG2RAD,
           this.length
         );
+      }
+    },
+    animate(record) {
+      console.log(record);
+      renderer.render(scene, camera);
+      let f = this.easing(this.loop);
+      cameraControls.rotateTo(f, this.polarAngle, false);
+      if (
+        this.previewing &&
+        !this.recording &&
+        this.currentLength < this.length
+      ) {
+        requestAnimationFrame(this.animate);
+        this.currentLength++;
+      } else {
+        this.currentLength = 0;
+        requestAnimationFrame(this.animate);
+        //cameraControls.enabled = true;
       }
     },
     previewExport: function (loop) {
@@ -70,24 +86,8 @@ export default {
       this.loop = loop;
       this.previewing = true;
       cameraControls.enabled = false;
-
-      function e(loop) {
-        () => {
-          this.easing(loop);
-        };
-      }
-
-      function animate() {
-        renderer.render(scene, camera);
-        let f = e(loop);
-        cameraControls.rotateTo(f, this.polarAngle, false);
-        if (this.previewing && !this.recording) {
-          requestAnimationFrame(animate);
-        } else {
-          cameraControls.enabled = true;
-        }
-      }
-      animate();
+      camera.layers.disable(0);
+      this.animate();
     },
     //api here: https://github.com/TrevorSundberg/h264-mp4-encoder
     // exportToMp4: function (loop) {
