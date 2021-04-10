@@ -1,16 +1,21 @@
 <template>
   <div v-if="previewing" class="fade">
-    <button>Cancel</button>
-    <button>Record</button>
+    <div class="fade-controls">
+      <button @click="cancel()">Cancel</button>
+      <button @click="startRecording()" :disabled="recording" v>Record</button>
+      <span v-if="recording"
+        >Recording frame {{ currentLength }} of {{ length }}</span
+      >
+    </div>
   </div>
-  <button @click="previewExport('360')">Export 360</button>
-  <button @click="previewExport('bf')">Export b&f</button>
+  <button @click="startPreview('360')">Export 360</button>
+  <button @click="startPreview('bf')">Export b&f</button>
 </template>
 
 <script>
 import * as THREE from "three";
 import { renderer, camera, scene, cameraControls } from "../App.vue";
-// import * as HME from "h264-mp4-encoder";
+import * as HME from "h264-mp4-encoder";
 
 export default {
   name: "Import",
@@ -62,103 +67,118 @@ export default {
         );
       }
     },
-    animate(record) {
-      console.log(record);
+    animate(ctx, encoder) {
+      if (!this.previewing) {
+        return;
+      }
       renderer.render(scene, camera);
       let f = this.easing(this.loop);
       cameraControls.rotateTo(f, this.polarAngle, false);
-      if (
-        this.previewing &&
-        !this.recording &&
-        this.currentLength < this.length
-      ) {
-        requestAnimationFrame(this.animate);
-        this.currentLength++;
+      if (!this.recording) {
+        //animate in loop
+        if (this.currentLength < this.length) {
+          requestAnimationFrame(this.animate);
+          this.currentLength++;
+        } else {
+          this.currentLength = 0;
+          requestAnimationFrame(this.animate);
+          //cameraControls.enabled = true;
+        }
       } else {
-        this.currentLength = 0;
-        requestAnimationFrame(this.animate);
-        //cameraControls.enabled = true;
+        //record and exit
+        //only record after the fist frame, it's needed to let the camera riposition properly
+        if (this.currentLength > 0) {
+          var buf = new Uint8Array(
+            ctx.drawingBufferWidth * ctx.drawingBufferHeight * 4
+          );
+          ctx.readPixels(
+            0,
+            0,
+            ctx.drawingBufferWidth,
+            ctx.drawingBufferHeight,
+            ctx.RGBA,
+            ctx.UNSIGNED_BYTE,
+            buf
+          );
+          var halfHeight = (ctx.drawingBufferHeight / 2) | 0; // the | 0 keeps the result an int
+          var bytesPerRow = ctx.drawingBufferWidth * 4;
+          // make a temp buffer to hold one row
+          var temp = new Uint8Array(ctx.drawingBufferWidth * 4);
+          for (var y = 0; y < halfHeight; ++y) {
+            var topOffset = y * bytesPerRow;
+            var bottomOffset = (ctx.drawingBufferHeight - y - 1) * bytesPerRow;
+            // make copy of a row on the top half
+            temp.set(buf.subarray(topOffset, topOffset + bytesPerRow));
+            // copy a row from the bottom half to the top
+            buf.copyWithin(topOffset, bottomOffset, bottomOffset + bytesPerRow);
+            // copy the copy of the top half row to the bottom half
+            buf.set(temp, bottomOffset);
+          }
+          encoder.addFrameRgba(buf);
+        }
+
+        if (this.currentLength < this.length) {
+          requestAnimationFrame(() => {
+            this.animate(ctx, encoder);
+          });
+          this.currentLength++;
+        } else {
+          encoder.finalize();
+          const uint8Array = encoder.FS.readFile(encoder.outputFilename);
+          this.download(
+            URL.createObjectURL(new Blob([uint8Array], { type: "video/mp4" }))
+          );
+          encoder.delete();
+          this.cancel();
+        }
       }
     },
-    previewExport: function (loop) {
+    startRecording() {
+      // cameraControls.rotateTo(this.startAzimuthAngle, this.polarAngle, false);
+      // renderer.render(scene, camera);
+      HME.createH264MP4Encoder().then((encoder) => {
+        let ctx = renderer.getContext();
+        encoder.width = ctx.drawingBufferWidth;
+        encoder.height = ctx.drawingBufferHeight;
+        encoder.initialize();
+        this.recording = true;
+        this.currentLength = 0;
+        this.animate(ctx, encoder);
+      });
+    },
+    startPreview(loop) {
       this.startAzimuthAngle = cameraControls.azimuthAngle;
       this.polarAngle = cameraControls.polarAngle;
       this.loop = loop;
       this.previewing = true;
+      cameraControls.dampingFactor = 0.5;
       cameraControls.enabled = false;
       camera.layers.disable(0);
       this.animate();
     },
-    //api here: https://github.com/TrevorSundberg/h264-mp4-encoder
-    // exportToMp4: function (loop) {
-    //   const download = (url, filename) => {
-    //     const anchor = document.createElement("a");
-    //     anchor.href = url;
-    //     anchor.download = filename || "download";
-    //     anchor.click();
-    //   };
-
-    //   HME.createH264MP4Encoder().then((encoder) => {
-    //     var ctx = renderer.getContext();
-    //     encoder.width = ctx.drawingBufferWidth;
-    //     encoder.height = ctx.drawingBufferHeight;
-    //     encoder.initialize();
-    //     camera.layers.disable(0);
-
-    //     function animate() {
-    //       renderer.render(scene, camera);
-    //       let f = easing(loop);
-    //       cameraControls.rotateTo(f, polarAngle, false);
-    //       var buf = new Uint8Array(
-    //         ctx.drawingBufferWidth * ctx.drawingBufferHeight * 4
-    //       );
-    //       ctx.readPixels(
-    //         0,
-    //         0,
-    //         ctx.drawingBufferWidth,
-    //         ctx.drawingBufferHeight,
-    //         ctx.RGBA,
-    //         ctx.UNSIGNED_BYTE,
-    //         buf
-    //       );
-    //       var halfHeight = (ctx.drawingBufferHeight / 2) | 0; // the | 0 keeps the result an int
-    //       var bytesPerRow = ctx.drawingBufferWidth * 4;
-    //       // make a temp buffer to hold one row
-    //       var temp = new Uint8Array(ctx.drawingBufferWidth * 4);
-    //       for (var y = 0; y < halfHeight; ++y) {
-    //         var topOffset = y * bytesPerRow;
-    //         var bottomOffset = (ctx.drawingBufferHeight - y - 1) * bytesPerRow;
-    //         // make copy of a row on the top half
-    //         temp.set(buf.subarray(topOffset, topOffset + bytesPerRow));
-    //         // copy a row from the bottom half to the top
-    //         buf.copyWithin(topOffset, bottomOffset, bottomOffset + bytesPerRow);
-    //         // copy the copy of the top half row to the bottom half
-    //         buf.set(temp, bottomOffset);
-    //       }
-    //       encoder.addFrameRgba(buf);
-
-    //       if (currentLength < length) {
-    //         requestAnimationFrame(animate);
-    //         currentLength++;
-    //       } else {
-    //         encoder.finalize();
-    //         const uint8Array = encoder.FS.readFile(encoder.outputFilename);
-    //         download(
-    //           URL.createObjectURL(new Blob([uint8Array], { type: "video/mp4" }))
-    //         );
-    //         encoder.delete();
-    //         camera.layers.enable(0);
-    //         cameraControls.enabled = true;
-    //       }
-    //     }
-    //     animate();
-    //   });
-    // },
+    download(url, filename) {
+      const anchor = document.createElement("a");
+      anchor.href = url;
+      anchor.download = filename || "download";
+      anchor.click();
+    },
     cancel: function () {
       this.previewing = false;
       this.recording = false;
       this.currentLength = 0;
+      this.pos = [];
+      camera.layers.enable(0);
       this.loop = undefined;
+      cameraControls.dampingFactor = 0.5;
+      cameraControls.rotateTo(this.startAzimuthAngle, this.polarAngle, true);
+      this.startAzimuthAngle = undefined;
+      this.polarAngle = undefined;
+      cameraControls.enabled = true;
+      setTimeout(() => {
+        cameraControls.dampingFactor = 20;
+        cameraControls.normalizeRotations();
+      }, 100);
+      renderer.render(scene, camera);
     },
   },
   watch: {},
@@ -168,11 +188,18 @@ export default {
 
 <style scoped>
 .fade {
-  height: 100%;
-  width: 100%;
+  height: 100vh;
+  width: 100vw;
   position: absolute;
-  top: 0;
-  left: 0;
+  bottom: -10px;
+  left: -10px;
   z-index: 5;
+  background-color: rgba(0, 0, 0, 0.4);
+}
+
+.fade-controls {
+  margin: 0 auto;
+  position: absolute;
+  bottom: 10px;
 }
 </style>
