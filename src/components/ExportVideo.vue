@@ -62,7 +62,7 @@ export default {
         return this.easeInOutQuadYoyo(
           this.currentLength,
           this.startAzimuthAngle,
-          this.startAzimuthAngle + 60 * THREE.MathUtils.DEG2RAD,
+          (this.startAzimuthAngle / 100) * 5,
           this.length
         );
       }
@@ -147,6 +147,7 @@ export default {
       });
     },
     startPreview(loop) {
+      cameraControls.normalizeRotations();
       this.startAzimuthAngle = cameraControls.azimuthAngle;
       this.polarAngle = cameraControls.polarAngle;
       this.loop = loop;
