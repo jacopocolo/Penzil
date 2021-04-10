@@ -18,6 +18,7 @@
 
 <script>
 import * as THREE from "three";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import CameraControls from "camera-controls";
 CameraControls.install({ THREE: THREE });
 
@@ -47,9 +48,9 @@ export let camera = new THREE.OrthographicCamera(
   window.innerHeight / 2,
   window.innerHeight / -2,
   0,
-  20
+  15
 );
-export let scene, drawingScene, cameraControls, context, vm, sphere;
+export let scene, drawingScene, cameraControls, context, vm, drawingprop;
 
 var main, drawingCanvas, clock;
 
@@ -204,14 +205,38 @@ export default {
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
 
-      const sgeometry = new THREE.SphereGeometry(1, 22, 22);
-      const smaterial = new THREE.MeshBasicMaterial({
-        color: 0xffff00,
-        transparent: true,
-        opacity: 0.1,
+      // const tgeometry = new THREE.TorusKnotGeometry(1, 0.2, 100, 8);
+      // const tmaterial = new THREE.MeshBasicMaterial({
+      //   color: 0xff0000,
+      //   transparent: true,
+      //   opacity: 0.2,
+      //   polygonOffset: true,
+      //   polygonOffsetFactor: 100,
+      //   polygonOffsetUnits: 4,
+      // });
+      // drawingprop = new THREE.Mesh(tgeometry, tmaterial);
+      // scene.add(drawingprop);
+
+      const loader = new GLTFLoader();
+      loader.load("/asaro.gltf", function (gltf) {
+        console.log(gltf);
+        const mesh = gltf.scene.children[0];
+        mesh.material = new THREE.MeshPhongMaterial({
+          color: 0x9cd6f3,
+          transparent: true,
+          opacity: 0.8,
+          polygonOffset: true,
+          polygonOffsetFactor: 100,
+          polygonOffsetUnits: -4,
+        });
+        mesh.scale.set(0.25, 0.25, 0.25);
+        mesh.position.set(0, -1.5, 0);
+        scene.add(mesh);
+        drawingprop = mesh;
       });
-      sphere = new THREE.Mesh(sgeometry, smaterial);
-      scene.add(sphere);
+
+      const light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+      scene.add(light);
 
       drawingPlane.setUp();
 

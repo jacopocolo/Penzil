@@ -5,13 +5,14 @@ let drawingPlane = {
     plane: undefined,
     count: 0,
     setUp: function () {
-        var geometry = new THREE.PlaneGeometry(4, 4, 4);
-        var grid = new THREE.TextureLoader().load(require("@/assets/drawingPlane/grid.png"));
-        var alphaGrid = new THREE.TextureLoader().load(require("@/assets/drawingPlane/amap.png"));
+        var geometry = new THREE.PlaneGeometry(0.1, 0.1, 0.1);
+        // var grid = new THREE.TextureLoader().load(require("@/assets/drawingPlane/grid.png"));
+        // var alphaGrid = new THREE.TextureLoader().load(require("@/assets/drawingPlane/amap.png"));
         var material = new THREE.MeshBasicMaterial({
-            map: grid,
-            alphaMap: alphaGrid,
+            // map: grid,
+            // alphaMap: alphaGrid,
             transparent: true,
+            opacity: 0,
             side: THREE.DoubleSide,
             fog: false,
         });
