@@ -36,13 +36,13 @@ export default {
   methods: {
     emitStroke: function () {
       this.$emit("stroke", {
-        visible: this.stroke,
+        show_stroke: this.stroke,
         lineWidth: this.strokeWidth / 500,
         color: this.strokeColor,
       });
     },
     emitFill: function () {
-      this.$emit("fill", { visible: this.fill, color: this.fillColor });
+      this.$emit("fill", { show_fill: this.fill, color: this.fillColor });
     },
   },
   watch: {
