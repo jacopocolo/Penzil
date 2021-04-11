@@ -4,6 +4,7 @@
     :cameraResetDisabled="cameraResetDisabled"
   />
   <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
+  <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
   <transorm-toolbar
     :top="transformToolbar.top"
     :left="transformToolbar.left"
@@ -11,8 +12,9 @@
     :display="transformToolbar.display"
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
-  <import />
-  <Canvas :selectedTool="tool" :mirror="mirror" />
+  <!-- <import /> -->
+  <Canvas :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
+  <Menu />
 </template>
 
 <script>
@@ -24,9 +26,12 @@ import Canvas from "./components/Canvas.vue";
 import ToolSelector from "./components/ToolSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
-import Import from "./components/Import.vue";
+// import Import from "./components/Import.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
+import { drawingPlane } from "./components/drawingPlane.js";
+import LineSettings from "./components/LineSettings.vue";
+import Menu from "./components/Menu.vue";
 
 //import Modal from "./components/Modal.vue";
 //import Toast from "./components/Toast.vue";
@@ -57,17 +62,20 @@ export default {
     // Toast,
     // ToolSelector,
     Canvas,
-    // LineSettings,
+    LineSettings,
     ToolSelector,
     TransormToolbar,
     ViewportCube,
     UndoRedo,
-    Import,
+    Menu,
+    //Import,
   },
   data() {
     return {
       tool: "draw",
       toolHistory: ["draw"],
+      stroke: { lineWidth: 0.01, color: 0xff0000 },
+      fill: { color: 0x00ff00 },
       mirror: false,
       quaternion: undefined,
       cameraResetDisabled: false,
@@ -92,7 +100,7 @@ export default {
       //Set the background based on the css variable;
       var bgCol = 0xffffff;
       scene.background = new THREE.Color(bgCol);
-      // scene.fog = new THREE.Fog(bgCol, 9, 13);
+      //scene.fog = new THREE.Fog(0xffffff, 9, 13);
 
       drawingScene = new THREE.Scene(); //this scene is only used for rendering lines as they are being drawn. Lines are then moved to the main scene.
 
@@ -124,13 +132,16 @@ export default {
       clock = new THREE.Clock();
 
       cameraControls = new CameraControls(camera, drawingCanvas);
-      cameraControls.dampingFactor = 10;
+      cameraControls.dampingFactor = 20;
+      cameraControls.draggingDampingFactor = 200;
       cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
       cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
       cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
       cameraControls.touches.one = CameraControls.ACTION.NONE;
-      cameraControls.touches.two = CameraControls.ACTION.TOUCH_ROTATE;
+      cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
       cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
+      cameraControls.maxZoom = 4000;
+      cameraControls.minZoom = 100;
 
       cameraControls.addEventListener("update", () => {
         if (cameraControls.enabled == true) {
@@ -142,6 +153,10 @@ export default {
           ];
         }
 
+        let target = new THREE.Vector3();
+        target = cameraControls.getTarget(target);
+        targetSphere.position.set(target.x, target.y, target.z);
+
         //hide the contextual transformControls while we adjust the camera is something is selected
         if (select.s && select.s.controls != undefined) {
           this.transformToolbar.display = false;
@@ -152,6 +167,9 @@ export default {
       });
 
       cameraControls.addEventListener("sleep", () => {
+        //reposition the drawingPlane
+        drawingPlane.updatePosition();
+
         //reposition the contextual transformControls after we adjusted the camera is something is selected
         if (select.s && select.s.controls != undefined) {
           select.s.helper.update();
@@ -185,9 +203,11 @@ export default {
       });
 
       var geometry = new THREE.SphereBufferGeometry(0.025, 32, 32);
-      var material = new THREE.MeshBasicMaterial({ color: 0xffff00 });
+      var material = new THREE.MeshBasicMaterial({ color: 0xffc75f });
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
+
+      drawingPlane.setUp();
 
       window.addEventListener("resize", this.onWindowResize);
       window.addEventListener("orientationchange", this.onWindowResize);
@@ -224,6 +244,11 @@ export default {
     },
     setSelectedTool: function (val) {
       this.tool = val;
+
+      if (val == "center") {
+        return;
+      }
+
       this.toolHistory.push(val);
       if (this.toolHistory.length > 2) {
         this.toolHistory.shift();
@@ -243,6 +268,16 @@ export default {
 
       this.$.refs.undoRedo.updateUi();
     },
+    setSelectedTool_internal: function (val) {
+      //this is a version without undo so that it can be called by the setCenter tool
+      this.tool = val;
+    },
+    setPreviouslySelectedTool: function () {
+      //this is used by setCenter.js to set the tool back to its previus config after setting the center
+      this.setSelectedTool_internal(
+        this.toolHistory[this.toolHistory.length - 1]
+      );
+    },
     setSelectedObject: function (val) {
       this.selected = val;
     },
@@ -253,6 +288,12 @@ export default {
     },
     setTransformToolbarDisplay: function (val) {
       this.transformToolbar.display = val;
+    },
+    setStroke: function (val) {
+      this.stroke = val;
+    },
+    setFill: function (val) {
+      this.fill = val;
     },
   },
   mounted() {
@@ -289,6 +330,7 @@ html,
   -moz-user-select: none;
   -ms-user-select: none;
   user-select: none;
+  touch-action: manipulation;
 }
 
 #app {

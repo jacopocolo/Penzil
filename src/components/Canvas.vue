@@ -16,6 +16,7 @@
 import { draw } from "./draw.js";
 import { erase } from "./erase.js";
 import { select } from "./select.js";
+import { setCenter } from "./setCenter.js";
 
 export default {
   name: "Canvas",
@@ -28,12 +29,17 @@ export default {
         cx: undefined, //x coord for canvas
         cy: undefined, //y coord for canvas
         force: 0,
+        touchLengthHistory: [0, 0],
+        multiTouched: false,
+        eventCancelled: false,
       },
     };
   },
   props: {
     selectedTool: String,
     mirror: [Boolean, String],
+    stroke: [Object],
+    fill: [Object],
   },
   methods: {
     updateMouseCoordinates: function (event) {
@@ -44,6 +50,9 @@ export default {
           -(event.changedTouches[0].pageY / window.innerHeight) * 2 + 1;
         this.mouse.cx = event.changedTouches[0].pageX;
         this.mouse.cy = event.changedTouches[0].pageY;
+
+        this.mouse.touchLengthHistory.push(event.touches.length);
+        this.mouse.touchLengthHistory.shift();
 
         if (event.touches[0] && event.touches[0]["force"] !== undefined) {
           this.mouse.force = event.touches[0]["force"];
@@ -62,6 +71,8 @@ export default {
     onStart: function (event) {
       if (event.button == 0 || event.touches.length == 1) {
         this.mouse.down = true;
+        this.mouse.eventCancelled = false;
+        this.mouse.multiTouched = false;
         switch (this.selectedTool) {
           case "draw":
             draw.onStart(
@@ -70,7 +81,9 @@ export default {
               0,
               this.mouse.force,
               true,
-              this.mirror
+              this.mirror,
+              this.stroke,
+              this.fill
             );
             break;
           case "erase":
@@ -84,38 +97,75 @@ export default {
               this.mouse.cy
             );
             break;
-          default:
-            break;
-        }
-      }
-    },
-    onMove: function (event) {
-      if (this.mouse.down && (event.button == 0 || event.touches.length == 1)) {
-        switch (this.selectedTool) {
-          case "draw":
-            draw.onMove(
-              this.mouse.tx,
-              this.mouse.ty,
-              0,
-              this.mouse.force,
-              true
-            );
-            break;
-          case "erase":
-            erase.onMove(this.mouse.cx, this.mouse.cy);
-            break;
-          case "select":
-            select.onMove(this.mouse.cx, this.mouse.cy);
+          case "center":
+            //setCenter.set(this.mouse.tx, this.mouse.ty);
             break;
           default:
             break;
         }
       } else {
-        return;
+        //this means that we are escalating from a single touch to a multitouch and then we should cancel whatever input we started
+        this.mouse.multiTouched = true;
+        if (
+          this.mouse.touchLengthHistory[0] === 1 &&
+          this.mouse.touchLengthHistory[1] === 2
+        ) {
+          this.mouse.eventCancelled = true;
+          switch (this.selectedTool) {
+            case "draw":
+              draw.onCancel();
+              break;
+            case "erase":
+              erase.onCancel();
+              break;
+            case "select":
+              select.onCancel();
+              break;
+            case "center":
+              //setCenter.set(this.mouse.tx, this.mouse.ty);
+              break;
+            default:
+              break;
+          }
+        }
+      }
+    },
+    onMove: function (event) {
+      if (this.mouse.down) {
+        if (event.button == 0 || event.touches.length == 1) {
+          switch (this.selectedTool) {
+            case "draw":
+              draw.onMove(
+                this.mouse.tx,
+                this.mouse.ty,
+                0,
+                this.mouse.force,
+                true
+              );
+              break;
+            case "erase":
+              erase.onMove(this.mouse.cx, this.mouse.cy);
+              break;
+            case "select":
+              select.onMove(this.mouse.cx, this.mouse.cy);
+              break;
+            case "center":
+              //setCenter.set(this.mouse.tx, this.mouse.ty);
+              break;
+            default:
+              break;
+          }
+        } else {
+          //cameraControls handle the multitouch
+          //this is the way to handl multi-touch events in a way that allows for multitouch fires and not misfires
+          //https://stackoverflow.com/questions/45108732/drawing-on-html5-canvas-with-support-for-multitouch-pinch-pan-and-zoom
+        }
       }
     },
     onEnd: function () {
-      if (this.mouse.down) {
+      if (this.mouse.multiTouched || this.mouse.eventCancelled) {
+        return;
+      } else {
         switch (this.selectedTool) {
           case "draw":
             draw.onEnd(this.mirror);
@@ -126,11 +176,15 @@ export default {
           case "select":
             select.onEnd(this.mouse.tx, this.mouse.ty);
             break;
+          case "center":
+            setCenter.set(this.mouse.tx, this.mouse.ty);
+            break;
           default:
             break;
         }
       }
       this.mouse.down = false;
+      this.mouse.distance = 0;
     },
     handleInput: function (event) {
       this.updateMouseCoordinates(event);

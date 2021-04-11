@@ -226,6 +226,15 @@ let erase = {
             context.clearRect(0, 0, window.innerWidth, window.innerHeight);
             //actually nothing here
         }
+        cancel() {
+            // context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            // for (let i = 0; i < this.numberOfErasedObjects; i++) {
+            //     undoManager.undo();
+            // }
+            // erase.e = undefined;
+            // erase.e = new erase.eraser();
+            // renderer.render(scene, camera)
+        }
     },
     deleteObject: function (object) {
         //ignore triggers for objects already deleted
@@ -236,10 +245,10 @@ let erase = {
 
         let uuid = object.uuid;
         let vertices = object.geometry.points;
-        let force = object.geometry.userData.force;
-        let mirrorOn = object.userData.mirror;
-        let width = object.material.lineWidth;
+        let stroke = object.userData.stroke;
+        let fill = object.userData.fill;
         let position = new THREE.Vector3();
+        let mirrorOn = false;
         object.getWorldPosition(position);
         let quaternion = new THREE.Quaternion();
         object.getWorldQuaternion(quaternion);
@@ -252,13 +261,16 @@ let erase = {
         mirror.eraseMirrorOf(object);
         object.material.dispose();
 
+        if (object.userData.fill.visible) {
+            object.children[0].material.dispose();
+        }
+
         undoManager.add({
             undo: function () {
                 draw.fromVertices(
                     vertices,
-                    force,
-                    //color,
-                    width,
+                    stroke,
+                    fill,
                     mirrorOn,
                     uuid,
                     //true
@@ -293,6 +305,9 @@ let erase = {
     onEnd: function () {
         this.e.end();
         this.e.resetPicking();
+    },
+    onCancel: function () {
+        //this.e ? this.e.cancel() : null;
     }
 }
 
