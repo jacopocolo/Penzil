@@ -2,14 +2,29 @@
   <div v-if="previewing" class="fade">
     <div class="fade-controls">
       <button @click="cancel()">Cancel</button>
+      <input
+        type="radio"
+        name="360"
+        value="360"
+        v-model="loop"
+        :disabled="recording"
+      />
+      <label for="360">360</label>
+      <input
+        type="radio"
+        name="bf"
+        value="bf"
+        v-model="loop"
+        :disabled="recording"
+      />
+      <label for="bf">Back and forth</label>
       <button @click="startRecording()" :disabled="recording" v>Record</button>
       <span v-if="recording"
         >Recording frame {{ currentLength }} of {{ length }}</span
       >
     </div>
   </div>
-  <button @click="startPreview('360')">Export 360</button>
-  <button @click="startPreview('bf')">Export b&f</button>
+  <button @click="startPreview()">Export video</button>
 </template>
 
 <script>
@@ -24,7 +39,7 @@ export default {
     return {
       previewing: false,
       recording: false,
-      loop: undefined,
+      loop: "360",
       length: 240, //in frames
       currentLength: 0, //current frame
       startAzimuthAngle: undefined,
@@ -146,11 +161,10 @@ export default {
         this.animate(ctx, encoder);
       });
     },
-    startPreview(loop) {
+    startPreview() {
       cameraControls.normalizeRotations();
       this.startAzimuthAngle = cameraControls.azimuthAngle;
       this.polarAngle = cameraControls.polarAngle;
-      this.loop = loop;
       this.previewing = true;
       cameraControls.dampingFactor = 0.5;
       cameraControls.enabled = false;
@@ -169,7 +183,7 @@ export default {
       this.currentLength = 0;
       this.pos = [];
       camera.layers.enable(0);
-      this.loop = undefined;
+      this.loop = "360";
       cameraControls.dampingFactor = 0.5;
       cameraControls.rotateTo(this.startAzimuthAngle, this.polarAngle, true);
       this.startAzimuthAngle = undefined;
@@ -182,7 +196,11 @@ export default {
       renderer.render(scene, camera);
     },
   },
-  watch: {},
+  watch: {
+    loop: function () {
+      this.currentLength = 0;
+    },
+  },
   mounted() {},
 };
 </script>
@@ -199,8 +217,12 @@ export default {
 }
 
 .fade-controls {
+  background-color: black;
+  color: white;
   margin: 0 auto;
   position: absolute;
-  bottom: 10px;
+  bottom: 0px;
+  padding: 10px;
+  width: 100vw;
 }
 </style>
