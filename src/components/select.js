@@ -615,10 +615,13 @@ let select = {
                 case this.controls.object.type == "Mesh":
                     previousSelectedArray.push(this.controls.object.uuid);
                     var duplicate = this.controls.object.clone();
+                    console.log(duplicate.userData.stroke)
                     var duplicateMaterial = new MeshLineMaterial({
-                        lineWidth: duplicate.material.lineWidth,
+                        lineWidth: duplicate.userData.stroke.show_stroke ? duplicate.userData.stroke.lineWidth : 0.005,
                         sizeAttenuation: 1,
-                        color: duplicate.userData.lineColor,
+                        color: duplicate.userData.stroke.show_stroke ? duplicate.userData.stroke.color : 0xFFFFFF,
+                        transparent: duplicate.userData.stroke.show_stroke ? false : true,
+                        opacity: duplicate.userData.stroke.show_stroke ? 1 : 0,
                         side: THREE.DoubleSide,
                         fog: false,
                     });
@@ -643,9 +646,11 @@ let select = {
                         var duplicate = originalObject.clone();
                         duplicate.layers.set(1);
                         var duplicateMaterial = new MeshLineMaterial({
-                            lineWidth: duplicate.material.lineWidth,
+                            lineWidth: duplicate.userData.stroke.show_stroke ? duplicate.userData.stroke.lineWidth : 0.005,
                             sizeAttenuation: 1,
-                            color: duplicate.userData.lineColor,
+                            color: duplicate.userData.stroke.show_stroke ? duplicate.userData.stroke.color : 0xFFFFFF,
+                            transparent: duplicate.userData.stroke.show_stroke ? false : true,
+                            opacity: duplicate.userData.stroke.show_stroke ? 1 : 0,
                             side: THREE.DoubleSide,
                             fog: false,
                         });

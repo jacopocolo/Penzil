@@ -74,8 +74,8 @@ export default {
     return {
       tool: "draw",
       toolHistory: ["draw"],
-      stroke: { lineWidth: 0.01, color: 0xff0000 },
-      fill: { color: 0x00ff00 },
+      stroke: {}, //filled by the component on mount
+      fill: {}, //filled by the component on mount
       mirror: false,
       quaternion: undefined,
       cameraResetDisabled: false,

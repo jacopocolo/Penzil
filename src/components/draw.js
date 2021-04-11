@@ -1,7 +1,7 @@
 // {
 //     vertices: [],
-//     stroke: { visible: true, force: [0], color: 'red', width: 3 },
-//     fill: { visible: false, color: 'black' },
+//     stroke: { show_stroke: true, force: [0], color: 'red', width: 3 },
+//     fill: { show_fill: false, color: 'black' },
 //   }
 
 import * as THREE from "three";
@@ -23,14 +23,14 @@ let draw = {
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
             this.material = new MeshLineMaterial({
-                lineWidth: this.stroke.visible ? this.stroke.lineWidth : 0.001,
+                lineWidth: this.stroke.show_stroke ? this.stroke.lineWidth : 0.005,
                 sizeAttenuation: 1,
-                color: this.stroke.visible ? this.stroke.color : 0xFFFFFF,
+                color: this.stroke.show_stroke ? this.stroke.color : 0xFFFFFF,
                 side: THREE.DoubleSide,
                 fog: false,
                 wireframe: false,
-                transparent: this.stroke.visible ? false : true,
-                opacity: !this.stroke.visible ? 1 : 1,
+                transparent: this.stroke.show_stroke ? false : true,
+                opacity: !this.stroke.show_stroke ? 1 : 1,
             });
             this.mesh = new THREE.Mesh(this.line, this.material);
             this.uuid = this.mesh.uuid;
@@ -43,9 +43,9 @@ let draw = {
             this.size = 8;
 
             this.mesh.userData.vertices = new Array();
-            this.mesh.userData.stroke = { visible: stroke.visible, color: stroke.color, lineWidth: stroke.lineWidth };
+            this.mesh.userData.stroke = { show_stroke: stroke.show_stroke, color: stroke.color, lineWidth: stroke.lineWidth };
             this.mesh.userData.stroke.force = new Array();
-            this.mesh.userData.fill = { visible: fill.visible, color: fill.color };
+            this.mesh.userData.fill = { show_fill: fill.show_fill, color: fill.color };
 
             this.fill = fill;
             this.fillGeometry = new THREE.BufferGeometry();
@@ -60,7 +60,8 @@ let draw = {
                 polygonOffset: this.stroke ? true : false,
                 polygonOffsetFactor: 10,
                 polygonOffsetUnits: 4,
-                transparent: !this.fill,
+                transparent: this.fill.show_fill ? true : false,
+                opacity: this.fill.show_fill ? 0.05 : 0,
             });
             this.fillMesh = new THREE.Mesh(this.fillGeometry, this.fillMaterial);
             this.fillMesh.layers.set(1);
@@ -68,7 +69,7 @@ let draw = {
         start(x, y, z, force, unproject, mirrorOn) {
             drawingScene.add(this.mesh);
 
-            if (this.fill.visible) {
+            if (this.fill.show_fill) {
                 this.mesh.add(this.fillMesh)
             }
 
@@ -105,7 +106,9 @@ let draw = {
             renderer.render(scene, camera);
 
             this.geometry.verticesNeedsUpdate = true;
-            this.stroke.visible ? '' : this.mesh.material.opacity = 0;
+            this.stroke.show_stroke ? '' : this.mesh.material.opacity = 0;
+            this.fill.show_fill ? this.fillMesh.material.transparent = false : '';
+            this.fill.show_fill ? this.fillMesh.material.opacity = 1 : '';
             renderer.render(scene, camera);
 
             this.mesh.position.set(
@@ -341,7 +344,7 @@ let draw = {
         }
     },
     onStart: function (x, y, z, force, unproject, mirrorOn, stroke, fill) {
-        //this draw acceppts two arguments: stroke and fill. stroke: { visible: bool, color: 'red', lineWidth: 3 }, fill: { visible: bool, color: 'black' },
+        //this draw acceppts two arguments: stroke and fill. stroke: { show_stroke: bool, color: 'red', lineWidth: 3 }, fill: { show_fill: bool, color: 'black' },
         //I should gate the possibility of drawing something without stroke or fill
         this.l = new this.draw(stroke, fill);
         this.l.start(mirrorOn);
