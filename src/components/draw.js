@@ -58,12 +58,12 @@ let draw = {
                 side: THREE.DoubleSide,
                 wireframe: false,
                 polygonOffset: this.stroke ? true : false,
-                polygonOffsetFactor: 1,
-                polygonOffsetUnits: -1,
+                polygonOffsetFactor: 10,
+                polygonOffsetUnits: 4,
                 transparent: !this.fill,
             });
             this.fillMesh = new THREE.Mesh(this.fillGeometry, this.fillMaterial);
-
+            this.fillMesh.layers.set(1);
         }
         start(x, y, z, force, unproject, mirrorOn) {
             drawingScene.add(this.mesh);
@@ -98,7 +98,7 @@ let draw = {
         move(x, y, z, force, unproject) {
             this.addVertex(x, y, z, force, unproject)
         }
-        end(mirrorOn) {
+        end_internal(mirrorOn) {
             scene.add(this.mesh);
             drawingScene.clear();
             renderer.autoClear = true;
@@ -144,8 +144,10 @@ let draw = {
             this.fillGeometry.setIndex(triangles);
             this.fillGeometry.computeBoundingSphere();
             renderer.render(scene, camera);
+        }
+        end(mirrorOn) {
 
-            console.log(this.mesh.uuid)
+            this.end_internal(mirrorOn);
 
             let uuid = this.uuid;
             let vertices = this.geometry.attributes.position.array;
@@ -360,12 +362,16 @@ let draw = {
     onEnd: function (mirrorOn) {
         this.l.end(mirrorOn);
     },
+    onEnd_internal: function (mirrorOn) {
+        this.l.end_internal(mirrorOn);
+    },
     onCancel: function () {
         this.l ? this.l.cancel() : null;
     },
     fromVertices(vertices, stroke, fill, mirrorOn, uuid, position, quaternion, scale, matrix) {
         this.l = new this.draw(stroke, fill);
         this.onStart(0, 0, 0, 0, false, mirrorOn, stroke, fill);
+        console.log(this.l.geometry.attributes.position.array)
         this.l.geometry.attributes.position.array = vertices;
         this.l.geometry.attributes.position.count = vertices.length / 3;
         this.l.geometry.attributes.position.needsUpdate = true;
@@ -374,9 +380,8 @@ let draw = {
         renderer.autoClear = false;
         renderer.clearDepth();
         renderer.render(drawingScene, camera);
-        this.l.mesh.uuid = uuid;
-        this.onEnd(mirrorOn);
-
+        if (uuid) { this.l.mesh.uuid = uuid; }
+        this.onEnd_internal(mirrorOn);
         if (matrix) {
             this.l.mesh.applyMatrix4(matrix)
         }
@@ -402,7 +407,6 @@ let draw = {
                 scale.z
             );
         }
-
         scene.add(this.l.mesh)
         renderer.render(scene, camera)
     }
