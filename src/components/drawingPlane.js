@@ -18,6 +18,7 @@ let drawingPlane = {
         var planeBg = new THREE.Mesh(geometry, material);
         this.plane = new THREE.Group();
         this.plane.add(planeBg);
+        this.plane.layers.set(0);
         scene.add(this.plane);
         renderer.render(scene, camera);
     },

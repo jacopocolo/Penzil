@@ -58,12 +58,12 @@ let draw = {
                 side: THREE.DoubleSide,
                 wireframe: false,
                 polygonOffset: this.stroke ? true : false,
-                polygonOffsetFactor: 100,
+                polygonOffsetFactor: 10,
                 polygonOffsetUnits: 4,
                 transparent: !this.fill,
             });
             this.fillMesh = new THREE.Mesh(this.fillGeometry, this.fillMaterial);
-
+            this.fillMesh.layers.set(1);
         }
         start(x, y, z, force, unproject, mirrorOn) {
             drawingScene.add(this.mesh);
