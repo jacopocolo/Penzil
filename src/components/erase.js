@@ -261,7 +261,7 @@ let erase = {
         mirror.eraseMirrorOf(object);
         object.material.dispose();
 
-        if (object.userData.fill.visible) {
+        if (object.userData.fill.show_fill) {
             object.children[0].material.dispose();
         }
 
