@@ -2,7 +2,7 @@
 <template>
   <div class="mainToolbar">
     <div class="toolSelection">
-      <span @click="setTool('center', true)">
+      <!-- <span @click="setTool('center', true)">
         <input
           type="radio"
           id="setCenter"
@@ -11,8 +11,18 @@
           v-model="tool"
         /><label for="setCenter"> set • </label>
         <div></div>
-      </span>
-      <span @click="setTool('draw', true)">
+      </span> -->
+
+      <span @click="setTool('model', true)">
+        <input
+          type="radio"
+          id="toolModel"
+          name="tools"
+          value="model"
+          v-model="tool"
+        /><label for="toolModel"> Canvas </label>
+        <div></div> </span
+      ><span @click="setTool('draw', true)">
         <input
           type="radio"
           id="toolDraw"

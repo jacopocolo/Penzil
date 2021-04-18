@@ -7,7 +7,8 @@
 import * as THREE from "three";
 import { Earcut } from 'three/src/extras/Earcut.js';
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
-import { scene, drawingScene, renderer, camera, drawingprop } from "../App.vue";
+import { scene, drawingScene, renderer, camera } from "../App.vue";
+import { model } from "./ModelSettings.vue";
 import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
@@ -201,8 +202,9 @@ let draw = {
             let raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
             try {
-                var intersectedObject = raycaster.intersectObjects([drawingprop])[0];
+                var intersectedObject = raycaster.intersectObjects([model])[0];
                 var nt = intersectedObject.point;
+                console.log(intersectedObject);
                 v4 = new THREE.Vector4(nt.x, nt.y, nt.z, force);
             } catch (err) {
                 console.log(err);

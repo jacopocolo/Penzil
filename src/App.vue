@@ -5,21 +5,27 @@
   />
   <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
   <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
+  <model-settings
+    :selectedTool="tool"
+    ref="modalSettings"
+    @transform-toolbar-display="setTransformToolbarDisplay"
+    @toolbar-position="setTransformToolbarPosition"
+  />
   <transorm-toolbar
     :top="transformToolbar.top"
     :left="transformToolbar.left"
     :location="transformToolbar.location"
     :display="transformToolbar.display"
+    :selectedTool="tool"
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
-  <!-- <import /> -->
   <Canvas :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
   <Menu />
 </template>
 
 <script>
 import * as THREE from "three";
-import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
+//import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import CameraControls from "camera-controls";
 CameraControls.install({ THREE: THREE });
 
@@ -27,11 +33,11 @@ import Canvas from "./components/Canvas.vue";
 import ToolSelector from "./components/ToolSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
-// import Import from "./components/Import.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
-import { drawingPlane } from "./components/drawingPlane.js";
+// import { drawingPlane } from "./components/drawingPlane.js";
 import LineSettings from "./components/LineSettings.vue";
+import ModelSettings from "./components/ModelSettings.vue";
 import Menu from "./components/Menu.vue";
 
 //import Modal from "./components/Modal.vue";
@@ -44,13 +50,19 @@ export let renderer = new THREE.WebGLRenderer({
   alpha: true,
   preserveDrawingBuffer: true, //this is the configuration that allows the renderer to redraw only the current line when we are drawing instead of the whole scene. If I remember correctly it could create some issues with the video rendering. Leaving a note in case it does. One potential workaround would be to have two separte renderers, one for the scene, one for the current line.
 });
-export let camera = new THREE.OrthographicCamera(
-  window.innerWidth / -2,
-  window.innerWidth / 2,
-  window.innerHeight / 2,
-  window.innerHeight / -2,
-  0,
-  15
+// export let camera = new THREE.OrthographicCamera(
+//   window.innerWidth / -2,
+//   window.innerWidth / 2,
+//   window.innerHeight / 2,
+//   window.innerHeight / -2,
+//   0,
+//   15
+// );
+export let camera = new THREE.PerspectiveCamera(
+  100,
+  window.innerWidth / window.innerHeight,
+  1,
+  1000
 );
 export let scene, drawingScene, cameraControls, context, vm, drawingprop;
 
@@ -64,6 +76,7 @@ export default {
     // ToolSelector,
     Canvas,
     LineSettings,
+    ModelSettings,
     ToolSelector,
     TransormToolbar,
     ViewportCube,
@@ -99,7 +112,7 @@ export default {
 
       scene = new THREE.Scene();
       //Set the background based on the css variable;
-      var bgCol = 0xffffff;
+      var bgCol = 0xeeeeee;
       scene.background = new THREE.Color(bgCol);
       //scene.fog = new THREE.Fog(0xffffff, 9, 13);
 
@@ -118,8 +131,13 @@ export default {
       scene.add(axesHelperFlipped);
 
       var size = 1;
-      var divisions = 1;
-      var gridHelper = new THREE.GridHelper(size, divisions);
+      var divisions = 10;
+      var gridHelper = new THREE.GridHelper(
+        size,
+        divisions,
+        0x0000ff,
+        0x0000ff
+      );
       gridHelper.applyMatrix4(new THREE.Matrix4().makeScale(5, 5, 5));
       gridHelper.layers.set(0);
       gridHelper.material.fog = false;
@@ -127,8 +145,8 @@ export default {
 
       camera.layers.enable(0); // enabled by default
       camera.layers.enable(1);
-      camera.zoom = 160;
-      camera.position.set(0, 0, 10);
+      camera.zoom = 3;
+      camera.position.set(10, 0, 0);
 
       clock = new THREE.Clock();
 
@@ -142,7 +160,14 @@ export default {
       cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
       cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
       cameraControls.maxZoom = 4000;
-      cameraControls.minZoom = 100;
+      cameraControls.minZoom = 2;
+
+      this.quaternion = [
+        camera.quaternion.x,
+        camera.quaternion.y,
+        camera.quaternion.z,
+        camera.quaternion.w,
+      ];
 
       cameraControls.addEventListener("update", () => {
         if (cameraControls.enabled == true) {
@@ -159,28 +184,46 @@ export default {
         targetSphere.position.set(target.x, target.y, target.z);
 
         //hide the contextual transformControls while we adjust the camera is something is selected
-        if (select.s && select.s.controls != undefined) {
+        if (
+          (select.s && select.s.controls != undefined) ||
+          this.tool == "model"
+        ) {
           this.transformToolbar.display = false;
         }
-        if (select.s && select.s.controls != undefined) {
-          select.s.helper.update();
+        if (
+          (select.s && select.s.controls != undefined) ||
+          this.tool == "model"
+        ) {
+          if (this.tool == "select") {
+            select.s.helper.update();
+          }
+          if (this.tool == "model") {
+            this.$.refs.modalSettings.updatePosition();
+          }
         }
       });
 
       cameraControls.addEventListener("sleep", () => {
         //reposition the drawingPlane
-        drawingPlane.updatePosition();
+        // drawingPlane.updatePosition();
 
         //reposition the contextual transformControls after we adjusted the camera is something is selected
-        if (select.s && select.s.controls != undefined) {
-          select.s.helper.update();
-
-          let position = select.s.calculateTransfromToolbarPosition();
-
-          this.transformToolbar.left = position.x;
-          this.transformToolbar.top = position.y;
-          this.transformToolbar.location = position.location;
-          this.transformToolbar.display = true;
+        if (
+          (select.s && select.s.controls != undefined) ||
+          this.tool == "model"
+        ) {
+          if (this.tool == "select") {
+            select.s.helper.update();
+            let position = select.s.calculateTransfromToolbarPosition();
+            this.transformToolbar.left = position.x;
+            this.transformToolbar.top = position.y;
+            this.transformToolbar.location = position.location;
+            this.transformToolbar.display = true;
+          }
+          if (this.tool == "model") {
+            this.$.refs.modalSettings.updatePosition();
+            this.transformToolbar.display = true;
+          }
         }
 
         //set if the camera is resettable after we adjusted the camera
@@ -195,7 +238,7 @@ export default {
           x != 0 ||
           y != 0 ||
           z != 0 ||
-          camera.zoom != 160
+          camera.zoom != 3
         ) {
           this.cameraResetDisabled = false;
         } else {
@@ -208,40 +251,10 @@ export default {
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
 
-      // const tgeometry = new THREE.TorusKnotGeometry(1, 0.2, 100, 8);
-      // const tmaterial = new THREE.MeshBasicMaterial({
-      //   color: 0xff0000,
-      //   transparent: true,
-      //   opacity: 0.2,
-      //   polygonOffset: true,
-      //   polygonOffsetFactor: 100,
-      //   polygonOffsetUnits: 4,
-      // });
-      // drawingprop = new THREE.Mesh(tgeometry, tmaterial);
-      // scene.add(drawingprop);
-
-      const loader = new GLTFLoader();
-      loader.load("/asaro.gltf", function (gltf) {
-        console.log(gltf);
-        const mesh = gltf.scene.children[0];
-        mesh.material = new THREE.MeshPhongMaterial({
-          color: 0x9cd6f3,
-          transparent: true,
-          opacity: 0.8,
-          polygonOffset: true,
-          polygonOffsetFactor: 100,
-          polygonOffsetUnits: -4,
-        });
-        mesh.scale.set(0.25, 0.25, 0.25);
-        mesh.position.set(0, -1.5, 0);
-        scene.add(mesh);
-        drawingprop = mesh;
-      });
-
-      const light = new THREE.HemisphereLight(0xffffbb, 0x080820, 1);
+      const light = new THREE.HemisphereLight(0xffffff, 0x080820, 1.5);
       scene.add(light);
 
-      drawingPlane.setUp();
+      this.$.refs.modalSettings.setUpModel();
 
       window.addEventListener("resize", this.onWindowResize);
       window.addEventListener("orientationchange", this.onWindowResize);
@@ -281,6 +294,12 @@ export default {
 
       if (val == "center") {
         return;
+      }
+
+      if (val == "model") {
+        this.$.refs.modalSettings.attachControls();
+      } else {
+        this.$.refs.modalSettings.detachControls();
       }
 
       this.toolHistory.push(val);
@@ -337,7 +356,6 @@ export default {
   },
 };
 </script>
-// how to update component data from app https://stackoverflow.com/questions/47281746/vue-update-component-data-from-vue-instance
 
 <style>
 :root {
