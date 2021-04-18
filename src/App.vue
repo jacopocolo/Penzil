@@ -124,11 +124,11 @@ export default {
       axesHelper.material.fog = false;
       scene.add(axesHelper);
 
-      var axesHelperFlipped = new THREE.AxesHelper();
-      axesHelperFlipped.applyMatrix4(new THREE.Matrix4().makeScale(-5, -5, -5));
-      axesHelperFlipped.layers.set(0);
-      axesHelperFlipped.material.fog = false;
-      scene.add(axesHelperFlipped);
+      // var axesHelperFlipped = new THREE.AxesHelper();
+      // axesHelperFlipped.applyMatrix4(new THREE.Matrix4().makeScale(-5, -5, -5));
+      // axesHelperFlipped.layers.set(0);
+      // axesHelperFlipped.material.fog = false;
+      // scene.add(axesHelperFlipped);
 
       var size = 1;
       var divisions = 10;

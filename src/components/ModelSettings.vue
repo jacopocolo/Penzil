@@ -65,7 +65,7 @@ export default {
       const cube = new THREE.Mesh(geometry, material);
       model = cube;
       scene.add(cube);
-      model.position.set(position.x, position.y, position.z);
+      model.position.set(position.x, position.y, position.z + 1);
       model.quaternion.set(
         quaternion.x,
         quaternion.y,
