@@ -251,7 +251,8 @@ export default {
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
 
-      const light = new THREE.HemisphereLight(0xffffff, 0x080820, 1.5);
+      const light = new THREE.HemisphereLight(0xffffff, 0x222222, 1); //0x080820
+      light.position.set(0, 1, 5);
       scene.add(light);
 
       this.$.refs.modalSettings.setUpModel();

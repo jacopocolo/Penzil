@@ -41,7 +41,7 @@ let draw = {
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
             this.bufferPoints = new Array();
-            this.size = 8;
+            this.size = 16;
 
             this.mesh.userData.vertices = new Array();
             this.mesh.userData.stroke = { show_stroke: stroke.show_stroke, color: stroke.color, lineWidth: stroke.lineWidth };
@@ -58,9 +58,9 @@ let draw = {
                 color: this.fill.color,
                 side: THREE.DoubleSide,
                 wireframe: false,
-                polygonOffset: this.stroke ? true : false,
-                polygonOffsetFactor: 10,
-                polygonOffsetUnits: 4,
+                polygonOffset: this.stroke.show_stroke ? true : false,
+                polygonOffsetFactor: this.stroke.lineWidth * 1000,
+                polygonOffsetUnits: -1,
                 transparent: this.fill.show_fill ? true : false,
                 opacity: this.fill.show_fill ? 0.05 : 0,
             });
@@ -205,7 +205,7 @@ let draw = {
                 var intersectedObject = raycaster.intersectObjects([model])[0];
                 var nt = intersectedObject.point;
                 var normal = intersectedObject.face.normal;
-                let offset = 40;
+                let offset = 30;
                 normal.x = normal.x / offset;
                 normal.y = normal.y / offset;
                 normal.z = normal.z / offset;

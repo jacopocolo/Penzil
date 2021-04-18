@@ -4,6 +4,7 @@
     <select name="models" v-model="model">
       <option value="plane">Plane</option>
       <option value="cube">Cube</option>
+      <option value="cylinder">Cylinder</option>
       <option value="head">Head</option>
     </select>
     <br />
@@ -71,7 +72,7 @@ export default {
       if (helper) {
         scene.remove(helper);
       }
-      const geometry = new THREE.BoxGeometry(1, 1, 1);
+      const geometry = new THREE.BoxGeometry(2.5, 2.5, 2.5);
       const material = this.material;
       const cube = new THREE.Mesh(geometry, material);
       model = cube;
@@ -117,6 +118,32 @@ export default {
       helper.geometry.computeBoundingBox();
       helper.visible = false;
       helper.update();
+      renderer.render(scene, camera);
+    },
+    setUpCylinder() {
+      if (helper) {
+        scene.remove(helper);
+      }
+      const geometry = new THREE.CylinderGeometry(0.5, 0.5, 2.5, 32);
+      const material = this.material;
+      const cylinder = new THREE.Mesh(geometry, material);
+      model = cylinder;
+      scene.add(cylinder);
+      model.position.set(position.x, position.y, position.z);
+      model.quaternion.set(
+        quaternion.x,
+        quaternion.y,
+        quaternion.z,
+        quaternion.w
+      );
+      model.scale.set(scale.x, scale.y, scale.z);
+      scene.add(controls);
+      helper = new THREE.BoxHelper(model, colors.selectedColor);
+      scene.add(helper);
+      helper.geometry.computeBoundingBox();
+      helper.visible = false;
+      helper.update();
+      this.transformToolbarDisplay(true);
       renderer.render(scene, camera);
     },
     setUpHead() {
@@ -303,6 +330,11 @@ export default {
         case "cube":
           scene.remove(model);
           this.setUpCube();
+          this.attachControls();
+          break;
+        case "cylinder":
+          scene.remove(model);
+          this.setUpCylinder();
           this.attachControls();
           break;
         case "head":
