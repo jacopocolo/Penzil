@@ -72,7 +72,7 @@ def draw_line(gp_frame, p0, index):
     ob = bpy.context.active_object
     ob.data.materials.append(mat)
 
-    if p0['stroke']['visible'] == True:
+    if p0['stroke']['show_stroke'] == True:
         color = p0['stroke']['color'].lstrip('#')
         color = tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
         r = color[0] / 255
@@ -83,7 +83,7 @@ def draw_line(gp_frame, p0, index):
     else:
         mat.grease_pencil.show_stroke = False
 
-    if p0['fill']['visible'] == True:
+    if p0['fill']['show_fill'] == True:
         fillcolor = p0['fill']['color'].lstrip('#')
         fillcolor = tuple(int(fillcolor[i:i+2], 16) for i in (0, 2, 4))
         fr = fillcolor[0] / 255
