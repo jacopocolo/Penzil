@@ -4,7 +4,7 @@
 import bpy
 import json
 
-with open(r'../../../../Users/jcolo/Downloads/gp_gojira.json', 'r') as f:
+with open(r'../../../../Users/jcolo/Downloads/gp_ultra.json', 'r') as f:
     print(f)
     j = json.load(f)
 
@@ -109,7 +109,7 @@ def draw_line(gp_frame, p0, index):
     i = 0
     l = 0
     while i < length*3:
-        gp_stroke.points[l].co = (vertices[i], vertices[i+1], vertices[i+2])
+        gp_stroke.points[l].co = (vertices[i], -vertices[i+2], vertices[i+1])
         l += 1
         i += 3
 
