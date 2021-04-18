@@ -80,22 +80,15 @@ export default {
 
       viewPortCamera = new THREE.OrthographicCamera();
       viewPortCamera.position.set(0, 0, 10);
-      // viewPortCamera.lookAt(new THREE.Vector3(0, 0, 0));
-      viewPortCamera.zoom = 0;
+      viewPortCamera.zoom = 160;
 
       viewPortScene = new THREE.Scene();
 
       this.addViewPortCube();
 
-      var axesHelper = new THREE.AxesHelper();
-      viewPortScene.add(axesHelper);
-
       this.render();
     },
     addViewPortCube: function () {
-      let front = new THREE.TextureLoader().load(
-        require("@/assets/viewport/front.png")
-      );
       let right = new THREE.TextureLoader().load(
         require("@/assets/viewport/right.png")
       );
@@ -108,6 +101,9 @@ export default {
       let bottom = new THREE.TextureLoader().load(
         require("@/assets/viewport/bottom.png")
       );
+      let front = new THREE.TextureLoader().load(
+        require("@/assets/viewport/front.png")
+      );
       let back = new THREE.TextureLoader().load(
         require("@/assets/viewport/back.png"),
         () => {
@@ -117,10 +113,10 @@ export default {
 
       const materials = [
         new THREE.MeshBasicMaterial({
-          map: front,
+          map: right,
         }),
         new THREE.MeshBasicMaterial({
-          map: back,
+          map: left,
         }),
         new THREE.MeshBasicMaterial({
           map: top,
@@ -129,10 +125,10 @@ export default {
           map: bottom,
         }),
         new THREE.MeshBasicMaterial({
-          map: left,
+          map: front,
         }),
         new THREE.MeshBasicMaterial({
-          map: right,
+          map: back,
         }),
       ];
 
@@ -154,16 +150,12 @@ export default {
       //This is a slight hack to allow the triangulate function that generates the fill to work in any scenario. See: https://github.com/mapbox/earcut/issues/21
       let adj = 0.0001;
 
-      let lookAt = function (x, y, z, rot) {
+      let lookAt = function (x, y, z) {
         cameraControls.dampingFactor = 0.5;
         cameraControls.enabled = false;
         cameraControls.setLookAt(x, y, z, target.x, target.y, target.z, true);
         cameraControls.enabled = true;
         setTimeout(() => {
-          //adjustments for top and bottom rotation
-          if (rot) {
-            cameraControls.rotate(90 * THREE.MathUtils.DEG2RAD, 0, true);
-          }
           cameraControls.dampingFactor = 10;
         }, 100);
       };
@@ -182,16 +174,16 @@ export default {
           lookAt(target.x - 10, target.y + adj, target.z + adj);
           break;
         case 4:
-          lookAt(target.x, target.y + 10, target.z + adj, true);
+          lookAt(target.x, target.y + 10, target.z + adj);
           break;
         case 5:
-          lookAt(target.x, target.y + 10, target.z + adj, true);
+          lookAt(target.x, target.y + 10, target.z + adj);
           break;
         case 6:
-          lookAt(target.x, target.y - 10, target.z + adj, true);
+          lookAt(target.x, target.y - 10, target.z + adj);
           break;
         case 7:
-          lookAt(target.x, target.y - 10, target.z + adj, true);
+          lookAt(target.x, target.y - 10, target.z + adj);
           break;
         case 8:
           lookAt(target.x + adj, target.y, target.z + 10);
@@ -266,7 +258,7 @@ export default {
     resetCamera: function () {
       cameraControls.dampingFactor = 0.5;
       cameraControls.enabled = false;
-      cameraControls.setLookAt(10, 0, 0, 0, 0, 0, true);
+      cameraControls.setLookAt(0, 0, 10, 0, 0, 0, true);
       cameraControls.zoomTo(3, true);
       cameraControls.enabled = true;
       setTimeout(() => {

@@ -6,8 +6,17 @@
       <option value="cube">Cube</option>
       <option value="head">Head</option>
     </select>
-    <input type="checkbox" id="snap" name="snap" value="false" />
+    <br />
+    <input
+      type="checkbox"
+      id="snap"
+      name="snap"
+      value="false"
+      v-model="snapToggle"
+    />
     <label for="snap"> Snap</label>
+    <br />
+    <button @click="resetTransformation()">Reset</button>
   </div>
 </template>
 
@@ -37,7 +46,9 @@ export default {
   data() {
     return {
       model: "cube",
-      snap: false,
+      rotationSnap: null,
+      translationSnap: null,
+      snapToggle: false,
       material: new THREE.MeshPhongMaterial({
         color: 0xfefefe,
         transparent: true,
@@ -65,7 +76,7 @@ export default {
       const cube = new THREE.Mesh(geometry, material);
       model = cube;
       scene.add(cube);
-      model.position.set(position.x, position.y, position.z + 1);
+      model.position.set(position.x, position.y, position.z);
       model.quaternion.set(
         quaternion.x,
         quaternion.y,
@@ -143,6 +154,8 @@ export default {
     setUpModel() {
       controls = new TransformControls(camera, document.getElementById("app"));
       controls.name = "canvasTransformControls";
+      controls.setRotationSnap(this.rotationSnap);
+      controls.setTranslationSnap(this.translationSnap);
       controls.addEventListener("change", function () {
         renderer.render(scene, camera);
       });
@@ -261,6 +274,22 @@ export default {
         location: transfromToolbarPosition.location,
       });
     },
+    resetTransformation() {
+      model.position.set(
+        this.startPosition.x,
+        this.startPosition.y,
+        this.startPosition.z
+      );
+      model.quaternion.set(
+        this.startQuaternion.x,
+        this.startQuaternion.y,
+        this.startQuaternion.z,
+        this.startQuaternion.w
+      );
+      model.scale.set(this.startScale.x, this.startScale.y, this.startScale.z);
+      renderer.render(scene, camera);
+      this.updatePosition();
+    },
   },
   watch: {
     model: function (val) {
@@ -289,6 +318,15 @@ export default {
     selectedTool: function (val) {
       if (val == "model") {
         this.updatePosition();
+      }
+    },
+    snapToggle: function (val) {
+      if (val) {
+        controls.setRotationSnap((30 * Math.PI) / 180);
+        controls.setTranslationSnap(1);
+      } else {
+        controls.setRotationSnap(null);
+        controls.setTranslationSnap(null);
       }
     },
   },

@@ -204,8 +204,12 @@ let draw = {
             try {
                 var intersectedObject = raycaster.intersectObjects([model])[0];
                 var nt = intersectedObject.point;
-                console.log(intersectedObject);
-                v4 = new THREE.Vector4(nt.x, nt.y, nt.z, force);
+                var normal = intersectedObject.face.normal;
+                let offset = 40;
+                normal.x = normal.x / offset;
+                normal.y = normal.y / offset;
+                normal.z = normal.z / offset;
+                v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
             } catch (err) {
                 console.log(err);
                 return

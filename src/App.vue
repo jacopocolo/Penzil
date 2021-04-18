@@ -124,11 +124,11 @@ export default {
       axesHelper.material.fog = false;
       scene.add(axesHelper);
 
-      // var axesHelperFlipped = new THREE.AxesHelper();
-      // axesHelperFlipped.applyMatrix4(new THREE.Matrix4().makeScale(-5, -5, -5));
-      // axesHelperFlipped.layers.set(0);
-      // axesHelperFlipped.material.fog = false;
-      // scene.add(axesHelperFlipped);
+      var axesHelperFlipped = new THREE.AxesHelper();
+      axesHelperFlipped.applyMatrix4(new THREE.Matrix4().makeScale(-5, -5, -5));
+      axesHelperFlipped.layers.set(0);
+      axesHelperFlipped.material.fog = false;
+      scene.add(axesHelperFlipped);
 
       var size = 1;
       var divisions = 10;
@@ -146,7 +146,7 @@ export default {
       camera.layers.enable(0); // enabled by default
       camera.layers.enable(1);
       camera.zoom = 3;
-      camera.position.set(10, 0, 0);
+      camera.position.set(0, 0, 10);
 
       clock = new THREE.Clock();
 
