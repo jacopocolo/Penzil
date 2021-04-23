@@ -13,24 +13,37 @@ import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 
+// let brush = new THREE.TextureLoader().load(
+//     "/brush.png"
+// )
+// let watercolor = new THREE.TextureLoader().load(
+//     "/watercolor.jpg"
+// )
+
 let draw = {
     l: undefined,
     draw: class {
         constructor(stroke, fill) {
-
             this.stroke = stroke;
             this.line = new MeshLine();
             this.geometry = new THREE.BufferGeometry();
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
             this.material = new MeshLineMaterial({
+                // useMap: true,
+                // map: brush,
                 lineWidth: this.stroke.show_stroke ? this.stroke.lineWidth : 0.005,
                 sizeAttenuation: 1,
                 color: this.stroke.show_stroke ? this.stroke.color : 0xFFFFFF,
                 side: THREE.DoubleSide,
                 fog: false,
                 wireframe: false,
-                transparent: this.stroke.show_stroke ? false : true,
+                // depthTest: true,
+                alphaTest: 0.4,
+                // transparent: this.stroke.show_stroke ? false : true,
+                blending: THREE.NormalBlending,
+                transparent: false,
+                repeat: new THREE.Vector2(1, 1),
                 opacity: !this.stroke.show_stroke ? 1 : 1,
             });
             this.mesh = new THREE.Mesh(this.line, this.material);
@@ -41,7 +54,7 @@ let draw = {
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
             this.bufferPoints = new Array();
-            this.size = 16;
+            this.size = 8;
 
             this.mesh.userData.vertices = new Array();
             this.mesh.userData.stroke = { show_stroke: stroke.show_stroke, color: stroke.color, lineWidth: stroke.lineWidth };
@@ -55,11 +68,14 @@ let draw = {
             this.triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
             this.fillGeometry.setIndex(this.triangles);
             this.fillMaterial = new THREE.MeshBasicMaterial({
+                // useMap: true,
+                // map: watercolor,
                 color: this.fill.color,
                 side: THREE.DoubleSide,
                 wireframe: false,
                 polygonOffset: this.stroke.show_stroke ? true : false,
                 polygonOffsetFactor: this.stroke.lineWidth * 1000,
+                depthTest: true,
                 polygonOffsetUnits: -1,
                 transparent: this.fill.show_fill ? true : false,
                 opacity: this.fill.show_fill ? 0.05 : 0,
@@ -110,6 +126,14 @@ let draw = {
             this.stroke.show_stroke ? '' : this.mesh.material.opacity = 0;
             this.fill.show_fill ? this.fillMesh.material.transparent = false : '';
             this.fill.show_fill ? this.fillMesh.material.opacity = 1 : '';
+
+            // let uvs = [];
+            // for (let i = this.fillGeometry.attributes.position.array.length; i >= 0; i = i - 2) {
+            //     uvs.push(this.fillGeometry.attributes.position.array[i]);
+            //     uvs.push(this.fillGeometry.attributes.position.array[i + 1]);
+            // }
+            // this.fillGeometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2));
+
             renderer.render(scene, camera);
 
             this.mesh.position.set(
@@ -194,6 +218,10 @@ let draw = {
 
         }
         addVertex(x, y, z, force, unproject) {
+
+            //trying to add a bit of noise maybe?
+            force = force * Math.random() * 4;
+
             var v3 = new THREE.Vector3(x, y, z);
             if (unproject) {
                 v3.unproject(camera);
@@ -204,11 +232,12 @@ let draw = {
             try {
                 var intersectedObject = raycaster.intersectObjects([model])[0];
                 var nt = intersectedObject.point;
-                var normal = intersectedObject.face.normal;
-                let offset = 30;
-                normal.x = normal.x / offset;
-                normal.y = normal.y / offset;
-                normal.z = normal.z / offset;
+                // var normal = intersectedObject.face.normal;
+                // let offset = 30;
+                // normal.x = normal.x / offset;
+                // normal.y = normal.y / offset;
+                // normal.z = normal.z / offset;
+                let normal = { x: 0, y: 0, z: 0 };
                 v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
             } catch (err) {
                 console.log(err);
@@ -239,16 +268,6 @@ let draw = {
                         this.fillGeometry.needsUpdate = true;
                     }
 
-                    // this.fillGeometry.setIndex(triangles);
-
-                    // this.fillGeometry.attributes.position.array = this.Float32Concat(this.fillGeometry.attributes.position.array, new Float32Array([pt.x, pt.y, pt.z]));
-                    // this.fillGeometry.attributes.position.count = this.fillGeometry.attributes.position.count + 3;
-                    // this.fillGeometry.attributes.position.needsUpdate = true;
-
-                    // this.triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
-                    // this.fillGeometry.setIndex(this.triangles);
-                    // console.log(this.fillGeometry)
-                    // this.fillGeometry.computeBoundingSphere();
                 }
             } else {
                 this.mesh.userData.stroke.force.push(force);

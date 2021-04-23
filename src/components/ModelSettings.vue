@@ -53,11 +53,13 @@ export default {
       material: new THREE.MeshPhongMaterial({
         color: 0xfefefe,
         transparent: true,
-        opacity: 0.95,
+        opacity: this.opacity,
         side: THREE.DoubleSide,
-        // polygonOffset: true,
-        // polygonOffsetFactor: 15,
-        // polygonOffsetUnits: -1,
+        // depthTest: false,
+        // depthWrite: false,
+        polygonOffset: true,
+        polygonOffsetFactor: 2.5,
+        polygonOffsetUnits: -1,
       }),
       startPosition: new THREE.Vector3(0.001, 0.001, 0.001),
       startQuaternion: new THREE.Quaternion(0.001, 0.001, 0.001, 1),
@@ -66,6 +68,7 @@ export default {
   },
   props: {
     selectedTool: String,
+    opacity: Number,
   },
   methods: {
     setUpCube() {
@@ -360,6 +363,15 @@ export default {
         controls.setRotationSnap(null);
         controls.setTranslationSnap(null);
       }
+    },
+    opacity: function (val) {
+      this.material.opacity = val;
+      if (val == 0) {
+        this.material.visible = false;
+      } else {
+        this.material.visible = true;
+      }
+      renderer.render(scene, camera);
     },
   },
   mounted() {

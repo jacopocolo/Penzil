@@ -25,8 +25,8 @@ export default {
     return {
       stroke: true,
       strokeColor: "#ff0000",
-      strokeWidth: 1,
-      fill: true,
+      strokeWidth: 10,
+      fill: false,
       fillColor: "#000000",
     };
   },

@@ -7,6 +7,7 @@
   <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
   <model-settings
     :selectedTool="tool"
+    :opacity="modelOpacity"
     ref="modalSettings"
     @transform-toolbar-display="setTransformToolbarDisplay"
     @toolbar-position="setTransformToolbarPosition"
@@ -35,29 +36,15 @@ import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
-// import { drawingPlane } from "./components/drawingPlane.js";
 import LineSettings from "./components/LineSettings.vue";
 import ModelSettings from "./components/ModelSettings.vue";
 import Menu from "./components/Menu.vue";
-
-//import Modal from "./components/Modal.vue";
-//import Toast from "./components/Toast.vue";
-//import LineSettings from "./components/LineSettings.vue";
-//import Old from "./components/Old.vue";
 
 export let renderer = new THREE.WebGLRenderer({
   antialias: true,
   alpha: true,
   preserveDrawingBuffer: true, //this is the configuration that allows the renderer to redraw only the current line when we are drawing instead of the whole scene. If I remember correctly it could create some issues with the video rendering. Leaving a note in case it does. One potential workaround would be to have two separte renderers, one for the scene, one for the current line.
 });
-// export let camera = new THREE.OrthographicCamera(
-//   window.innerWidth / -2,
-//   window.innerWidth / 2,
-//   window.innerHeight / 2,
-//   window.innerHeight / -2,
-//   0,
-//   15
-// );
 export let camera = new THREE.PerspectiveCamera(
   100,
   window.innerWidth / window.innerHeight,
@@ -95,6 +82,7 @@ export default {
       cameraResetDisabled: false,
       selected: undefined,
       transformToolbar: { top: 0, left: 0, location: "above", display: false },
+      modelOpacity: 0.9,
     };
   },
   methods: {
@@ -112,7 +100,7 @@ export default {
 
       scene = new THREE.Scene();
       //Set the background based on the css variable;
-      var bgCol = 0xeeeeee;
+      var bgCol = 0xdddddd;
       scene.background = new THREE.Color(bgCol);
       //scene.fog = new THREE.Fog(0xffffff, 9, 13);
 
@@ -297,6 +285,12 @@ export default {
         return;
       }
 
+      if (val == "draw" || val == "model") {
+        this.modelOpacity = 0.9;
+      } else {
+        this.modelOpacity = 0;
+      }
+
       if (val == "model") {
         this.$.refs.modalSettings.attachControls();
       } else {
@@ -348,6 +342,9 @@ export default {
     },
     setFill: function (val) {
       this.fill = val;
+    },
+    setModelOpacity: function (val) {
+      this.modelOpacity = val;
     },
   },
   mounted() {
