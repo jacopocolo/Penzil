@@ -24,14 +24,13 @@
 <script>
 import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
-import { scene, renderer, camera, vm } from "../App.vue";
-import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
+import { scene, renderer, camera } from "../App.vue";
 import * as colors from "./colors.js";
+import { ObjectTransform } from "./objectTransform";
 // let canvasTexture = new THREE.TextureLoader().load(
 //   require("@/assets/drawingPlane/canvas-texture.png")
 // );
 export let model;
-let controls;
 let helper;
 let position = new THREE.Vector3(0.001, 0.001, 0.001);
 let quaternion = new THREE.Quaternion(0.001, 0.002, 0.002, 1);
@@ -88,13 +87,16 @@ export default {
         quaternion.w
       );
       model.scale.set(scale.x, scale.y, scale.z);
-      scene.add(controls);
       helper = new THREE.BoxHelper(model, colors.selectedColor);
       scene.add(helper);
       helper.geometry.computeBoundingBox();
       helper.visible = false;
       helper.update();
       this.transformToolbarDisplay(true);
+
+      let drawingCanvas = document.getElementById("twod");
+      let ot = new ObjectTransform(model, drawingCanvas);
+      ot.start();
       renderer.render(scene, camera);
     },
     setUpPlane() {
@@ -114,8 +116,6 @@ export default {
         quaternion.w
       );
       model.scale.set(scale.x, scale.y, scale.z);
-      controls.attach(model);
-      scene.add(controls);
       helper = new THREE.BoxHelper(model, new THREE.Color(0x000000));
       scene.add(helper);
       helper.geometry.computeBoundingBox();
@@ -140,7 +140,6 @@ export default {
         quaternion.w
       );
       model.scale.set(scale.x, scale.y, scale.z);
-      scene.add(controls);
       helper = new THREE.BoxHelper(model, colors.selectedColor);
       scene.add(helper);
       helper.geometry.computeBoundingBox();
@@ -161,12 +160,9 @@ export default {
         quaternion.w
       );
       model.scale.set(scale.x, scale.y, scale.z);
-      controls.attach(model);
-      scene.add(controls);
       renderer.render(scene, camera);
     },
     attachControls() {
-      controls.attach(model);
       scene.add(helper);
       helper.update();
       this.transformToolbarDisplay(true);
@@ -174,7 +170,6 @@ export default {
     },
     detachControls() {
       this.transformToolbarDisplay(false);
-      controls.detach();
       scene.remove(helper);
       renderer.render(scene, camera);
     },
@@ -182,127 +177,7 @@ export default {
       this.$emit("transform-toolbar-display", val);
     },
     setUpModel() {
-      controls = new TransformControls(camera, document.getElementById("app"));
-      controls.name = "canvasTransformControls";
-      controls.setRotationSnap(this.rotationSnap);
-      controls.setTranslationSnap(this.translationSnap);
-      controls.addEventListener("change", function () {
-        renderer.render(scene, camera);
-      });
-      controls.addEventListener("objectChange", function () {
-        helper.update();
-        renderer.render(scene, camera);
-        function calculateTransfromToolbarPosition(controls) {
-          if (controls.object == undefined) {
-            return;
-          }
-
-          //find the center
-          let position = helper.geometry.boundingSphere.center;
-          position = position.project(camera);
-
-          //find the min and max vertical distance
-          let buffArray = helper.geometry.attributes.position.array;
-          let vectors = [];
-          for (let i = 0; i < buffArray.length; i = i + 3) {
-            vectors.push(new THREE.Vector3().fromArray(buffArray, i));
-          }
-          let vectorsY = [];
-          vectors.forEach((v) => {
-            v.project(camera);
-            let y = (-(v.y - 1) * window.innerHeight) / 2;
-            vectorsY.push(y);
-          });
-          let minY = Math.min(...vectorsY);
-          let maxY = Math.max(...vectorsY);
-
-          let location;
-
-          if (controls.children[0].gizmo.translate.children[5].visible) {
-            position.y = maxY;
-            location = "below";
-          } else {
-            position.y = minY;
-            location = "above";
-          }
-
-          return {
-            x: ((position.x + 1) * window.innerWidth) / 2,
-            y: position.y,
-            location: location,
-          };
-        }
-        let transfromToolbarPosition = calculateTransfromToolbarPosition(this);
-        vm.$.ctx.setTransformToolbarPosition({
-          left: transfromToolbarPosition.x,
-          top: transfromToolbarPosition.y,
-          location: transfromToolbarPosition.location,
-        });
-      });
-      controls.addEventListener("mouseUp", function () {
-        helper.update();
-        var endPosition = new THREE.Vector3();
-        controls.object.getWorldPosition(endPosition);
-        var endQuaternion = new THREE.Quaternion();
-        controls.object.getWorldQuaternion(endQuaternion);
-        var endScale = new THREE.Vector3();
-        controls.object.getWorldScale(endScale);
-        position = endPosition;
-        quaternion = endQuaternion;
-        scale = endScale;
-      });
       this.setUpCube();
-    },
-    updatePosition() {
-      helper.update();
-      function calculateTransfromToolbarPosition(controls) {
-        if (controls.object == undefined) {
-          return;
-        }
-
-        //find the center
-        let position = helper.geometry.boundingSphere.center;
-        position = position.project(camera);
-
-        //find the min and max vertical distance
-        let buffArray = helper.geometry.attributes.position.array;
-        let vectors = [];
-        for (let i = 0; i < buffArray.length; i = i + 3) {
-          vectors.push(new THREE.Vector3().fromArray(buffArray, i));
-        }
-        let vectorsY = [];
-        vectors.forEach((v) => {
-          v.project(camera);
-          let y = (-(v.y - 1) * window.innerHeight) / 2;
-          vectorsY.push(y);
-        });
-        let minY = Math.min(...vectorsY);
-        let maxY = Math.max(...vectorsY);
-
-        let location;
-
-        if (controls.children[0].gizmo.translate.children[5].visible) {
-          position.y = maxY;
-          location = "below";
-        } else {
-          position.y = minY;
-          location = "above";
-        }
-
-        return {
-          x: ((position.x + 1) * window.innerWidth) / 2,
-          y: position.y,
-          location: location,
-        };
-      }
-      let transfromToolbarPosition = calculateTransfromToolbarPosition(
-        controls
-      );
-      this.$emit("toolbar-position", {
-        left: transfromToolbarPosition.x,
-        top: transfromToolbarPosition.y,
-        location: transfromToolbarPosition.location,
-      });
     },
     resetTransformation() {
       model.position.set(
@@ -353,15 +228,6 @@ export default {
     selectedTool: function (val) {
       if (val == "model") {
         this.updatePosition();
-      }
-    },
-    snapToggle: function (val) {
-      if (val) {
-        controls.setRotationSnap((30 * Math.PI) / 180);
-        controls.setTranslationSnap(1);
-      } else {
-        controls.setRotationSnap(null);
-        controls.setTranslationSnap(null);
       }
     },
     opacity: function (val) {

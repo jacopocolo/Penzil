@@ -134,19 +134,28 @@ export default {
       camera.layers.enable(0); // enabled by default
       camera.layers.enable(1);
       camera.zoom = 3;
-      camera.position.set(0, 0, 10);
+      camera.position.set(10, 10, 10);
 
       clock = new THREE.Clock();
 
       cameraControls = new CameraControls(camera, drawingCanvas);
       cameraControls.dampingFactor = 20;
       cameraControls.draggingDampingFactor = 200;
+
       cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
-      cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
-      cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
+      cameraControls.mouseButtons.wheel = CameraControls.ACTION.NONE;
+      cameraControls.mouseButtons.right = CameraControls.ACTION.NONE;
       cameraControls.touches.one = CameraControls.ACTION.NONE;
-      cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
-      cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
+      cameraControls.touches.two = CameraControls.ACTION.NONE;
+      cameraControls.touches.three = CameraControls.ACTION.NONE;
+
+      // cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
+      // cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
+      // cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
+      // cameraControls.touches.one = CameraControls.ACTION.NONE;
+      // cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
+      // cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
+
       cameraControls.maxZoom = 4000;
       cameraControls.minZoom = 2;
 
@@ -185,9 +194,6 @@ export default {
           if (this.tool == "select") {
             select.s.helper.update();
           }
-          if (this.tool == "model") {
-            this.$.refs.modalSettings.updatePosition();
-          }
         }
       });
 
@@ -209,7 +215,6 @@ export default {
             this.transformToolbar.display = true;
           }
           if (this.tool == "model") {
-            this.$.refs.modalSettings.updatePosition();
             this.transformToolbar.display = true;
           }
         }
@@ -289,12 +294,6 @@ export default {
         this.modelOpacity = 0.9;
       } else {
         this.modelOpacity = 0;
-      }
-
-      if (val == "model") {
-        this.$.refs.modalSettings.attachControls();
-      } else {
-        this.$.refs.modalSettings.detachControls();
       }
 
       this.toolHistory.push(val);
