@@ -4,10 +4,15 @@
     :cameraResetDisabled="cameraResetDisabled"
   />
   <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
+  <multitouch-selector
+    @selected-multitouch="setMultitouch"
+    :selectedMultitouch="multitouch"
+  />
   <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
   <model-settings
     :selectedTool="tool"
     :opacity="modelOpacity"
+    :enabled="modelTransform"
     ref="modalSettings"
     @transform-toolbar-display="setTransformToolbarDisplay"
     @toolbar-position="setTransformToolbarPosition"
@@ -32,6 +37,7 @@ CameraControls.install({ THREE: THREE });
 
 import Canvas from "./components/Canvas.vue";
 import ToolSelector from "./components/ToolSelector.vue";
+import MultitouchSelector from "./components/MultitouchSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
@@ -69,11 +75,13 @@ export default {
     ViewportCube,
     UndoRedo,
     Menu,
+    MultitouchSelector,
     //Import,
   },
   data() {
     return {
       tool: "draw",
+      multitouch: "canvas",
       toolHistory: ["draw"],
       stroke: {}, //filled by the component on mount
       fill: {}, //filled by the component on mount
@@ -83,6 +91,7 @@ export default {
       selected: undefined,
       transformToolbar: { top: 0, left: 0, location: "above", display: false },
       modelOpacity: 0.9,
+      modelTransform: true,
     };
   },
   methods: {
@@ -318,6 +327,36 @@ export default {
     setSelectedTool_internal: function (val) {
       //this is a version without undo so that it can be called by the setCenter tool
       this.tool = val;
+    },
+    setMultitouch: function (val) {
+      this.multitouch = val;
+      switch (val) {
+        case "canvas":
+          this.modelTransform = true;
+          cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
+          cameraControls.mouseButtons.wheel = CameraControls.ACTION.NONE;
+          cameraControls.mouseButtons.right = CameraControls.ACTION.NONE;
+          cameraControls.touches.one = CameraControls.ACTION.NONE;
+          cameraControls.touches.two = CameraControls.ACTION.NONE;
+          cameraControls.touches.three = CameraControls.ACTION.NONE;
+          break;
+
+        case "camera":
+          this.modelTransform = false;
+          cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
+          cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
+          cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
+          cameraControls.touches.one = CameraControls.ACTION.NONE;
+          cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
+          cameraControls.touches.three =
+            CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
+          cameraControls.verticalDragToForward = true;
+
+          break;
+
+        default:
+          break;
+      }
     },
     setPreviouslySelectedTool: function () {
       //this is used by setCenter.js to set the tool back to its previus config after setting the center

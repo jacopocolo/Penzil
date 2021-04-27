@@ -36,6 +36,7 @@ let position = new THREE.Vector3(0.001, 0.001, 0.001);
 let quaternion = new THREE.Quaternion(0.001, 0.002, 0.002, 1);
 let scale = new THREE.Vector3(1, 1, 1);
 let head;
+let ot;
 const loader = new GLTFLoader();
 loader.load("/asaro.gltf", function (gltf) {
   head = gltf.scene.children[0];
@@ -68,6 +69,7 @@ export default {
   props: {
     selectedTool: String,
     opacity: Number,
+    enabled: Boolean,
   },
   methods: {
     setUpCube() {
@@ -95,7 +97,7 @@ export default {
       this.transformToolbarDisplay(true);
 
       let drawingCanvas = document.getElementById("twod");
-      let ot = new ObjectTransform(model, drawingCanvas);
+      ot = new ObjectTransform(model, drawingCanvas);
       ot.start();
       renderer.render(scene, camera);
     },
@@ -238,6 +240,13 @@ export default {
         this.material.visible = true;
       }
       renderer.render(scene, camera);
+    },
+    enabled: function (val) {
+      if (val == true) {
+        ot.enable();
+      } else {
+        ot.disable();
+      }
     },
   },
   mounted() {

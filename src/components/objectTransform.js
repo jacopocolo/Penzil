@@ -6,6 +6,7 @@ let ObjectTransform = class {
     constructor(object, element) {
         this.element = element
         this.object = object
+        this.enabled = true
     }
     mouse = {
         down: false,
@@ -83,7 +84,7 @@ let ObjectTransform = class {
         }
     }
     onTouchMove() {
-        if (this.touches.length == 3) {
+        if (this.touches.length === 3) {
             console.log("3")
             let lastDragX = this.touches[0].lastDragPosition.x;
             let lastDragY = this.touches[0].lastDragPosition.y;
@@ -97,7 +98,7 @@ let ObjectTransform = class {
             return;
         }
 
-        if (this.touches.length == 2) {
+        if (this.touches.length === 2) {
             //for rotation
             let lastDragX = this.touches[0].lastDragPosition.x;
             let lastDragY = this.touches[0].lastDragPosition.y;
@@ -142,36 +143,38 @@ let ObjectTransform = class {
         }
     }
     handleInput(event) {
-        switch (event.type) {
-            case "mousedown":
-                if (event.button != 3) { return }
-                this.updateMouse(event);
-                this.onMouseStart();
-                break;
-            case "touchstart":
-                this.updateTouches(event);
-                this.onTouchStart();
-                break;
-            case "mousemove":
-                if (event.button != 3) { return }
-                this.updateMouse(event);
-                this.onTouseMove();
-                break;
-            case "touchmove":
-                this.updateTouches(event);
-                this.onTouchMove();
-                break;
-            case "mouseup":
-                if (event.button != 3) { return }
-                this.updateMouse(event);
-                this.onMouseEnd();
-                break;
-            case "touchend":
-                this.updateTouches(event);
-                this.onTouchEnd();
-                break;
-            default:
-            //nothing;
+        if (this.enabled === false) { return } else {
+            switch (event.type) {
+                case "mousedown":
+                    if (event.button != 3) { return }
+                    this.updateMouse(event);
+                    this.onMouseStart();
+                    break;
+                case "touchstart":
+                    this.updateTouches(event);
+                    this.onTouchStart();
+                    break;
+                case "mousemove":
+                    if (event.button != 3) { return }
+                    this.updateMouse(event);
+                    this.onTouseMove();
+                    break;
+                case "touchmove":
+                    this.updateTouches(event);
+                    this.onTouchMove();
+                    break;
+                case "mouseup":
+                    if (event.button != 3) { return }
+                    this.updateMouse(event);
+                    this.onMouseEnd();
+                    break;
+                case "touchend":
+                    this.updateTouches(event);
+                    this.onTouchEnd();
+                    break;
+                default:
+                //nothing;
+            }
         }
     }
     updateLastDragPosition() {
@@ -183,15 +186,28 @@ let ObjectTransform = class {
         }
     }
     translateObject(deltaX, deltaY) {
+        //https://github.com/yomotsu/camera-controls/blob/dev/src/CameraControls.ts#L249
+
+        let cameraDirection = new THREE.Vector3();
+        camera.getWorldDirection(cameraDirection);
+        cameraDirection.y = 0;
+        console.log(cameraDirection)
+
         deltaX = Math.sign(deltaX)
         deltaY = Math.sign(deltaY)
-        var speed = 0.03;
+        var speed = 1;
 
-        this.object.position.set(
-            this.object.position.x += deltaX * speed,
-            this.object.position.y -= deltaY * speed,
-            this.object.position.z
-        )
+        if (deltaY < 0) {
+            this.object.position.add(
+                cameraDirection.multiplyScalar(speed)
+            )
+        } else {
+            this.object.position.add(
+                cameraDirection.multiplyScalar(-speed)
+            )
+        }
+
+
 
         renderer.render(scene, camera);
     }
@@ -230,6 +246,14 @@ let ObjectTransform = class {
         }
         renderer.render(scene, camera);
 
+    }
+    enable() {
+        this.enabled = true;
+        console.log(this.enabled)
+    }
+    disable() {
+        this.enabled = false;
+        console.log(this.enabled)
     }
 }
 

@@ -13,16 +13,7 @@
         <div></div>
       </span> -->
 
-      <span @click="setTool('model', true)">
-        <input
-          type="radio"
-          id="toolModel"
-          name="tools"
-          value="model"
-          v-model="tool"
-        /><label for="toolModel"> Canvas </label>
-        <div></div> </span
-      ><span @click="setTool('draw', true)">
+      <span @click="setTool('draw', true)">
         <input
           type="radio"
           id="toolDraw"
@@ -87,7 +78,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .mainToolbar {
   position: absolute;
   top: 0;
