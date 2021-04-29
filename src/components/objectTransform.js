@@ -7,6 +7,10 @@ let ObjectTransform = class {
         this.element = element
         this.object = object
         this.enabled = true
+        this.plane = new THREE.Plane(new THREE.Vector3(0, 1, 0), 0)
+        this.raycaster = new THREE.Raycaster()
+        this.intersects = new THREE.Vector3()
+        this.previousIntersects = new THREE.Vector3();
     }
     mouse = {
         down: false,
@@ -71,6 +75,9 @@ let ObjectTransform = class {
         console.log('mouseend')
     }
     onTouchStart() {
+
+        console.log(this.object.position)
+
         this.touches.down = true;
         for (let i = 0; i < this.touches.length; i++) {
             this.touches[i].dragStartPosition = new THREE.Vector2(
@@ -84,16 +91,31 @@ let ObjectTransform = class {
         }
     }
     onTouchMove() {
-        if (this.touches.length === 3) {
-            console.log("3")
+        if (this.touches.length === 1) {
+            let objectCoord = this.object.position;
+            objectCoord.project(camera);
+            let ox = ((objectCoord.x + 1) * this.element.width) / 2;
+            let oy = (-(objectCoord.y - 1) * this.element.height) / 2;
+            let offset = new THREE.Vector2(ox, oy);
+
+            // let d = document.createElement("div");
+            // d.style.position = "absolute";
+            // d.style.top = offset.y + "px";
+            // d.style.left = offset.x + "px";
+            // d.style.backgroundColor = "blue";
+            // d.style.width = "10px"
+            // d.style.height = "10px";
+            // document.body.appendChild(d);
+
             let lastDragX = this.touches[0].lastDragPosition.x;
             let lastDragY = this.touches[0].lastDragPosition.y;
             let x = this.touches[0].cx;
             let y = this.touches[0].cy;
-            this.translateObject(
-                -(lastDragX - x),
-                -(lastDragY - y)
-            )
+
+            let deltaX = lastDragX - x;
+            let deltaY = lastDragY - y;
+
+            this.translateObject(offset, deltaX, deltaY)
             this.updateLastDragPosition()
             return;
         }
@@ -178,40 +200,58 @@ let ObjectTransform = class {
         }
     }
     updateLastDragPosition() {
-        for (let i = 0; i < this.touches.length; i++) {
+        for (let i = 0; i < this.touches.length - 1; i++) {
             this.touches[i].lastDragPosition = new THREE.Vector2(
                 this.touches[i].cx,
                 this.touches[i].cy
             )
         }
     }
-    translateObject(deltaX, deltaY) {
-        //https://github.com/yomotsu/camera-controls/blob/dev/src/CameraControls.ts#L249
+    translateObject(offset, deltaX, deltaY) {
 
-        let cameraDirection = new THREE.Vector3();
-        camera.getWorldDirection(cameraDirection);
-        cameraDirection.y = 0;
-        console.log(cameraDirection)
+        // console.log(offset)
 
-        deltaX = Math.sign(deltaX)
-        deltaY = Math.sign(deltaY)
-        var speed = 1;
+        // let d = document.createElement("div");
+        // d.style.position = "absolute";
+        // d.style.top = offset.y + "px";
+        // d.style.left = offset.x + "px";
+        // d.style.backgroundColor = "rgba(255, 0, 0, 0.8)";
+        // d.style.width = "10px"
+        // d.style.height = "10px";
+        // document.body.appendChild(d);
+        let speed = 1.1;
 
-        if (deltaY < 0) {
-            this.object.position.add(
-                cameraDirection.multiplyScalar(speed)
-            )
-        } else {
-            this.object.position.add(
-                cameraDirection.multiplyScalar(-speed)
-            )
-        }
+        let x = (((offset.x - deltaX * speed) / this.element.width) * 2 - 1)
+        let y = (-((offset.y - deltaY * speed) / this.element.height) * 2 + 1)
 
 
+        let coord = new THREE.Vector2(x, y);
+        this.raycaster.setFromCamera(coord, camera);
+        this.raycaster.ray.intersectPlane(this.plane, this.intersects);
+        this.intersects.multiplyScalar(0.2)
+
+        if (this.intersects.x < -5) { this.intersects.x = -5 }
+        if (this.intersects.x > 5) { this.intersects.x = 5 }
+        if (this.intersects.y < -5) { this.intersects.y = -5 }
+        if (this.intersects.y > 5) { this.intersects.y = 5 }
+        if (this.intersects.z < -5) { this.intersects.z = -5 }
+        if (this.intersects.z > 5) { this.intersects.z = 5 }
+
+
+
+        this.object.position.set(
+            this.intersects.x,
+            this.intersects.y,
+            this.intersects.z
+        );
+
+        console.log(this.object.position)
 
         renderer.render(scene, camera);
     }
     rotateObject(deltaX, deltaY) {
+        //https://stackoverflow.com/questions/49780786/rotate-an-object-like-orbitcontrols-but-only-the-object-itself
+
         deltaX = Math.sign(deltaX)
         deltaY = Math.sign(deltaY)
         let w = this.element.width;

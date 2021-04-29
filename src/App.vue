@@ -350,7 +350,7 @@ export default {
           cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
           cameraControls.touches.three =
             CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
-          cameraControls.verticalDragToForward = true;
+          //cameraControls.verticalDragToForward = true;
 
           break;
 
