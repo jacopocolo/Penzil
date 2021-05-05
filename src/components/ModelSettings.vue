@@ -26,7 +26,7 @@ import * as THREE from "three";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { scene, renderer, camera } from "../App.vue";
 import * as colors from "./colors.js";
-import { ObjectTransform } from "./objectTransform";
+import { ObjectControls } from "./objectControls.js";
 // let canvasTexture = new THREE.TextureLoader().load(
 //   require("@/assets/drawingPlane/canvas-texture.png")
 // );
@@ -97,8 +97,18 @@ export default {
       this.transformToolbarDisplay(true);
 
       let drawingCanvas = document.getElementById("twod");
-      ot = new ObjectTransform(model, drawingCanvas);
-      ot.start();
+      ot = new ObjectControls(model, camera, drawingCanvas);
+      ot.translateSpeed = 0.2;
+      ot.addEventListener(
+        "change",
+        () => {
+          console.log("update");
+          ot.update();
+          renderer.render(scene, camera);
+        },
+        false
+      );
+      ot.update();
       renderer.render(scene, camera);
     },
     setUpPlane() {
@@ -123,6 +133,20 @@ export default {
       helper.geometry.computeBoundingBox();
       helper.visible = false;
       helper.update();
+
+      let drawingCanvas = document.getElementById("twod");
+      ot = new ObjectControls(model, camera, drawingCanvas);
+      ot.translateSpeed = 0.2;
+      ot.addEventListener(
+        "change",
+        () => {
+          console.log("update");
+          ot.update();
+          renderer.render(scene, camera);
+        },
+        false
+      );
+      ot.update();
       renderer.render(scene, camera);
     },
     setUpCylinder() {
@@ -179,7 +203,7 @@ export default {
       this.$emit("transform-toolbar-display", val);
     },
     setUpModel() {
-      this.setUpCube();
+      this.setUpPlane();
     },
     resetTransformation() {
       model.position.set(
@@ -243,9 +267,9 @@ export default {
     },
     enabled: function (val) {
       if (val == true) {
-        ot.enable();
+        ot.enabled = true;
       } else {
-        ot.disable();
+        ot.enabled = false;
       }
     },
   },
