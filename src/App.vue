@@ -299,12 +299,6 @@ export default {
         return;
       }
 
-      if (val == "draw" || val == "model") {
-        this.modelOpacity = 0.9;
-      } else {
-        this.modelOpacity = 0;
-      }
-
       this.toolHistory.push(val);
       if (this.toolHistory.length > 2) {
         this.toolHistory.shift();
@@ -333,6 +327,7 @@ export default {
       switch (val) {
         case "canvas":
           this.modelTransform = true;
+          this.setModelOpacity(0.9);
           cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
           cameraControls.mouseButtons.wheel = CameraControls.ACTION.NONE;
           cameraControls.mouseButtons.right = CameraControls.ACTION.NONE;
@@ -343,6 +338,7 @@ export default {
 
         case "camera":
           this.modelTransform = false;
+          this.setModelOpacity(0.2);
           cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
           cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
           cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;

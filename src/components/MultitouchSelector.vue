@@ -11,7 +11,18 @@
         /><label for="setCenter"> set • </label>
         <div></div>
       </span> -->
-
+      <span @click="setMultitouch('camera', true)">
+        <input
+          type="radio"
+          id="cameraMultitouch"
+          name="multitouch"
+          value="camera"
+          v-model="touch"
+        /><label for="cameraMultitouch">
+          <img src="@/assets/icons/camera.svg" alt="Select camera" />
+        </label>
+        <div></div>
+      </span>
       <span @click="setMultitouch('canvas', true)">
         <input
           type="radio"
@@ -19,16 +30,9 @@
           name="multitouch"
           value="canvas"
           v-model="touch"
-        /><label for="canvasMultitouch"> Canvas </label>
-        <div></div> </span
-      ><span @click="setMultitouch('camera', true)">
-        <input
-          type="radio"
-          id="cameraMultitouch"
-          name="multitouch"
-          value="camera"
-          v-model="touch"
-        /><label for="cameraMultitouch"> Camera </label>
+        /><label for="canvasMultitouch">
+          <img src="@/assets/icons/canvas.svg" alt="Select canvas" />
+        </label>
         <div></div>
       </span>
     </div>
@@ -81,11 +85,39 @@ export default {
   padding-left: 6px;
   white-space: discard;
   display: flex;
-  width: 400px;
+  flex-direction: column;
   float: left;
+  flex-wrap: wrap;
+  gap: 20px;
 }
 
 #setCenter + label {
   margin-right: 50px;
+}
+
+ul {
+  list-style: none;
+}
+li {
+  display: inline-block;
+  margin-right: 15px;
+}
+input {
+  visibility: hidden;
+}
+label {
+  cursor: pointer;
+  padding: 16px;
+  border-radius: 6px;
+  height: 60px;
+}
+
+label > img {
+  position: relative;
+  bottom: -12px;
+}
+
+input:checked + label {
+  background: rgba(30, 30, 0, 0.2);
 }
 </style>

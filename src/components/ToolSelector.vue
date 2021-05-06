@@ -20,7 +20,9 @@
           name="tools"
           value="draw"
           v-model="tool"
-        /><label for="toolDraw"> Draw </label>
+        /><label for="toolDraw">
+          <img src="@/assets/icons/draw.svg" alt="Select pencil" />
+        </label>
         <div></div> </span
       ><span @click="setTool('erase', true)">
         <input
@@ -29,7 +31,9 @@
           name="tools"
           value="erase"
           v-model="tool"
-        /><label for="toolEraser"> Erase </label>
+        /><label for="toolEraser">
+          <img src="@/assets/icons/eraser.svg" alt="Select eraser" />
+        </label>
         <div></div> </span
       ><span @click="setTool('select', true)">
         <input
@@ -38,7 +42,9 @@
           name="tools"
           value="select"
           v-model="tool"
-        /><label for="toolSelect"> Select </label>
+        /><label for="toolSelect">
+          <img src="@/assets/icons/select.svg" alt="Select selector" />
+        </label>
         <div></div>
       </span>
     </div>
@@ -96,5 +102,30 @@ export default {
 
 #setCenter + label {
   margin-right: 50px;
+}
+
+ul {
+  list-style: none;
+}
+li {
+  display: inline-block;
+  margin-right: 15px;
+}
+input {
+  visibility: hidden;
+}
+label {
+  cursor: pointer;
+  padding: 16px;
+  border-radius: 6px;
+}
+
+label > img {
+  position: relative;
+  bottom: -12px;
+}
+
+input:checked + label {
+  background: rgba(30, 30, 0, 0.2);
 }
 </style>
