@@ -1,6 +1,6 @@
 
 <template>
-  <div class="mainToolbar">
+  <div>
     <div class="toolSelection">
       <!-- <span @click="setTool('center', true)">
         <input
@@ -85,13 +85,6 @@ export default {
 </script>
 
 <style scoped>
-.mainToolbar {
-  position: absolute;
-  top: 0;
-  left: calc(50% - 160px);
-  z-index: 2;
-}
-
 .toolSelection {
   padding-left: 6px;
   white-space: discard;

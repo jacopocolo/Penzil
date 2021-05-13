@@ -36,6 +36,6 @@ div {
   position: absolute;
   z-index: 2;
   bottom: 10px;
-  left: 10px;
+  right: 10px;
 }
 </style>

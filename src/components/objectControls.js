@@ -99,7 +99,7 @@ class ObjectControls extends EventDispatcher {
         this.keys = { LEFT: 'ArrowLeft', UP: 'ArrowUp', RIGHT: 'ArrowRight', BOTTOM: 'ArrowDown' };
 
         // Mouse buttons
-        this.mouseButtons = { LEFT: MOUSE.NONE, MIDDLE: MOUSE.ROTATE, RIGHT: MOUSE.TRANSLATE };
+        this.mouseButtons = { LEFT: MOUSE.ROTATE, MIDDLE: MOUSE.ROTATE, RIGHT: MOUSE.TRANSLATE };
 
         // Touch fingers
         this.touches = { ONE: ACTION.NONE, TWO: ACTION.SCALE_ROTATE, THREE: ACTION.TRANSLATE };

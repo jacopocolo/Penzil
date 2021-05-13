@@ -1,22 +1,27 @@
 <template>
   <viewport-cube
-    :quaternion="quaternion"
+    :quaternion="cameraQuaternion"
     :cameraResetDisabled="cameraResetDisabled"
   />
-  <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
+  <model-settings
+    :quaternion="cameraQuaternion"
+    :opacity="modelOpacity"
+    :enabled="multitouch"
+    ref="modalSettings"
+    @transform-toolbar-display="setTransformToolbarDisplay"
+    @toolbar-position="setTransformToolbarPosition"
+  />
+  <div class="toolbar">
+    <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool">
+    </tool-selector>
+    <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
+  </div>
   <multitouch-selector
     @selected-multitouch="setMultitouch"
     :selectedMultitouch="multitouch"
   />
   <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
-  <model-settings
-    :selectedTool="tool"
-    :opacity="modelOpacity"
-    :enabled="modelTransform"
-    ref="modalSettings"
-    @transform-toolbar-display="setTransformToolbarDisplay"
-    @toolbar-position="setTransformToolbarPosition"
-  />
+
   <transorm-toolbar
     :top="transformToolbar.top"
     :left="transformToolbar.left"
@@ -24,7 +29,7 @@
     :display="transformToolbar.display"
     :selectedTool="tool"
   />
-  <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
+
   <Canvas :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
   <Menu />
 </template>
@@ -86,7 +91,8 @@ export default {
       stroke: {}, //filled by the component on mount
       fill: {}, //filled by the component on mount
       mirror: false,
-      quaternion: undefined,
+      cameraQuaternion: undefined,
+      modelQuaternion: undefined,
       cameraResetDisabled: false,
       selected: undefined,
       transformToolbar: { top: 0, left: 0, location: "above", display: false },
@@ -168,7 +174,7 @@ export default {
       cameraControls.maxZoom = 4000;
       cameraControls.minZoom = 2;
 
-      this.quaternion = [
+      this.cameraQuaternion = [
         camera.quaternion.x,
         camera.quaternion.y,
         camera.quaternion.z,
@@ -177,7 +183,7 @@ export default {
 
       cameraControls.addEventListener("update", () => {
         if (cameraControls.enabled == true) {
-          this.quaternion = [
+          this.cameraQuaternion = [
             camera.quaternion.x,
             camera.quaternion.y,
             camera.quaternion.z,
@@ -380,6 +386,9 @@ export default {
     setModelOpacity: function (val) {
       this.modelOpacity = val;
     },
+    setModelQuaternion: function (val) {
+      this.modelQuaternion = val;
+    },
   },
   mounted() {
     this.init();
@@ -423,6 +432,13 @@ html,
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
   width: 100%;
+}
+
+.toolbar {
+  position: absolute;
+  top: 0;
+  left: calc(50% - 160px);
+  z-index: 2;
 }
 
 .disabled {

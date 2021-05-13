@@ -7,14 +7,14 @@
     @mousedown="handleInput"
     @mousemove="handleInput"
     @mouseup="handleInput"
-    id="viewport"
+    id="viewportM"
   >
-    <canvas id="viewportCanvas"></canvas>
+    <canvas id="viewportModel"></canvas>
     <span
-      class="reset-camera"
-      @click="resetCamera()"
-      @touchstart="resetCamera()"
-      v-bind:class="[cameraResetDisabled ? 'disabled ' : '']"
+      class="reset-model"
+      @click="resetModel()"
+      @touchstart="resetModel()"
+      v-bind:class="[modelResetDisabled ? 'disabled ' : '']"
       >↺</span
     >
   </div>
@@ -22,14 +22,12 @@
 
 <script>
 import * as THREE from "three";
-// import { OrbitControls } from "three/examples/jsm/controls/OrbitControls";
-import { cameraControls } from "../App.vue";
 
-let viewPortRenderer, viewPortScene, viewPortCamera;
+let modelRenderer, modelScene, modelCamera;
 
 export default {
   name: "ViewportCube",
-  props: { quaternion: Array, cameraResetDisabled: Boolean },
+  props: { modelResetDisabled: Boolean },
   data() {
     return {
       mouse: {
@@ -67,29 +65,27 @@ export default {
       }
     },
     render: function () {
-      viewPortRenderer.render(viewPortScene, viewPortCamera);
+      modelRenderer.render(modelScene, modelCamera);
     },
     init: function () {
-      viewPortRenderer = new THREE.WebGLRenderer({
+      modelRenderer = new THREE.WebGLRenderer({
         antialias: true,
         alpha: true,
-        canvas: document.getElementById("viewportCanvas"),
+        canvas: document.getElementById("viewportModel"),
       });
-      viewPortRenderer.setClearColor(0x000000, 0);
-      viewPortRenderer.setPixelRatio(window.devicePixelRatio);
-      viewPortRenderer.setSize(150, 150);
+      modelRenderer.setPixelRatio(window.devicePixelRatio);
+      modelRenderer.setSize(150, 150);
 
-      viewPortCamera = new THREE.OrthographicCamera();
-      viewPortCamera.position.set(0, 0, 10);
-      viewPortCamera.zoom = 160;
+      modelCamera = new THREE.OrthographicCamera();
+      modelCamera.position.set(0, 0, 10);
+      modelCamera.zoom = 160;
 
-      viewPortScene = new THREE.Scene();
+      modelScene = new THREE.Scene();
 
-      this.addViewPortCube();
-
+      this.addModelCube();
       this.render();
     },
-    addViewPortCube: function () {
+    addModelCube: function () {
       let right = new THREE.TextureLoader().load(
         require("@/assets/viewport/right.png")
       );
@@ -135,7 +131,7 @@ export default {
 
       const geometry = new THREE.BoxGeometry(1, 1, 1);
       const cube = new THREE.Mesh(geometry, materials);
-      viewPortScene.add(cube);
+      modelScene.add(cube);
     },
     rotate: function (deltaX, deltaY) {
       let w = 150;
@@ -143,64 +139,43 @@ export default {
       var speed = 0.5;
       var theta = (PI_2 * speed * deltaX) / w;
       var phi = (PI_2 * speed * deltaY) / w;
-      cameraControls.rotate(theta, phi, false);
+      console.log(theta, phi);
+      //   cameraControls.rotate(theta, phi, false);
     },
-    evalFaceIndexAndRepositionCamera: function (index) {
-      let target = new THREE.Vector3();
-      target = cameraControls.getTarget(target);
+    evalFaceIndexAndRepositionModel: function (index) {
       //This is a slight hack to allow the triangulate function that generates the fill to work in any scenario. See: https://github.com/mapbox/earcut/issues/21
-      let adj = 0.0001;
+      //   let adj = 0.0001;
 
-      let lookAt = function (x, y, z) {
-        cameraControls.dampingFactor = 0.5;
-        cameraControls.enabled = false;
-        cameraControls.setLookAt(x, y, z, target.x, target.y, target.z, true);
-        cameraControls.enabled = true;
-        setTimeout(() => {
-          cameraControls.dampingFactor = 10;
-        }, 100);
-      };
+      console.log(index);
 
-      switch (index) {
-        case 0:
-          lookAt(target.x + 10, target.y + adj, target.z + adj);
-          break;
-        case 1:
-          lookAt(target.x + 10, target.y + adj, target.z + adj);
-          break;
-        case 2:
-          lookAt(target.x - 10, target.y + adj, target.z + adj);
-          break;
-        case 3:
-          lookAt(target.x - 10, target.y + adj, target.z + adj);
-          break;
-        case 4:
-          lookAt(target.x, target.y + 10, target.z + adj);
-          break;
-        case 5:
-          lookAt(target.x, target.y + 10, target.z + adj);
-          break;
-        case 6:
-          lookAt(target.x, target.y - 10, target.z + adj);
-          break;
-        case 7:
-          lookAt(target.x, target.y - 10, target.z + adj);
-          break;
-        case 8:
-          lookAt(target.x + adj, target.y, target.z + 10);
-          break;
-        case 9:
-          lookAt(target.x + adj, target.y, target.z + 10);
-          break;
-        case 10:
-          lookAt(target.x + adj, target.y, target.z - 10);
-          break;
-        case 11:
-          lookAt(target.x + adj, target.y, target.z - 10);
-          break;
-        default:
-          console.log(index);
-      }
+      //   switch (index) {
+      //     case 0:
+      //       break;
+      //     case 1:
+      //       break;
+      //     case 2:
+      //       break;
+      //     case 3:
+      //       break;
+      //     case 4:
+      //       break;
+      //     case 5:
+      //       break;
+      //     case 6:
+      //       break;
+      //     case 7:
+      //       break;
+      //     case 8:
+      //       break;
+      //     case 9:
+      //       break;
+      //     case 10:
+      //       break;
+      //     case 11:
+      //       break;
+      //     default:
+      //       console.log(index);
+      //   }
     },
     onTapStart: function () {
       this.mouse.down = true;
@@ -235,12 +210,12 @@ export default {
       ) {
         raycaster.setFromCamera(
           new THREE.Vector2(this.mouse.tx, this.mouse.ty),
-          viewPortCamera
+          modelCamera
         );
 
         try {
           this.evalFaceIndexAndRepositionCamera(
-            raycaster.intersectObjects(viewPortScene.children)[0].faceIndex
+            raycaster.intersectObjects(modelScene.children)[0].faceIndex
           );
         } catch (error) {
           //raycaster didn't find anything
@@ -256,15 +231,8 @@ export default {
       document.removeEventListener("touchend", this.handleInput);
       this.mouse.down = false;
     },
-    resetCamera: function () {
-      cameraControls.dampingFactor = 0.5;
-      cameraControls.enabled = false;
-      cameraControls.setLookAt(0, 0, 10, 0, 0, 0, true);
-      cameraControls.zoomTo(3, true);
-      cameraControls.enabled = true;
-      setTimeout(() => {
-        cameraControls.dampingFactor = 20;
-      }, 100);
+    resetModel: function () {
+      console.log("model");
     },
     handleInput: function (event) {
       this.updateMouseCoordinates(event);
@@ -297,9 +265,7 @@ export default {
   },
   watch: {
     quaternion: function (val) {
-      viewPortScene.setRotationFromQuaternion(
-        new THREE.Quaternion(val[0], val[1], val[2], val[3]).invert()
-      );
+      console.log(val);
       this.render();
     },
   },
@@ -311,20 +277,20 @@ export default {
 </script>
 
 <style>
-#viewport {
+#viewportM {
   position: absolute;
   height: 150px;
   width: 150px;
-  top: 0;
+  bottom: 0;
   z-index: 2;
 }
 
-#viewportCanvas {
+#viewportModel {
   position: absolute;
   height: 150px;
   width: 150px;
   z-index: 3;
-  background-color: none;
+  background-color: black;
 }
 
 .reset-camera {

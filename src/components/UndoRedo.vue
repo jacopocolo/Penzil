@@ -46,10 +46,10 @@ export default {
 </script>
 
 <style scoped>
-div {
+/* div {
   z-index: 2;
   position: absolute;
-  bottom: 0;
-  right: 10px;
-}
+  top: 0;
+  right: 100px;
+} */
 </style>
