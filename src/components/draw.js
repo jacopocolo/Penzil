@@ -171,6 +171,7 @@ let draw = {
             let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
             this.fillGeometry.setIndex(triangles);
             this.fillGeometry.computeBoundingSphere();
+            //this.fillGeometry.computeVertexNormals();
             renderer.render(scene, camera);
         }
         end(mirrorOn) {
