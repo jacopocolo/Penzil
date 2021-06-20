@@ -1,14 +1,23 @@
 
 <template>
-  <div>
-    <button @click="resetTransformation()">Reset</button>
+  <div class="canvasSettings">
+    <span
+      v-bind:class="[transformationResetDisabled ? 'disabled ' : '']"
+      class="reset-canvas"
+      @click="resetTransformation()"
+    >
+      <img
+        src="@/assets/icons/reset.svg"
+        alt="Reset canvas position and rotation"
+      />
+    </span>
   </div>
 </template>
 
 <script>
 import * as THREE from "three";
 import { TransformControls } from "./touchTransformControls.js";
-import { scene, renderer, camera } from "../App.vue";
+import { scene, renderer, camera, vm } from "../App.vue";
 export let canvas, controls;
 let position = new THREE.Vector3(0.001, 0.001, 0.001);
 let quaternion = new THREE.Quaternion(0.001, 0.002, 0.002, 1);
@@ -31,6 +40,7 @@ export default {
       startPosition: new THREE.Vector3(0.001, 0.001, 0.001),
       startQuaternion: new THREE.Quaternion(0.001, 0.001, 0.001, 1),
       startScale: new THREE.Vector3(1, 1, 1),
+      transformationResetDisabled: true,
     };
   },
   props: {
@@ -50,6 +60,10 @@ export default {
       controls.setRotationSnap(Math.PI / 10);
       controls.addEventListener("change", () => {
         renderer.render(scene, camera);
+        //this is not very elegant but…
+        if (vm != undefined) {
+          vm.$refs.raycastCanvas.transformationResetDisabled = false;
+        }
       });
 
       controls.attach(plane);
@@ -80,6 +94,7 @@ export default {
       );
       canvas.scale.set(this.startScale.x, this.startScale.y, this.startScale.z);
       renderer.render(scene, camera);
+      this.transformationResetDisabled = true;
       this.updatePosition();
     },
   },
@@ -109,10 +124,32 @@ export default {
 </script>
 
 <style>
-.lineSettings {
+.canvasSettings {
   z-index: 2;
   position: absolute;
-  top: 0;
-  right: 10px;
+  bottom: calc(44px + 16px);
+  left: 16px;
+  /* background-color: white;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
+  height: 44px;
+  border-radius: 8px; */
+  font-weight: 900;
+}
+
+.reset-canvas {
+  height: 44px;
+  width: 44px;
+  border-radius: 22px;
+  background-color: rgba(255, 255, 255, 1);
+  font-size: 2em;
+  line-height: 1em;
+  position: absolute;
+  color: rgba(255, 255, 255, 1);
+  opacity: 1;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  z-index: 4;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
 }
 </style>
