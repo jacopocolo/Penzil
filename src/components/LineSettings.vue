@@ -24,8 +24,8 @@ export default {
   data() {
     return {
       stroke: true,
-      strokeColor: "#ff0000",
-      strokeWidth: 10,
+      strokeColor: "#1C1C1E",
+      strokeWidth: 1,
       fill: false,
       fillColor: "#000000",
     };
@@ -75,5 +75,6 @@ export default {
   position: absolute;
   top: 0;
   right: 10px;
+  display: none;
 }
 </style>

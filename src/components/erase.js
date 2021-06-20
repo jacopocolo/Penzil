@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { scene, renderer, camera, context } from "../App.vue";
+import { scene, renderer, camera } from "../App.vue";
 import { mirror } from "./mirror.js"
 import { MeshLineMaterial } from "three.meshline";
 import { draw } from "./draw.js";
@@ -193,18 +193,9 @@ let erase = {
                 });
             }
 
-            context.globalAlpha = 0.25;
-            context.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            context.fillStyle = "black";
-            context.fillRect(cx - 8, cy - 8, 16, 16);
-
             renderer.render(scene, camera)
         }
         move(cx, cy) {
-
-            context.clearRect(0, 0, window.innerWidth, window.innerHeight);
-            context.fillStyle = "black";
-            context.fillRect(cx - 8, cy - 8, 16, 16);
 
             var pickedObjects = this.picker.pickArea(
                 cx - 5,
@@ -222,12 +213,10 @@ let erase = {
             renderer.render(scene, camera)
         }
         end() {
-            renderer.render(scene, camera)
-            context.clearRect(0, 0, window.innerWidth, window.innerHeight);
+            renderer.render(scene, camera);
             //actually nothing here
         }
         cancel() {
-            // context.clearRect(0, 0, window.innerWidth, window.innerHeight);
             // for (let i = 0; i < this.numberOfErasedObjects; i++) {
             //     undoManager.undo();
             // }

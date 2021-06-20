@@ -1,35 +1,23 @@
 
 <template>
   <div class="mainToolbar">
+    <img
+      class="oneDot"
+      src="@/assets/icons/1dot.svg"
+      alt="One dot indicator: these tools can be used with one finger"
+    />
+    <div class="oneDot"></div>
     <div class="toolSelection">
-      <!-- <span @click="setTool('center', true)">
-        <input
-          type="radio"
-          id="setCenter"
-          name="tools"
-          value="center"
-          v-model="tool"
-        /><label for="setCenter"> set • </label>
-        <div></div>
-      </span> -->
-
-      <span @click="setTool('model', true)">
-        <input
-          type="radio"
-          id="toolModel"
-          name="tools"
-          value="model"
-          v-model="tool"
-        /><label for="toolModel"> Canvas </label>
-        <div></div> </span
-      ><span @click="setTool('draw', true)">
+      <span @click="setTool('draw', true)">
         <input
           type="radio"
           id="toolDraw"
           name="tools"
           value="draw"
           v-model="tool"
-        /><label for="toolDraw"> Draw </label>
+        /><label for="toolDraw"
+          ><img src="@/assets/icons/draw.svg" alt="Select draw tool"
+        /></label>
         <div></div> </span
       ><span @click="setTool('erase', true)">
         <input
@@ -38,9 +26,12 @@
           name="tools"
           value="erase"
           v-model="tool"
-        /><label for="toolEraser"> Erase </label>
-        <div></div> </span
-      ><span @click="setTool('select', true)">
+        /><label for="toolEraser"
+          ><img src="@/assets/icons/erase.svg" alt="Select erase tool"
+        /></label>
+        <div></div>
+      </span>
+      <!-- <span @click="setTool('select', true)">
         <input
           type="radio"
           id="toolSelect"
@@ -49,7 +40,7 @@
           v-model="tool"
         /><label for="toolSelect"> Select </label>
         <div></div>
-      </span>
+      </span> -->
     </div>
   </div>
 </template>
@@ -87,11 +78,11 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .mainToolbar {
   position: absolute;
-  top: 0;
-  left: calc(50% - 160px);
+  top: 12px;
+  right: calc(50% + 16px);
   z-index: 2;
 }
 
@@ -99,11 +90,27 @@ export default {
   padding-left: 6px;
   white-space: discard;
   display: flex;
-  width: 400px;
+  float: left;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
+}
+
+#toolDraw + label {
+  border-radius: 8px 0px 0px 8px;
+}
+
+#toolEraser + label {
+  border-radius: 0px 8px 8px 0px;
+}
+
+.oneDot {
+  position: absolute;
+  left: -8px;
+  top: 18px;
+  clear: both;
   float: left;
 }
 
-#setCenter + label {
-  margin-right: 50px;
+label > img {
+  min-height: 44px;
 }
 </style>

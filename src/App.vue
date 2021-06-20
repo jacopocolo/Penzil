@@ -2,16 +2,14 @@
   <viewport-cube
     :quaternion="quaternion"
     :cameraResetDisabled="cameraResetDisabled"
+    :cameraControlsEnabled="multitouch"
   />
   <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
-  <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
-  <model-settings
-    :selectedTool="tool"
-    :opacity="modelOpacity"
-    ref="modalSettings"
-    @transform-toolbar-display="setTransformToolbarDisplay"
-    @toolbar-position="setTransformToolbarPosition"
+  <multitouch-selector
+    @selected-multitouch="setSelectedMultitouch"
+    :selectedMultitouch="multitouch"
   />
+  <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
   <transorm-toolbar
     :top="transformToolbar.top"
     :left="transformToolbar.left"
@@ -20,8 +18,9 @@
     :selectedTool="tool"
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
-  <Canvas :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
+  <Input :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
   <Menu />
+  <Canvas ref="raycastCanvas" :enabled="multitouch" />
 </template>
 
 <script>
@@ -29,16 +28,18 @@ import * as THREE from "three";
 //import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import CameraControls from "camera-controls";
 CameraControls.install({ THREE: THREE });
+import InfiniteGridHelper from "./components/InfiniteGridHelper.js";
 
-import Canvas from "./components/Canvas.vue";
+import Input from "./components/Input.vue";
 import ToolSelector from "./components/ToolSelector.vue";
+import MultitouchSelector from "./components/MultitouchSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
 import LineSettings from "./components/LineSettings.vue";
-import ModelSettings from "./components/ModelSettings.vue";
 import Menu from "./components/Menu.vue";
+import Canvas from "./components/Canvas.vue";
 
 export let renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -51,9 +52,9 @@ export let camera = new THREE.PerspectiveCamera(
   1,
   1000
 );
-export let scene, drawingScene, cameraControls, context, vm, drawingprop;
+export let scene, drawingScene, cameraControls, vm, drawingprop;
 
-var main, drawingCanvas, clock;
+var main, clock;
 
 export default {
   name: "App",
@@ -61,19 +62,21 @@ export default {
     // Modal,
     // Toast,
     // ToolSelector,
-    Canvas,
+    Input,
     LineSettings,
-    ModelSettings,
     ToolSelector,
     TransormToolbar,
     ViewportCube,
     UndoRedo,
     Menu,
+    Canvas,
+    MultitouchSelector,
     //Import,
   },
   data() {
     return {
       tool: "draw",
+      multitouch: "canvas",
       toolHistory: ["draw"],
       stroke: {}, //filled by the component on mount
       fill: {}, //filled by the component on mount
@@ -82,14 +85,12 @@ export default {
       cameraResetDisabled: false,
       selected: undefined,
       transformToolbar: { top: 0, left: 0, location: "above", display: false },
-      modelOpacity: 0.9,
+      canvasTransformEnabled: true,
     };
   },
   methods: {
     init: function () {
       CameraControls.install({ THREE: THREE });
-      drawingCanvas = document.getElementById("twod");
-      context = drawingCanvas.getContext("2d");
       main = document.getElementById("threed");
 
       renderer.setPixelRatio(window.devicePixelRatio);
@@ -106,39 +107,42 @@ export default {
 
       drawingScene = new THREE.Scene(); //this scene is only used for rendering lines as they are being drawn. Lines are then moved to the main scene.
 
-      var axesHelper = new THREE.AxesHelper();
-      axesHelper.applyMatrix4(new THREE.Matrix4().makeScale(5, 5, 5));
-      axesHelper.layers.set(0);
-      axesHelper.material.fog = false;
-      scene.add(axesHelper);
+      // var axesHelper = new THREE.AxesHelper();
+      // axesHelper.applyMatrix4(new THREE.Matrix4().makeScale(5, 5, 5));
+      // axesHelper.layers.set(0);
+      // axesHelper.material.fog = false;
+      // scene.add(axesHelper);
 
-      var axesHelperFlipped = new THREE.AxesHelper();
-      axesHelperFlipped.applyMatrix4(new THREE.Matrix4().makeScale(-5, -5, -5));
-      axesHelperFlipped.layers.set(0);
-      axesHelperFlipped.material.fog = false;
-      scene.add(axesHelperFlipped);
+      // var axesHelperFlipped = new THREE.AxesHelper();
+      // axesHelperFlipped.applyMatrix4(new THREE.Matrix4().makeScale(-5, -5, -5));
+      // axesHelperFlipped.layers.set(0);
+      // axesHelperFlipped.material.fog = false;
+      // scene.add(axesHelperFlipped);
 
-      var size = 1;
-      var divisions = 10;
-      var gridHelper = new THREE.GridHelper(
-        size,
-        divisions,
-        0x0000ff,
-        0x0000ff
-      );
-      gridHelper.applyMatrix4(new THREE.Matrix4().makeScale(5, 5, 5));
-      gridHelper.layers.set(0);
-      gridHelper.material.fog = false;
-      scene.add(gridHelper);
+      // var size = 1;
+      // var divisions = 10;
+      // var gridHelper = new THREE.GridHelper(
+      //   size,
+      //   divisions,
+      //   0x0000ff,
+      //   0x0000ff
+      // );
+      // gridHelper.applyMatrix4(new THREE.Matrix4().makeScale(5, 5, 5));
+      // gridHelper.layers.set(0);
+      // gridHelper.material.fog = false;
+      // scene.add(gridHelper);
+
+      const grid = new InfiniteGridHelper(1, 10, new THREE.Color(0x0000ff), 40);
+      scene.add(grid);
 
       camera.layers.enable(0); // enabled by default
       camera.layers.enable(1);
       camera.zoom = 3;
-      camera.position.set(0, 0, 10);
+      camera.position.set(5, 5, 10);
 
       clock = new THREE.Clock();
 
-      cameraControls = new CameraControls(camera, drawingCanvas);
+      cameraControls = new CameraControls(camera, renderer.domElement);
       cameraControls.dampingFactor = 20;
       cameraControls.draggingDampingFactor = 200;
       cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
@@ -149,6 +153,7 @@ export default {
       cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
       cameraControls.maxZoom = 4000;
       cameraControls.minZoom = 2;
+      cameraControls.enabled = false;
 
       this.quaternion = [
         camera.quaternion.x,
@@ -158,35 +163,24 @@ export default {
       ];
 
       cameraControls.addEventListener("update", () => {
-        if (cameraControls.enabled == true) {
-          this.quaternion = [
-            camera.quaternion.x,
-            camera.quaternion.y,
-            camera.quaternion.z,
-            camera.quaternion.w,
-          ];
-        }
+        this.quaternion = [
+          camera.quaternion.x,
+          camera.quaternion.y,
+          camera.quaternion.z,
+          camera.quaternion.w,
+        ];
 
         let target = new THREE.Vector3();
         target = cameraControls.getTarget(target);
         targetSphere.position.set(target.x, target.y, target.z);
 
         //hide the contextual transformControls while we adjust the camera is something is selected
-        if (
-          (select.s && select.s.controls != undefined) ||
-          this.tool == "model"
-        ) {
+        if (select.s && select.s.controls != undefined) {
           this.transformToolbar.display = false;
         }
-        if (
-          (select.s && select.s.controls != undefined) ||
-          this.tool == "model"
-        ) {
+        if (select.s && select.s.controls != undefined) {
           if (this.tool == "select") {
             select.s.helper.update();
-          }
-          if (this.tool == "model") {
-            this.$.refs.modalSettings.updatePosition();
           }
         }
       });
@@ -196,20 +190,13 @@ export default {
         // drawingPlane.updatePosition();
 
         //reposition the contextual transformControls after we adjusted the camera is something is selected
-        if (
-          (select.s && select.s.controls != undefined) ||
-          this.tool == "model"
-        ) {
+        if (select.s && select.s.controls != undefined) {
           if (this.tool == "select") {
             select.s.helper.update();
             let position = select.s.calculateTransfromToolbarPosition();
             this.transformToolbar.left = position.x;
             this.transformToolbar.top = position.y;
             this.transformToolbar.location = position.location;
-            this.transformToolbar.display = true;
-          }
-          if (this.tool == "model") {
-            this.$.refs.modalSettings.updatePosition();
             this.transformToolbar.display = true;
           }
         }
@@ -243,7 +230,7 @@ export default {
       light.position.set(0, 1, 5);
       scene.add(light);
 
-      this.$.refs.modalSettings.setUpModel();
+      this.$.refs.raycastCanvas.setUp();
 
       window.addEventListener("resize", this.onWindowResize);
       window.addEventListener("orientationchange", this.onWindowResize);
@@ -261,8 +248,6 @@ export default {
       camera.updateProjectionMatrix();
 
       renderer.setSize(window.innerWidth, window.innerHeight);
-      drawingCanvas.width = window.innerWidth;
-      drawingCanvas.height = window.innerHeight;
 
       renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       renderer.render(scene, camera);
@@ -280,22 +265,6 @@ export default {
     },
     setSelectedTool: function (val) {
       this.tool = val;
-
-      if (val == "center") {
-        return;
-      }
-
-      if (val == "draw" || val == "model") {
-        this.modelOpacity = 0.9;
-      } else {
-        this.modelOpacity = 0;
-      }
-
-      if (val == "model") {
-        this.$.refs.modalSettings.attachControls();
-      } else {
-        this.$.refs.modalSettings.detachControls();
-      }
 
       this.toolHistory.push(val);
       if (this.toolHistory.length > 2) {
@@ -320,11 +289,14 @@ export default {
       //this is a version without undo so that it can be called by the setCenter tool
       this.tool = val;
     },
-    setPreviouslySelectedTool: function () {
-      //this is used by setCenter.js to set the tool back to its previus config after setting the center
-      this.setSelectedTool_internal(
-        this.toolHistory[this.toolHistory.length - 1]
-      );
+    setSelectedMultitouch: function (val) {
+      this.multitouch = val;
+
+      if (val === "camera") {
+        cameraControls.enabled = true;
+      } else {
+        cameraControls.enabled = false;
+      }
     },
     setSelectedObject: function (val) {
       this.selected = val;
@@ -342,9 +314,6 @@ export default {
     },
     setFill: function (val) {
       this.fill = val;
-    },
-    setModelOpacity: function (val) {
-      this.modelOpacity = val;
     },
   },
   mounted() {
@@ -389,6 +358,28 @@ html,
   -moz-osx-font-smoothing: grayscale;
   height: 100%;
   width: 100%;
+}
+
+input[type="radio"] {
+  opacity: 0;
+  position: fixed;
+  width: 0;
+}
+
+label {
+  display: flex;
+  width: 60px;
+  height: 44px;
+  align-content: center;
+  justify-content: center;
+}
+
+input[type="radio"]:checked + label {
+  background-color: #ffe8b3;
+}
+
+input[type="radio"]:not(:checked) + label {
+  background-color: #ffffff;
 }
 
 .disabled {

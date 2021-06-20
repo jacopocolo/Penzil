@@ -2,23 +2,29 @@
   <div v-if="previewing" class="fade">
     <div class="fade-controls">
       <button @click="cancel()">Cancel</button>
-      <input
-        type="radio"
-        name="360"
-        value="360"
-        v-model="loop"
-        :disabled="recording"
-      />
-      <label for="360">360</label>
-      <input
-        type="radio"
-        name="bf"
-        value="bf"
-        v-model="loop"
-        :disabled="recording"
-      />
-      <label for="bf">Back and forth</label>
-      <button @click="startRecording()" :disabled="recording" v>Record</button>
+      <span class="rightAlign">
+        <input
+          type="radio"
+          name="360"
+          value="360"
+          id="360"
+          v-model="loop"
+          :disabled="recording"
+        />
+        <label for="360">360</label>
+        <input
+          type="radio"
+          name="bf"
+          value="bf"
+          id="bf"
+          v-model="loop"
+          :disabled="recording"
+        />
+        <label for="bf">Back and forth</label>
+        <button @click="startRecording()" :disabled="recording" v>
+          Start recording
+        </button>
+      </span>
       <span v-if="recording"
         >Recording frame {{ currentLength }} of {{ length }}</span
       >
@@ -33,7 +39,7 @@ import { renderer, camera, scene, cameraControls } from "../App.vue";
 import * as HME from "h264-mp4-encoder";
 
 export default {
-  name: "Import",
+  name: "export-video",
   props: {},
   data() {
     return {
@@ -210,19 +216,42 @@ export default {
   height: 100vh;
   width: 100vw;
   position: absolute;
-  bottom: -10px;
-  left: -10px;
+  bottom: 0px;
+  right: 0px;
   z-index: 5;
   background-color: rgba(0, 0, 0, 0.4);
 }
 
 .fade-controls {
-  background-color: black;
-  color: white;
+  background-color: white;
+  color: black;
   margin: 0 auto;
   position: absolute;
   bottom: 0px;
   padding: 10px;
   width: 100vw;
+}
+
+label {
+  width: 200px;
+  display: flex;
+  justify-content: center;
+  align-content: center;
+  align-items: center;
+}
+
+button {
+  align-content: center;
+  background-color: rgba(0, 0, 0, 0);
+  border: none;
+  height: 44px;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-right: 2px;
+}
+
+.rightAlign {
+  float: right;
+  display: flex;
 }
 </style>
