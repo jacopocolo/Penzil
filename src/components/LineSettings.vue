@@ -1,7 +1,7 @@
 
 <template>
   <div class="lineSettings" v-if="selectedTool == 'draw'">
-    <input type="checkbox" id="stroke" name="strokeBool" v-model="stroke" />
+    <!-- <input type="checkbox" id="stroke" name="strokeBool" v-model="stroke" />
     <label for="strokeBool"> Stroke</label>
     <input type="color" id="favcolor" name="favcolor" v-model="strokeColor" />
     <input
@@ -14,12 +14,16 @@
     />
     <input type="checkbox" id="fill" name="strokeFill" v-model="fill" />
     <label for="fillBool"> Fill</label>
-    <input type="color" name="fillColor" v-model="fillColor" />
+    <input type="color" name="fillColor" v-model="fillColor" /> -->
+    <color-selector />
   </div>
 </template>
 
 <script>
+import ColorSelector from "./ColorSelector.vue";
+
 export default {
+  components: { ColorSelector },
   name: "Modal",
   data() {
     return {
@@ -75,6 +79,5 @@ export default {
   position: absolute;
   top: 0;
   right: 10px;
-  display: none;
 }
 </style>

@@ -56,8 +56,8 @@ export default {
 
       controls = new TransformControls(camera, renderer.domElement);
       controls.mode = "rotate";
-      controls.setTranslationSnap(0.2);
-      controls.setRotationSnap(Math.PI / 10);
+      // controls.setTranslationSnap(0);
+      // controls.setRotationSnap(Math.PI / 10);
       controls.addEventListener("change", () => {
         renderer.render(scene, camera);
         //this is not very elegant but…
@@ -149,7 +149,7 @@ export default {
   justify-content: center;
   align-content: center;
   text-align: center;
-  z-index: 4;
+  z-index: 2;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
 }
 </style>

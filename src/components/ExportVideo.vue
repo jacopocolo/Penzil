@@ -22,7 +22,7 @@
         />
         <label for="bf">Back and forth</label>
         <button @click="startRecording()" :disabled="recording" v>
-          Start recording
+          {{ !recording ? "Start recording" : "Recording..." }}
         </button>
       </span>
       <span v-if="recording"
@@ -230,6 +230,7 @@ export default {
   bottom: 0px;
   padding: 10px;
   width: 100vw;
+  z-index: 5;
 }
 
 label {

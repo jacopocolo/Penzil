@@ -19,8 +19,8 @@
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
   <Input :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
-  <Menu />
   <Canvas ref="raycastCanvas" :enabled="multitouch" />
+  <Menu />
 </template>
 
 <script>

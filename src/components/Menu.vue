@@ -41,7 +41,6 @@ div {
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   height: 44px;
   border-radius: 8px;
-  font-weight: 900;
 }
 
 button {
@@ -52,5 +51,6 @@ button {
   padding-left: 16px;
   padding-right: 16px;
   border-right: 2px solid #ffe8b3;
+  font-weight: 900;
 }
 </style>
