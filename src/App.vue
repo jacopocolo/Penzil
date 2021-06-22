@@ -350,6 +350,11 @@ html,
   -ms-user-select: none;
   user-select: none;
   touch-action: manipulation;
+  font-weight: 900;
+}
+
+button {
+  font-weight: 900;
 }
 
 #app {

@@ -15,22 +15,28 @@
     <input type="checkbox" id="fill" name="strokeFill" v-model="fill" />
     <label for="fillBool"> Fill</label>
     <input type="color" name="fillColor" v-model="fillColor" /> -->
-    <color-selector />
+    <line-width-selector @width="setStrokeWidth" />
+    <line-color-selector
+      @color="setStrokeColor"
+      @active="setStrokeActive"
+    /><br />
+    <line-color-selector @color="setFillColor" @active="setFillActive" />
   </div>
 </template>
 
 <script>
-import ColorSelector from "./ColorSelector.vue";
+import LineColorSelector from "./LineColorSelector.vue";
+import LineWidthSelector from "./LineWidthSelector.vue";
 
 export default {
-  components: { ColorSelector },
+  components: { LineColorSelector, LineWidthSelector },
   name: "Modal",
   data() {
     return {
       stroke: true,
       strokeColor: "#1C1C1E",
-      strokeWidth: 1,
-      fill: false,
+      strokeWidth: 20,
+      fill: true,
       fillColor: "#000000",
     };
   },
@@ -38,6 +44,21 @@ export default {
     selectedTool: String,
   },
   methods: {
+    setStrokeColor: function (val) {
+      this.strokeColor = "rgb(" + val.r + "," + val.g + "," + val.b + ")";
+    },
+    setStrokeActive: function (val) {
+      this.stroke = val.active;
+    },
+    setStrokeWidth: function (val) {
+      this.strokeWidth = val.width;
+    },
+    setFillColor: function (val) {
+      this.fillColor = "rgb(" + val.r + "," + val.g + "," + val.b + ")";
+    },
+    setFillActive: function (val) {
+      this.fill = val.active;
+    },
     emitStroke: function () {
       this.$emit("stroke", {
         show_stroke: this.stroke,
@@ -77,7 +98,10 @@ export default {
 .lineSettings {
   z-index: 2;
   position: absolute;
-  top: 0;
+  top: 8px;
   right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 </style>

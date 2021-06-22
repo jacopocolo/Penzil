@@ -51,6 +51,5 @@ button {
   padding-left: 16px;
   padding-right: 16px;
   border-right: 2px solid #ffe8b3;
-  font-weight: 900;
 }
 </style>

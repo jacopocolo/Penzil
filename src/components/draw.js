@@ -84,6 +84,9 @@ let draw = {
             this.fillMesh.layers.set(1);
         }
         start(x, y, z, force, unproject, mirrorOn) {
+
+            if (this.stroke.show_stroke === false && this.fill.show_stroke === false) return
+
             drawingScene.add(this.mesh);
 
             if (this.fill.show_fill) {
@@ -114,6 +117,9 @@ let draw = {
 
         }
         move(x, y, z, force, unproject) {
+
+            if (this.stroke.show_stroke === false && this.fill.show_fill === false) return
+
             this.addVertex(x, y, z, force, unproject)
         }
         end_internal(mirrorOn) {
@@ -175,6 +181,8 @@ let draw = {
             renderer.render(scene, camera);
         }
         end(mirrorOn) {
+
+            if (this.stroke.show_stroke === false && this.fill.show_stroke === false) return
 
             this.end_internal(mirrorOn);
 

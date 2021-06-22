@@ -6,39 +6,87 @@
     @mousedown="handleInput"
     @mousemove="handleInput"
     @mouseup="handleInput"
-    id="threed"
   ></div>
+  <!-- v-for="item in items" -->
+  <svg
+    v-if="mouse.down && displayTouches"
+    class="cursor"
+    :style="{ top: mouse.cy - 52 / 2 + 'px', left: mouse.cx - 52 / 2 + 'px' }"
+    width="52"
+    height="52"
+    viewBox="0 0 52 52"
+    fill="none"
+    xmlns="http://www.w3.org/2000/svg"
+  >
+    <circle cx="26" cy="24" r="22" fill="url(#paint0_radial)" />
+    <g filter="url(#filter0_d)">
+      <circle
+        cx="26"
+        cy="24"
+        r="22"
+        stroke="white"
+        stroke-opacity="0.38"
+        stroke-width="0.5"
+      />
+    </g>
+    <defs>
+      <filter
+        id="filter0_d"
+        x="0.75"
+        y="0.75"
+        width="50.5"
+        height="50.5"
+        filterUnits="userSpaceOnUse"
+        color-interpolation-filters="sRGB"
+      >
+        <feFlood flood-opacity="0" result="BackgroundImageFix" />
+        <feColorMatrix
+          in="SourceAlpha"
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+        />
+        <feOffset dy="2" />
+        <feGaussianBlur stdDeviation="1.5" />
+        <feColorMatrix
+          type="matrix"
+          values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.7 0"
+        />
+        <feBlend
+          mode="normal"
+          in2="BackgroundImageFix"
+          result="effect1_dropShadow"
+        />
+        <feBlend
+          mode="normal"
+          in="SourceGraphic"
+          in2="effect1_dropShadow"
+          result="shape"
+        />
+      </filter>
+      <radialGradient
+        id="paint0_radial"
+        cx="0"
+        cy="0"
+        r="1"
+        gradientUnits="userSpaceOnUse"
+        gradientTransform="translate(26 24) rotate(90) scale(22)"
+      >
+        <stop stop-color="white" stop-opacity="0" />
+        <stop offset="1" stop-color="white" stop-opacity="0.42" />
+      </radialGradient>
+    </defs>
+  </svg>
 </template>
 
 <script>
-import { draw } from "./draw.js";
-import { erase } from "./erase.js";
-import { select } from "./select.js";
-import { setCenter } from "./setCenter.js";
-
 export default {
-  name: "Input",
+  name: "DisplayTouches",
   data() {
     return {
-      mouse: {
-        down: false,
-        tx: undefined, //x coord for threejs
-        ty: undefined, //y coord for threejs
-        cx: undefined, //x coord for canvas
-        cy: undefined, //y coord for canvas
-        force: 0,
-        touchLengthHistory: [0, 0],
-        multiTouched: false,
-        eventCancelled: false,
-      },
+      displayTouches: true,
     };
   },
-  props: {
-    selectedTool: String,
-    mirror: [Boolean, String],
-    stroke: [Object],
-    fill: [Object],
-  },
+  props: {},
   methods: {
     updateMouseCoordinates: function (event) {
       if (event.touches) {

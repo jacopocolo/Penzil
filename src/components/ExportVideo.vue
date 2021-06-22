@@ -173,7 +173,7 @@ export default {
       this.polarAngle = cameraControls.polarAngle;
       this.previewing = true;
       cameraControls.dampingFactor = 0.5;
-      cameraControls.enabled = false;
+      // cameraControls.enabled = false;
       camera.layers.disable(0);
       this.animate();
     },
@@ -194,7 +194,7 @@ export default {
       cameraControls.rotateTo(this.startAzimuthAngle, this.polarAngle, true);
       this.startAzimuthAngle = undefined;
       this.polarAngle = undefined;
-      cameraControls.enabled = true;
+      // cameraControls.enabled = true;
       setTimeout(() => {
         cameraControls.dampingFactor = 20;
         cameraControls.normalizeRotations();
