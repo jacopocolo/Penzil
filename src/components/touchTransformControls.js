@@ -172,9 +172,17 @@ class TransformControls extends Object3D {
         this._onTouchMove = onTouchMove.bind(this);
         this._onTouchEnd = onTouchEnd.bind(this);
 
+        this._onMouseDown = onMouseDown.bind(this);
+        this._onMouseMove = onMouseMove.bind(this);
+        this._onMouseUp = onMouseUp.bind(this);
+
         this.domElement.addEventListener('touchstart', this._onTouchStart)
         this.domElement.addEventListener('touchmove', this._onTouchMove)
         this.domElement.addEventListener('touchend', this._onTouchEnd)
+
+        this.domElement.addEventListener('mousedown', this._onMouseDown)
+        this.domElement.addEventListener('mousemove', this._onMouseMove)
+        this.domElement.addEventListener('mouseup', this._onMouseUp)
 
         // this.domElement.addEventListener('pointerdown', (event) => {
         //     if (event.isPrimary == true) {
@@ -700,6 +708,28 @@ function onTouchStart(event) {
 
 }
 
+function onMouseDown(event) {
+
+    event.preventDefault();
+
+    if (!this.enabled) return;
+    if (event.button != 2) return;
+
+    const rect = this.domElement.getBoundingClientRect();
+    let pointer = {
+        x: (event.clientX - rect.left) / rect.width * 2 - 1,
+        y: - (event.clientY - rect.top) / rect.height * 2 + 1,
+        button: 0
+    }
+
+    //not super elegant but it's a way to gaurantee that we have set the right mode
+    setTimeout(() => {
+        this.pointerHover(pointer)
+        this.pointerDown(pointer)
+    }, 50);
+
+}
+
 function onTouchMove(event) {
 
     event.preventDefault();
@@ -716,8 +746,36 @@ function onTouchMove(event) {
     this.pointerMove(pointer)
 }
 
+function onMouseMove(event) {
+    event.preventDefault();
+
+    if (!this.enabled || event.button != 2) return;
+
+    const rect = this.domElement.getBoundingClientRect();
+    let pointer = {
+        x: (event.clientX - rect.left) / rect.width * 2 - 1,
+        y: - (event.clientY - rect.top) / rect.height * 2 + 1,
+        button: -1
+    }
+    this.pointerHover(pointer)
+    this.pointerMove(pointer)
+}
+
 function onTouchEnd(event) {
 
+    event.preventDefault();
+
+    if (!this.enabled) return;
+
+    let pointer = {
+        x: 0,
+        y: 0,
+        button: 0
+    }
+    this.pointerUp(pointer)
+}
+
+function onMouseUp(event) {
     event.preventDefault();
 
     if (!this.enabled) return;

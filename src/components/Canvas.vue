@@ -11,6 +11,10 @@
         alt="Reset canvas position and rotation"
       />
     </span>
+    <select name="mode" id="transform-mode" v-model="mode">
+      <option value="rotate">Rotate</option>
+      <option value="translate">Move</option>
+    </select>
   </div>
 </template>
 
@@ -34,13 +38,15 @@ export default {
         side: THREE.DoubleSide,
         polygonOffset: true,
         polygonOffsetFactor: 2.5,
-        polygonOffsetUnits: -1,
+        polygonOffsetUnits: 0,
+        blending: THREE.MultiplyBlending,
         // wireframe: true,
       }),
       startPosition: new THREE.Vector3(0.001, 0.001, 0.001),
       startQuaternion: new THREE.Quaternion(0.001, 0.001, 0.001, 1),
       startScale: new THREE.Vector3(1, 1, 1),
       transformationResetDisabled: true,
+      mode: "rotate",
     };
   },
   props: {
@@ -55,7 +61,7 @@ export default {
       scene.add(plane);
 
       controls = new TransformControls(camera, renderer.domElement);
-      controls.mode = "rotate";
+      controls.mode = this.mode;
       // controls.setTranslationSnap(0);
       // controls.setRotationSnap(Math.PI / 10);
       controls.addEventListener("change", () => {
@@ -95,7 +101,6 @@ export default {
       canvas.scale.set(this.startScale.x, this.startScale.y, this.startScale.z);
       renderer.render(scene, camera);
       this.transformationResetDisabled = true;
-      this.updatePosition();
     },
   },
   watch: {
@@ -112,11 +117,17 @@ export default {
       if (val == "canvas") {
         controls.enabled = true;
         this.material.opacity = 0.9;
+        this.material.blending = THREE.MultiplyBlending;
       } else {
         controls.enabled = false;
-        this.material.opacity = 0.2;
+        this.material.opacity = 0.3;
+        this.material.blending = THREE.NormalBlending;
       }
       renderer.render(scene, camera);
+    },
+    mode: function (val) {
+      console.log(controls);
+      controls.setMode(val);
     },
   },
   mounted() {},
@@ -127,13 +138,16 @@ export default {
 .canvasSettings {
   z-index: 2;
   position: absolute;
-  bottom: calc(44px + 16px);
+  bottom: calc(44px - 16px);
   left: 16px;
   /* background-color: white;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   height: 44px;
   border-radius: 8px; */
   font-weight: 900;
+  display: flex;
+  flex-direction: row;
+  gap: 16px;
 }
 
 .reset-canvas {
@@ -143,7 +157,6 @@ export default {
   background-color: rgba(255, 255, 255, 1);
   font-size: 2em;
   line-height: 1em;
-  position: absolute;
   color: rgba(255, 255, 255, 1);
   opacity: 1;
   justify-content: center;
@@ -151,5 +164,20 @@ export default {
   text-align: center;
   z-index: 2;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
+}
+
+#transform-mode {
+  background-color: white;
+  border: none;
+  padding: 8px;
+  border-radius: 8px;
+  font-weight: 900;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
+}
+
+@media (pointer: coarse) {
+  #transform-mode {
+    display: none;
+  }
 }
 </style>

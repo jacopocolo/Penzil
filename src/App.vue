@@ -320,6 +320,7 @@ export default {
     this.init();
     this.animate();
     vm = this;
+    this.cameraResetDisabled = false; //this is an override, I'm not quite sure what sets it to true on mount
   },
 };
 </script>

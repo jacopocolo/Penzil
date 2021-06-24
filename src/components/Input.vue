@@ -67,6 +67,8 @@ export default {
       }
     },
     onStart: function (event) {
+      if (event.button && event.button != 0) return;
+
       if (event.button == 0 || event.touches.length == 1) {
         this.mouse.down = true;
         this.mouse.eventCancelled = false;
@@ -129,6 +131,8 @@ export default {
       }
     },
     onMove: function (event) {
+      if (event.button && event.button != 0) return;
+
       if (this.mouse.down) {
         if (event.button == 0 || event.touches.length == 1) {
           switch (this.selectedTool) {
@@ -160,7 +164,9 @@ export default {
         }
       }
     },
-    onEnd: function () {
+    onEnd: function (event) {
+      if (event.button && event.button != 0) return;
+
       if (this.mouse.multiTouched || this.mouse.eventCancelled) {
         return;
       } else {
