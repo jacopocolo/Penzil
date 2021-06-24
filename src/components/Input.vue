@@ -7,7 +7,81 @@
     @mousemove="handleInput"
     @mouseup="handleInput"
     id="threed"
-  ></div>
+  >
+    <span v-if="displayTouches">
+      <svg
+        v-for="item in touches"
+        :key="item.clientX"
+        class="cursor"
+        :style="{
+          top: item.clientY - 52 / 2 + 'px',
+          left: item.clientX - 52 / 2 + 'px',
+        }"
+        width="52"
+        height="52"
+        viewBox="0 0 52 52"
+        fill="none"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <circle cx="26" cy="24" r="22" fill="url(#paint0_radial)" />
+        <g filter="url(#filter0_d)">
+          <circle
+            cx="26"
+            cy="24"
+            r="22"
+            stroke="white"
+            stroke-opacity="0.38"
+            stroke-width="0.5"
+          />
+        </g>
+        <defs>
+          <filter
+            id="filter0_d"
+            x="0.75"
+            y="0.75"
+            width="50.5"
+            height="50.5"
+            filterUnits="userSpaceOnUse"
+            color-interpolation-filters="sRGB"
+          >
+            <feFlood flood-opacity="0" result="BackgroundImageFix" />
+            <feColorMatrix
+              in="SourceAlpha"
+              type="matrix"
+              values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 127 0"
+            />
+            <feOffset dy="2" />
+            <feGaussianBlur stdDeviation="1.5" />
+            <feColorMatrix
+              type="matrix"
+              values="0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0 0.7 0"
+            />
+            <feBlend
+              mode="normal"
+              in2="BackgroundImageFix"
+              result="effect1_dropShadow"
+            />
+            <feBlend
+              mode="normal"
+              in="SourceGraphic"
+              in2="effect1_dropShadow"
+              result="shape"
+            />
+          </filter>
+          <radialGradient
+            id="paint0_radial"
+            cx="0"
+            cy="0"
+            r="1"
+            gradientUnits="userSpaceOnUse"
+            gradientTransform="translate(26 24) rotate(90) scale(22)"
+          >
+            <stop stop-color="white" stop-opacity="0" />
+            <stop offset="1" stop-color="white" stop-opacity="0.42" />
+          </radialGradient>
+        </defs></svg
+    ></span>
+  </div>
 </template>
 
 <script>
@@ -31,6 +105,8 @@ export default {
         multiTouched: false,
         eventCancelled: false,
       },
+      displayTouches: true,
+      touches: [],
     };
   },
   props: {
@@ -68,6 +144,13 @@ export default {
     },
     onStart: function (event) {
       if (event.button && event.button != 0) return;
+
+      this.touches = [];
+      if (event.touches?.length > 0 && this.displayTouches == true) {
+        for (let i = 0; i < event.touches.length; i++) {
+          this.touches.push(event.touches[i]);
+        }
+      }
 
       if (event.button == 0 || event.touches.length == 1) {
         this.mouse.down = true;
@@ -133,6 +216,13 @@ export default {
     onMove: function (event) {
       if (event.button && event.button != 0) return;
 
+      this.touches = [];
+      if (event.touches?.length > 0 && this.displayTouches == true) {
+        for (let i = 0; i < event.touches.length; i++) {
+          this.touches.push(event.touches[i]);
+        }
+      }
+
       if (this.mouse.down) {
         if (event.button == 0 || event.touches.length == 1) {
           switch (this.selectedTool) {
@@ -165,6 +255,8 @@ export default {
       }
     },
     onEnd: function (event) {
+      this.touches = [];
+
       if (event.button && event.button != 0) return;
 
       if (this.mouse.multiTouched || this.mouse.eventCancelled) {
@@ -217,7 +309,11 @@ export default {
       }
     },
   },
-  watch: {},
+  watch: {
+    touches: function (val) {
+      console.log(val);
+    },
+  },
   mounted() {},
 };
 </script>

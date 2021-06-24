@@ -243,8 +243,6 @@ class TransformControls extends Object3D {
 
             this.axis = intersect.object.name;
 
-            console.log(intersect.object)
-
             // if (this.mode == "translate" && this.axis.length === 1) {
             //     if (this.axis === "X") { this.axis = "XY" }
             //     if (this.axis === "Y") { this.axis = "YZ" }

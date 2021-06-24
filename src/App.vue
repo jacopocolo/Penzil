@@ -59,9 +59,6 @@ var main, clock;
 export default {
   name: "App",
   components: {
-    // Modal,
-    // Toast,
-    // ToolSelector,
     Input,
     LineSettings,
     ToolSelector,
@@ -71,7 +68,6 @@ export default {
     Menu,
     Canvas,
     MultitouchSelector,
-    //Import,
   },
   data() {
     return {
