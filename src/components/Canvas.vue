@@ -114,7 +114,7 @@ export default {
         this.material.opacity = 0.9;
       } else {
         controls.enabled = false;
-        this.material.opacity = 0.3;
+        this.material.opacity = 0.2;
       }
       renderer.render(scene, camera);
     },

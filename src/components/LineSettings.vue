@@ -1,42 +1,38 @@
 
 <template>
-  <div class="lineSettings" v-if="selectedTool == 'draw'">
-    <!-- <input type="checkbox" id="stroke" name="strokeBool" v-model="stroke" />
-    <label for="strokeBool"> Stroke</label>
-    <input type="color" id="favcolor" name="favcolor" v-model="strokeColor" />
-    <input
-      type="number"
-      id="width"
-      name="width"
-      min="1"
-      max="10"
-      v-model="strokeWidth"
-    />
-    <input type="checkbox" id="fill" name="strokeFill" v-model="fill" />
-    <label for="fillBool"> Fill</label>
-    <input type="color" name="fillColor" v-model="fillColor" /> -->
-    <line-width-selector @width="setStrokeWidth" />
-    <line-color-selector
+  <div
+    class="lineSettings"
+    v-bind:class="[selectedTool != 'draw' ? 'hidden ' : '']"
+  >
+    <line-sliders
+      mode="stroke"
+      :active="stroke"
       @color="setStrokeColor"
       @active="setStrokeActive"
+      @width="setStrokeWidth"
     /><br />
-    <line-color-selector @color="setFillColor" @active="setFillActive" />
+    <line-sliders
+      :active="fill"
+      mode="fill"
+      @color="setFillColor"
+      @active="setFillActive"
+    />
   </div>
 </template>
 
 <script>
-import LineColorSelector from "./LineColorSelector.vue";
-import LineWidthSelector from "./LineWidthSelector.vue";
+import LineSliders from "./LineSliders.vue";
+// import LineWidthSelector from "./LineWidthSelector.vue";
 
 export default {
-  components: { LineColorSelector, LineWidthSelector },
+  components: { LineSliders },
   name: "Modal",
   data() {
     return {
       stroke: true,
       strokeColor: "#1C1C1E",
-      strokeWidth: 20,
-      fill: true,
+      strokeWidth: 2,
+      fill: false,
       fillColor: "#000000",
     };
   },

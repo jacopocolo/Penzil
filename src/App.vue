@@ -103,7 +103,7 @@ export default {
       //Set the background based on the css variable;
       var bgCol = 0xdddddd;
       scene.background = new THREE.Color(bgCol);
-      //scene.fog = new THREE.Fog(0xffffff, 9, 13);
+      scene.fog = new THREE.Fog(bgCol, 10, 25);
 
       drawingScene = new THREE.Scene(); //this scene is only used for rendering lines as they are being drawn. Lines are then moved to the main scene.
 
@@ -390,5 +390,9 @@ input[type="radio"]:not(:checked) + label {
 .disabled {
   pointer-events: none;
   opacity: 0.6;
+}
+
+.hidden {
+  display: none;
 }
 </style>

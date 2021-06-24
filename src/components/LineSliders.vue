@@ -12,16 +12,31 @@
       /> -->
       <svg
         v-if="active"
-        width="36"
-        height="36"
-        viewBox="0 0 36 36"
+        width="40"
+        height="40"
+        viewBox="0 0 40 40"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M33.3 18C33.3 26.45 26.45 33.3 18 33.3C9.55004 33.3 2.7 26.45 2.7 18C2.7 9.55004 9.55004 2.7 18 2.7C26.45 2.7 33.3 9.55004 33.3 18Z"
+          v-if="mode === 'stroke'"
+          d="M20 38C29.9411 38 38 29.9411 38 20C38 10.0589 29.9411 2 20 2C10.0589 2 2 10.0589 2 20C2 29.9411 10.0589 38 20 38Z"
+          fill="#CCCCCC"
           :stroke="'rgb(' + r + ',' + g + ',' + b + ')'"
-          stroke-width="5.4"
+          stroke-width="2"
+        />
+        <circle
+          v-if="mode === 'stroke'"
+          cx="20"
+          cy="20"
+          :r="width / 2"
+          :fill="'rgb(' + r + ',' + g + ',' + b + ')'"
+        />
+
+        <path
+          v-if="mode === 'fill'"
+          d="M20 38C29.9411 38 38 29.9411 38 20C38 10.0589 29.9411 2 20 2C10.0589 2 2 10.0589 2 20C2 29.9411 10.0589 38 20 38Z"
+          :fill="'rgb(' + r + ',' + g + ',' + b + ')'"
         />
       </svg>
 
@@ -35,12 +50,17 @@
       >
         <path
           d="M37.5 20C37.5 29.665 29.665 37.5 20 37.5C10.335 37.5 2.5 29.665 2.5 20C2.5 10.335 10.335 2.5 20 2.5C29.665 2.5 37.5 10.335 37.5 20Z"
-          stroke="black"
+          stroke="#1c1c1e"
+          stroke-width="2"
         />
-        <path d="M8 32.3431L32.3431 8" stroke="black" stroke-width="8" />
+        <path d="M8 32.3431L32.3431 8" stroke="#1c1c1e" stroke-width="8" />
       </svg>
     </div>
     <div class="sliders" v-if="active">
+      <span class="width-slider" v-if="mode === 'stroke'"
+        ><span>w</span
+        ><input type="range" min="1" max="20" id="width-slider" v-model="width"
+      /></span>
       <span class="hsb-slider"
         ><span>h</span
         ><input type="range" min="0" max="359" id="hue-slider" v-model="hue"
@@ -83,16 +103,16 @@ export default {
   name: "ColorSelector",
   data() {
     return {
-      active: true,
       hue: 0,
       saturation: 50,
       brightness: 50,
+      width: 2,
       r: 0,
       g: 0,
       b: 0,
     };
   },
-  props: {},
+  props: { mode: String, active: Boolean },
   computed: {
     cssProps() {
       return {
@@ -156,11 +176,13 @@ export default {
       this.$emit("color", { r: this.r, g: this.g, b: this.b });
     },
     setActive() {
-      this.active = !this.active;
-      this.$emit("active", { active: this.active });
+      this.$emit("active", { active: !this.active });
     },
   },
   watch: {
+    width: function (val) {
+      this.$emit("width", { width: val });
+    },
     hue: function () {
       this.updateColor(
         this.hue / 359,
@@ -198,7 +220,7 @@ export default {
   content: " ";
   width: 44px;
   height: 44px;
-  padding: 8px;
+  padding: 0px 8px;
   float: right;
   display: block;
 }
@@ -217,14 +239,16 @@ export default {
   flex-direction: column;
 }
 
-.hsb-slider {
+.hsb-slider,
+.width-slider {
   display: flex;
   align-content: center;
   align-items: center;
-  gap: 8px;
+  gap: 12px;
 }
 
-.hsb-slider span {
+.hsb-slider span,
+.width-slider span {
   width: 8px;
 }
 
@@ -289,10 +313,6 @@ input[type="range"]::-webkit-slider-thumb {
     hsl(0, 0%, 0%) 0%,
     hsl(0, 0%, 100%) 100%
   );
-}
-
-.hsb-slider span {
-  margin-right: 8px;
 }
 
 label {
