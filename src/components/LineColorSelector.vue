@@ -1,6 +1,6 @@
 
 <template>
-  <div class="color">
+  <div class="color" :style="cssProps">
     <div class="color-container" @click="setActive">
       <!-- <div
         class="color-bubble"
@@ -93,7 +93,31 @@ export default {
     };
   },
   props: {},
+  computed: {
+    cssProps() {
+      return {
+        "--hue-margin": this.map(this.hue, 0, 359, -6, +6) + "px",
+        "--hue-radius": this.calcRadius(this.hue, 0, 359),
+        "--saturation-margin": this.map(this.saturation, 0, 99, -6, +6) + "px",
+        "--saturation-radius": this.calcRadius(this.saturation, 0, 99),
+        "--brightness-margin": this.map(this.brightness, 0, 99, -6, +6) + "px",
+        "--brightness-radius": this.calcRadius(this.brightness, 0, 99),
+      };
+    },
+  },
   methods: {
+    map: function (n, start1, stop1, start2, stop2) {
+      return ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2;
+    },
+    calcRadius: function (val, min, max) {
+      if (val < min + 4) {
+        return "0px 4px 4px 0px";
+      } else if (val > max - 4) {
+        return "4px 0px 0px 4px";
+      } else {
+        return "4px";
+      }
+    },
     updateColor: function (h, s, v) {
       var r, g, b, i, f, p, q, t;
       if (arguments.length === 1) {
@@ -188,22 +212,62 @@ export default {
 
 .sliders {
   float: left;
+  display: flex;
+  gap: 8px;
+  flex-direction: column;
 }
 
 .hsb-slider {
   display: flex;
   align-content: center;
   align-items: center;
+  gap: 8px;
 }
 
 .hsb-slider span {
   width: 8px;
 }
 
-input {
+input[type="range"] {
   -webkit-appearance: none; /* Override default CSS styles */
   appearance: none;
   height: 8px;
+}
+
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background-color: rgba(255, 255, 255, 0);
+  border: 6px solid #1c1c1e;
+  border-radius: 3px;
+  width: 20px;
+  height: 20px;
+  margin-top: 0px;
+  overflow: visible;
+  position: relative;
+}
+
+#hue-slider {
+  border-radius: var(--hue-radius);
+}
+
+#hue-slider::-webkit-slider-thumb {
+  left: var(--hue-margin);
+}
+
+#saturation-slider {
+  border-radius: var(--saturation-radius);
+}
+
+#saturation-slider::-webkit-slider-thumb {
+  left: var(--saturation-margin);
+}
+
+#brightness-slider {
+  border-radius: var(--brightness-radius);
+}
+
+#brightness-slider::-webkit-slider-thumb {
+  left: var(--brightness-margin);
 }
 
 #hue-slider {

@@ -81,6 +81,17 @@ input {
   height: 8px;
 }
 
+input[type="range"]::-webkit-slider-thumb {
+  -webkit-appearance: none;
+  background-color: #1c1c1e;
+  border: 8px solid #1c1c1e;
+  border-radius: 3px;
+  width: 24px;
+  height: 24px;
+  margin-top: 0px;
+  overflow: visible;
+}
+
 label {
   display: flex;
 }
