@@ -1,78 +1,84 @@
 <template>
+  <video-export-preview :show="previewing" @stop-previewing="setPreview" />
+  <modal :modalProp="modalProp" @modal-set="setModal" />
   <viewport-cube
     :quaternion="quaternion"
     :cameraResetDisabled="cameraResetDisabled"
+    :cameraControlsEnabled="multitouch"
   />
   <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
+  <multitouch-selector
+    @selected-multitouch="setSelectedMultitouch"
+    :selectedMultitouch="multitouch"
+  />
   <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
   <transorm-toolbar
     :top="transformToolbar.top"
     :left="transformToolbar.left"
     :location="transformToolbar.location"
     :display="transformToolbar.display"
+    :selectedTool="tool"
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
-  <!-- <import /> -->
-  <Canvas :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
-  <Menu />
+  <Input :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
+  <Canvas ref="raycastCanvas" :enabled="multitouch" />
+  <Menu @modal-set="setModal" @preview="setPreview" />
 </template>
 
 <script>
 import * as THREE from "three";
+//import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import CameraControls from "camera-controls";
 CameraControls.install({ THREE: THREE });
+import InfiniteGridHelper from "./components/InfiniteGridHelper.js";
 
-import Canvas from "./components/Canvas.vue";
+import Input from "./components/Input.vue";
 import ToolSelector from "./components/ToolSelector.vue";
+import MultitouchSelector from "./components/MultitouchSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
-// import Import from "./components/Import.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
-import { drawingPlane } from "./components/drawingPlane.js";
 import LineSettings from "./components/LineSettings.vue";
 import Menu from "./components/Menu.vue";
-
-//import Modal from "./components/Modal.vue";
-//import Toast from "./components/Toast.vue";
-//import LineSettings from "./components/LineSettings.vue";
-//import Old from "./components/Old.vue";
+import Canvas from "./components/Canvas.vue";
+import Modal from "./components/Modal.vue";
+import VideoExportPreview from "./components/VideoExportPreview.vue";
 
 export let renderer = new THREE.WebGLRenderer({
   antialias: true,
   alpha: true,
   preserveDrawingBuffer: true, //this is the configuration that allows the renderer to redraw only the current line when we are drawing instead of the whole scene. If I remember correctly it could create some issues with the video rendering. Leaving a note in case it does. One potential workaround would be to have two separte renderers, one for the scene, one for the current line.
 });
-export let camera = new THREE.OrthographicCamera(
-  window.innerWidth / -2,
-  window.innerWidth / 2,
-  window.innerHeight / 2,
-  window.innerHeight / -2,
-  0,
-  20
+export let camera = new THREE.PerspectiveCamera(
+  100,
+  window.innerWidth / window.innerHeight,
+  1,
+  1000
 );
-export let scene, drawingScene, cameraControls, context, vm;
+export let scene, drawingScene, cameraControls, vm, drawingprop;
 
-var main, drawingCanvas, clock;
+var main, clock;
 
 export default {
   name: "App",
   components: {
-    // Modal,
-    // Toast,
-    // ToolSelector,
-    Canvas,
+    Input,
     LineSettings,
     ToolSelector,
     TransormToolbar,
     ViewportCube,
     UndoRedo,
     Menu,
-    //Import,
+    Canvas,
+    MultitouchSelector,
+    Modal,
+    VideoExportPreview,
   },
   data() {
     return {
       tool: "draw",
+      multitouch: "canvas",
       toolHistory: ["draw"],
       stroke: {}, //filled by the component on mount
       fill: {}, //filled by the component on mount
@@ -81,13 +87,15 @@ export default {
       cameraResetDisabled: false,
       selected: undefined,
       transformToolbar: { top: 0, left: 0, location: "above", display: false },
+      canvasTransformEnabled: true,
+      modalProp: { show: false, mode: "about" },
+      previewing: false,
     };
   },
+  emits: ["modal-set"],
   methods: {
     init: function () {
       CameraControls.install({ THREE: THREE });
-      drawingCanvas = document.getElementById("twod");
-      context = drawingCanvas.getContext("2d");
       main = document.getElementById("threed");
 
       renderer.setPixelRatio(window.devicePixelRatio);
@@ -98,40 +106,23 @@ export default {
 
       scene = new THREE.Scene();
       //Set the background based on the css variable;
-      var bgCol = 0xffffff;
+      var bgCol = 0xdddddd;
       scene.background = new THREE.Color(bgCol);
-      //scene.fog = new THREE.Fog(0xffffff, 9, 13);
+      scene.fog = new THREE.Fog(bgCol, 10, 25);
 
       drawingScene = new THREE.Scene(); //this scene is only used for rendering lines as they are being drawn. Lines are then moved to the main scene.
 
-      var axesHelper = new THREE.AxesHelper();
-      axesHelper.applyMatrix4(new THREE.Matrix4().makeScale(5, 5, 5));
-      axesHelper.layers.set(0);
-      axesHelper.material.fog = false;
-      scene.add(axesHelper);
-
-      var axesHelperFlipped = new THREE.AxesHelper();
-      axesHelperFlipped.applyMatrix4(new THREE.Matrix4().makeScale(-5, -5, -5));
-      axesHelperFlipped.layers.set(0);
-      axesHelperFlipped.material.fog = false;
-      scene.add(axesHelperFlipped);
-
-      var size = 1;
-      var divisions = 1;
-      var gridHelper = new THREE.GridHelper(size, divisions);
-      gridHelper.applyMatrix4(new THREE.Matrix4().makeScale(5, 5, 5));
-      gridHelper.layers.set(0);
-      gridHelper.material.fog = false;
-      scene.add(gridHelper);
+      const grid = new InfiniteGridHelper(1, 10, new THREE.Color(0x0000ff), 40);
+      scene.add(grid);
 
       camera.layers.enable(0); // enabled by default
       camera.layers.enable(1);
-      camera.zoom = 160;
-      camera.position.set(0, 0, 10);
+      camera.zoom = 3;
+      camera.position.set(5, 5, 10);
 
       clock = new THREE.Clock();
 
-      cameraControls = new CameraControls(camera, drawingCanvas);
+      cameraControls = new CameraControls(camera, renderer.domElement);
       cameraControls.dampingFactor = 20;
       cameraControls.draggingDampingFactor = 200;
       cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
@@ -141,17 +132,23 @@ export default {
       cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
       cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
       cameraControls.maxZoom = 4000;
-      cameraControls.minZoom = 100;
+      cameraControls.minZoom = 2;
+      cameraControls.enabled = false;
+
+      this.quaternion = [
+        camera.quaternion.x,
+        camera.quaternion.y,
+        camera.quaternion.z,
+        camera.quaternion.w,
+      ];
 
       cameraControls.addEventListener("update", () => {
-        if (cameraControls.enabled == true) {
-          this.quaternion = [
-            camera.quaternion.x,
-            camera.quaternion.y,
-            camera.quaternion.z,
-            camera.quaternion.w,
-          ];
-        }
+        this.quaternion = [
+          camera.quaternion.x,
+          camera.quaternion.y,
+          camera.quaternion.z,
+          camera.quaternion.w,
+        ];
 
         let target = new THREE.Vector3();
         target = cameraControls.getTarget(target);
@@ -162,24 +159,26 @@ export default {
           this.transformToolbar.display = false;
         }
         if (select.s && select.s.controls != undefined) {
-          select.s.helper.update();
+          if (this.tool == "select") {
+            select.s.helper.update();
+          }
         }
       });
 
       cameraControls.addEventListener("sleep", () => {
         //reposition the drawingPlane
-        drawingPlane.updatePosition();
+        // drawingPlane.updatePosition();
 
         //reposition the contextual transformControls after we adjusted the camera is something is selected
         if (select.s && select.s.controls != undefined) {
-          select.s.helper.update();
-
-          let position = select.s.calculateTransfromToolbarPosition();
-
-          this.transformToolbar.left = position.x;
-          this.transformToolbar.top = position.y;
-          this.transformToolbar.location = position.location;
-          this.transformToolbar.display = true;
+          if (this.tool == "select") {
+            select.s.helper.update();
+            let position = select.s.calculateTransfromToolbarPosition();
+            this.transformToolbar.left = position.x;
+            this.transformToolbar.top = position.y;
+            this.transformToolbar.location = position.location;
+            this.transformToolbar.display = true;
+          }
         }
 
         //set if the camera is resettable after we adjusted the camera
@@ -194,7 +193,7 @@ export default {
           x != 0 ||
           y != 0 ||
           z != 0 ||
-          camera.zoom != 160
+          camera.zoom != 3
         ) {
           this.cameraResetDisabled = false;
         } else {
@@ -207,7 +206,11 @@ export default {
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
 
-      drawingPlane.setUp();
+      const light = new THREE.HemisphereLight(0xffffff, 0x222222, 1); //0x080820
+      light.position.set(0, 1, 5);
+      scene.add(light);
+
+      this.$.refs.raycastCanvas.setUp();
 
       window.addEventListener("resize", this.onWindowResize);
       window.addEventListener("orientationchange", this.onWindowResize);
@@ -225,8 +228,6 @@ export default {
       camera.updateProjectionMatrix();
 
       renderer.setSize(window.innerWidth, window.innerHeight);
-      drawingCanvas.width = window.innerWidth;
-      drawingCanvas.height = window.innerHeight;
 
       renderer.setViewport(0, 0, window.innerWidth, window.innerHeight);
       renderer.render(scene, camera);
@@ -244,10 +245,6 @@ export default {
     },
     setSelectedTool: function (val) {
       this.tool = val;
-
-      if (val == "center") {
-        return;
-      }
 
       this.toolHistory.push(val);
       if (this.toolHistory.length > 2) {
@@ -272,11 +269,14 @@ export default {
       //this is a version without undo so that it can be called by the setCenter tool
       this.tool = val;
     },
-    setPreviouslySelectedTool: function () {
-      //this is used by setCenter.js to set the tool back to its previus config after setting the center
-      this.setSelectedTool_internal(
-        this.toolHistory[this.toolHistory.length - 1]
-      );
+    setSelectedMultitouch: function (val) {
+      this.multitouch = val;
+
+      if (val === "camera") {
+        cameraControls.enabled = true;
+      } else {
+        cameraControls.enabled = false;
+      }
     },
     setSelectedObject: function (val) {
       this.selected = val;
@@ -295,15 +295,21 @@ export default {
     setFill: function (val) {
       this.fill = val;
     },
+    setModal: function (val) {
+      this.modalProp = val;
+    },
+    setPreview: function (val) {
+      this.previewing = val;
+    },
   },
   mounted() {
     this.init();
     this.animate();
     vm = this;
+    this.cameraResetDisabled = false; //this is an override, I'm not quite sure what sets it to true on mount
   },
 };
 </script>
-// how to update component data from app https://stackoverflow.com/questions/47281746/vue-update-component-data-from-vue-instance
 
 <style>
 :root {
@@ -331,6 +337,12 @@ html,
   -ms-user-select: none;
   user-select: none;
   touch-action: manipulation;
+  font-weight: 900;
+  color: #1c1c1e;
+}
+
+button {
+  font-weight: 900;
 }
 
 #app {
@@ -341,8 +353,43 @@ html,
   width: 100%;
 }
 
+input[type="radio"] {
+  opacity: 0;
+  position: fixed;
+  width: 0;
+}
+
+label {
+  display: flex;
+  width: 60px;
+  height: 44px;
+  align-content: center;
+  justify-content: center;
+}
+
+input[type="radio"]:checked + label {
+  background-color: #ffe8b3;
+}
+
+input[type="radio"]:not(:checked) + label {
+  background-color: #ffffff;
+}
+
 .disabled {
   pointer-events: none;
   opacity: 0.6;
+}
+
+.hidden {
+  display: none;
+}
+
+a {
+  color: #ffb000;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ff8400;
 }
 </style>

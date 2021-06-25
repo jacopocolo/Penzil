@@ -1,8 +1,12 @@
 
 <template>
   <div>
-    <button @click="undo" :disabled="undoDisabled">Undo</button>
-    <button @click="redo" :disabled="redoDisabled">Redo</button>
+    <button @click="undo" :disabled="undoDisabled">
+      <img src="@/assets/icons/undo.svg" alt="undo" />
+    </button>
+    <button @click="redo" :disabled="redoDisabled">
+      <img src="@/assets/icons/redo.svg" alt="redo" />
+    </button>
   </div>
 </template>
 
@@ -49,7 +53,26 @@ export default {
 div {
   z-index: 2;
   position: absolute;
-  bottom: 0;
-  right: 10px;
+  top: 12px;
+  height: 44px;
+  left: calc(50% + 16px);
+  background-color: #fff;
+  border-radius: 8px;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
+}
+
+button {
+  background-color: rgba(255, 255, 255, 0);
+  border: none;
+  border-radius: 0px;
+  height: 44px;
+}
+
+button:first-child {
+  border-right: 2px solid #ffe8b3;
+}
+
+button:disabled > img {
+  opacity: 0.5;
 }
 </style>

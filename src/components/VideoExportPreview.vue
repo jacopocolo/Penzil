@@ -1,30 +1,36 @@
+
 <template>
   <div v-if="previewing" class="fade">
     <div class="fade-controls">
       <button @click="cancel()">Cancel</button>
-      <input
-        type="radio"
-        name="360"
-        value="360"
-        v-model="loop"
-        :disabled="recording"
-      />
-      <label for="360">360</label>
-      <input
-        type="radio"
-        name="bf"
-        value="bf"
-        v-model="loop"
-        :disabled="recording"
-      />
-      <label for="bf">Back and forth</label>
-      <button @click="startRecording()" :disabled="recording" v>Record</button>
+      <span class="rightAlign">
+        <input
+          type="radio"
+          name="360"
+          value="360"
+          id="360"
+          v-model="loop"
+          :disabled="recording"
+        />
+        <label for="360">360</label>
+        <input
+          type="radio"
+          name="bf"
+          value="bf"
+          id="bf"
+          v-model="loop"
+          :disabled="recording"
+        />
+        <label for="bf">Back and forth</label>
+        <button @click="startRecording()" :disabled="recording" v>
+          {{ !recording ? "Start recording" : "Recording..." }}
+        </button>
+      </span>
       <span v-if="recording"
         >Recording frame {{ currentLength }} of {{ length }}</span
       >
     </div>
   </div>
-  <button @click="startPreview()">Export video</button>
 </template>
 
 <script>
@@ -33,8 +39,8 @@ import { renderer, camera, scene, cameraControls } from "../App.vue";
 import * as HME from "h264-mp4-encoder";
 
 export default {
-  name: "Import",
-  props: {},
+  name: "VideoExport",
+  components: {},
   data() {
     return {
       previewing: false,
@@ -46,6 +52,10 @@ export default {
       polarAngle: undefined,
       pos: [],
     };
+  },
+  emits: ["stop-previewing"],
+  props: {
+    show: Boolean,
   },
   methods: {
     easeInOutQuad(t, b, c, d) {
@@ -162,12 +172,13 @@ export default {
       });
     },
     startPreview() {
+      // this.$emit("show", false);
       cameraControls.normalizeRotations();
       this.startAzimuthAngle = cameraControls.azimuthAngle;
       this.polarAngle = cameraControls.polarAngle;
       this.previewing = true;
       cameraControls.dampingFactor = 0.5;
-      cameraControls.enabled = false;
+      // cameraControls.enabled = false;
       camera.layers.disable(0);
       this.animate();
     },
@@ -188,15 +199,21 @@ export default {
       cameraControls.rotateTo(this.startAzimuthAngle, this.polarAngle, true);
       this.startAzimuthAngle = undefined;
       this.polarAngle = undefined;
-      cameraControls.enabled = true;
+      // cameraControls.enabled = true;
       setTimeout(() => {
         cameraControls.dampingFactor = 20;
         cameraControls.normalizeRotations();
       }, 100);
       renderer.render(scene, camera);
+      this.$emit("stop-previewing", false);
     },
   },
   watch: {
+    show: function (val) {
+      if (val === true) {
+        this.startPreview();
+      }
+    },
     loop: function () {
       this.currentLength = 0;
     },
@@ -205,24 +222,50 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .fade {
-  height: 100vh;
-  width: 100vw;
   position: absolute;
-  bottom: -10px;
-  left: -10px;
-  z-index: 5;
-  background-color: rgba(0, 0, 0, 0.4);
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fade-controls {
-  background-color: black;
-  color: white;
+  background-color: white;
+  color: black;
   margin: 0 auto;
   position: absolute;
   bottom: 0px;
   padding: 10px;
   width: 100vw;
+  z-index: 5;
+}
+
+.rightAlign > label {
+  width: 200px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+}
+
+button {
+  align-content: center;
+  background-color: rgba(0, 0, 0, 0);
+  border: none;
+  height: 44px;
+  padding-left: 16px;
+  padding-right: 16px;
+  margin-right: 2px;
+}
+
+.rightAlign {
+  float: right;
+  display: flex;
 }
 </style>
