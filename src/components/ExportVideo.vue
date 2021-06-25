@@ -227,7 +227,7 @@ export default {
   color: black;
   margin: 0 auto;
   position: absolute;
-  bottom: 0px;
+  bottom: -60px;
   padding: 10px;
   width: 100vw;
   z-index: 5;
