@@ -1,32 +1,38 @@
 
 <template>
-  <div class="lineSettings" v-if="selectedTool == 'draw'">
-    <input type="checkbox" id="stroke" name="strokeBool" v-model="stroke" />
-    <label for="strokeBool"> Stroke</label>
-    <input type="color" id="favcolor" name="favcolor" v-model="strokeColor" />
-    <input
-      type="number"
-      id="width"
-      name="width"
-      min="1"
-      max="10"
-      v-model="strokeWidth"
+  <div
+    class="lineSettings"
+    v-bind:class="[selectedTool != 'draw' ? 'hidden ' : '']"
+  >
+    <line-sliders
+      mode="stroke"
+      :active="stroke"
+      @color="setStrokeColor"
+      @active="setStrokeActive"
+      @width="setStrokeWidth"
+    /><br />
+    <line-sliders
+      :active="fill"
+      mode="fill"
+      @color="setFillColor"
+      @active="setFillActive"
     />
-    <input type="checkbox" id="fill" name="strokeFill" v-model="fill" />
-    <label for="fillBool"> Fill</label>
-    <input type="color" name="fillColor" v-model="fillColor" />
   </div>
 </template>
 
 <script>
+import LineSliders from "./LineSliders.vue";
+// import LineWidthSelector from "./LineWidthSelector.vue";
+
 export default {
+  components: { LineSliders },
   name: "Modal",
   data() {
     return {
       stroke: true,
-      strokeColor: "#ff0000",
-      strokeWidth: 1,
-      fill: true,
+      strokeColor: "#1C1C1E",
+      strokeWidth: 2,
+      fill: false,
       fillColor: "#000000",
     };
   },
@@ -34,6 +40,21 @@ export default {
     selectedTool: String,
   },
   methods: {
+    setStrokeColor: function (val) {
+      this.strokeColor = "rgb(" + val.r + "," + val.g + "," + val.b + ")";
+    },
+    setStrokeActive: function (val) {
+      this.stroke = val.active;
+    },
+    setStrokeWidth: function (val) {
+      this.strokeWidth = val.width;
+    },
+    setFillColor: function (val) {
+      this.fillColor = "rgb(" + val.r + "," + val.g + "," + val.b + ")";
+    },
+    setFillActive: function (val) {
+      this.fill = val.active;
+    },
     emitStroke: function () {
       this.$emit("stroke", {
         show_stroke: this.stroke,
@@ -73,7 +94,10 @@ export default {
 .lineSettings {
   z-index: 2;
   position: absolute;
-  top: 0;
+  top: 8px;
   right: 10px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
 }
 </style>

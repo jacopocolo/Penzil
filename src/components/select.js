@@ -1,5 +1,5 @@
 import * as THREE from "three";
-import { scene, renderer, camera, context, vm } from "../App.vue";
+import { scene, renderer, camera, vm } from "../App.vue";
 import { TransformControls } from "three/examples/jsm/controls/TransformControls.js";
 import { mirror } from "./mirror.js"
 import { erase } from "./erase.js"
@@ -154,25 +154,10 @@ let select = {
         }
         move(cx, cy) {
             if (this.selected.length == 0) {
-                context.globalAlpha = 1;
-                context.clearRect(0, 0, window.innerWidth, window.innerHeight);
-                context.beginPath();
-                context.rect(
-                    this.selector.cssStart.x,
-                    this.selector.cssStart.y,
-                    cx - this.selector.cssStart.x,
-                    cy - this.selector.cssStart.y
-                );
-                // context.strokeStyle = getComputedStyle(
-                //     document.documentElement
-                // ).getPropertyValue("--accent-color-selected");
-                context.lineWidth = 0.7;
-                context.setLineDash([4, 4]);
-                context.stroke();
+                console.log(cx, cy)
             }
         }
         end(tx, ty) {
-            context.clearRect(0, 0, window.innerWidth, window.innerHeight);
             this.selector.end.x = tx;
             this.selector.end.y = ty;
             let objectsInRect = this.selector.select();
@@ -748,7 +733,6 @@ let select = {
             }
         }
         cancel() {
-            context.clearRect(0, 0, window.innerWidth, window.innerHeight);
             this.s = undefined;
             return;
         }

@@ -15,8 +15,8 @@
       @click="resetCamera()"
       @touchstart="resetCamera()"
       v-bind:class="[cameraResetDisabled ? 'disabled ' : '']"
-      >↺</span
-    >
+      ><img src="@/assets/icons/reset.svg" alt="Reset camera position and zoom"
+    /></span>
   </div>
 </template>
 
@@ -29,7 +29,11 @@ let viewPortRenderer, viewPortScene, viewPortCamera;
 
 export default {
   name: "ViewportCube",
-  props: { quaternion: Array, cameraResetDisabled: Boolean },
+  props: {
+    quaternion: Array,
+    cameraResetDisabled: Boolean,
+    cameraControlsEnabled: String,
+  },
   data() {
     return {
       mouse: {
@@ -150,52 +154,56 @@ export default {
       //This is a slight hack to allow the triangulate function that generates the fill to work in any scenario. See: https://github.com/mapbox/earcut/issues/21
       let adj = 0.0001;
 
-      let lookAt = function (x, y, z) {
+      let restore = this.cameraControlsEnabled === "camera" ? true : false;
+
+      let lookAt = function (x, y, z, restore) {
         cameraControls.dampingFactor = 0.5;
         cameraControls.enabled = false;
         cameraControls.setLookAt(x, y, z, target.x, target.y, target.z, true);
-        cameraControls.enabled = true;
+        cameraControls.enabled = restore;
         setTimeout(() => {
-          cameraControls.dampingFactor = 10;
+          cameraControls.dampingFactor = 20;
         }, 100);
+        // cameraControls.update();
+        console.log(cameraControls.enabled);
       };
 
       switch (index) {
         case 0:
-          lookAt(target.x + 10, target.y + adj, target.z + adj);
+          lookAt(target.x + 10, target.y + adj, target.z + adj, restore);
           break;
         case 1:
-          lookAt(target.x + 10, target.y + adj, target.z + adj);
+          lookAt(target.x + 10, target.y + adj, target.z + adj, restore);
           break;
         case 2:
-          lookAt(target.x - 10, target.y + adj, target.z + adj);
+          lookAt(target.x - 10, target.y + adj, target.z + adj, restore);
           break;
         case 3:
-          lookAt(target.x - 10, target.y + adj, target.z + adj);
+          lookAt(target.x - 10, target.y + adj, target.z + adj, restore);
           break;
         case 4:
-          lookAt(target.x, target.y + 10, target.z + adj);
+          lookAt(target.x, target.y + 10, target.z + adj, restore);
           break;
         case 5:
-          lookAt(target.x, target.y + 10, target.z + adj);
+          lookAt(target.x, target.y + 10, target.z + adj, restore);
           break;
         case 6:
-          lookAt(target.x, target.y - 10, target.z + adj);
+          lookAt(target.x, target.y - 10, target.z + adj, restore);
           break;
         case 7:
-          lookAt(target.x, target.y - 10, target.z + adj);
+          lookAt(target.x, target.y - 10, target.z + adj, restore);
           break;
         case 8:
-          lookAt(target.x + adj, target.y, target.z + 10);
+          lookAt(target.x + adj, target.y, target.z + 10, restore);
           break;
         case 9:
-          lookAt(target.x + adj, target.y, target.z + 10);
+          lookAt(target.x + adj, target.y, target.z + 10, restore);
           break;
         case 10:
-          lookAt(target.x + adj, target.y, target.z - 10);
+          lookAt(target.x + adj, target.y, target.z - 10, restore);
           break;
         case 11:
-          lookAt(target.x + adj, target.y, target.z - 10);
+          lookAt(target.x + adj, target.y, target.z - 10, restore);
           break;
         default:
           console.log(index);
@@ -259,8 +267,9 @@ export default {
       cameraControls.dampingFactor = 0.5;
       cameraControls.enabled = false;
       cameraControls.setLookAt(0, 0, 10, 0, 0, 0, true);
-      cameraControls.zoomTo(160, true);
-      cameraControls.enabled = true;
+      cameraControls.zoomTo(3, true);
+      cameraControls.enabled =
+        this.cameraControlsEnabled === "camera" ? true : false;
       setTimeout(() => {
         cameraControls.dampingFactor = 20;
       }, 100);
@@ -301,6 +310,9 @@ export default {
       );
       this.render();
     },
+    cameraControlsEnabled: function (val) {
+      console.log(val);
+    },
   },
   mounted() {
     this.init();
@@ -323,24 +335,25 @@ export default {
   height: 150px;
   width: 150px;
   z-index: 3;
-  background-color: black;
+  background-color: rgba(0, 0, 0, 0);
 }
 
 .reset-camera {
-  height: 32px;
-  width: 32px;
-  border-radius: 16px;
-  background-color: rgba(255, 255, 255, 0.2);
+  height: 44px;
+  width: 44px;
+  border-radius: 22px;
+  background-color: rgba(255, 255, 255, 1);
   font-size: 2em;
   line-height: 1em;
   position: absolute;
   color: rgba(255, 255, 255, 1);
   opacity: 1;
-  bottom: 8px;
-  right: 8px;
+  bottom: 0px;
+  right: 0px;
   justify-content: center;
   align-content: center;
   text-align: center;
   z-index: 4;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
 }
 </style>

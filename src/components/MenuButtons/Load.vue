@@ -3,7 +3,7 @@
 </template>
 
 <script>
-import { draw } from "./draw.js";
+import { draw } from "../draw.js";
 
 export default {
   name: "Import",

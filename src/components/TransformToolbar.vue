@@ -1,14 +1,15 @@
 <template>
   <div
+    class="transform-toolbar"
     v-bind:style="[
       location == 'above'
         ? {
-            top: 'calc(' + top + 'px - 60px',
-            left: 'calc(' + left + 'px - 110px)',
+            top: 'calc(' + posTop + 'px - 100px',
+            left: 'calc(' + posLeft + 'px - 110px)',
           }
         : {
-            top: 'calc(' + top + 'px + 10px',
-            left: 'calc(' + left + 'px - 110px)',
+            top: 'calc(' + posTop + 'px + 100px',
+            left: 'calc(' + posLeft + 'px - 110px)',
           },
     ]"
     v-bind:class="{ hide: !display }"
@@ -47,7 +48,9 @@
       </span>
     </span>
 
-    <button @click="duplicate">Duplicate</button>
+    <button v-bind:class="{ hide: selectedTool == 'model' }" @click="duplicate">
+      Duplicate
+    </button>
   </div>
 </template>
 
@@ -57,10 +60,18 @@ import { scene, renderer, camera } from "../App.vue";
 
 export default {
   name: "TransformToolbar",
-  props: { top: Number, left: Number, location: String, display: Boolean },
+  props: {
+    top: Number,
+    left: Number,
+    location: String,
+    display: Boolean,
+    selectedTool: String,
+  },
   data() {
     return {
       selectedTransformation: "translate",
+      posTop: 0,
+      posLeft: 0,
     };
   },
   methods: {
@@ -70,17 +81,47 @@ export default {
   },
   watch: {
     selectedTransformation: function (val) {
-      select.s.controls.mode = val;
-      //this maintains the selection from the last used transformation
-      this.selectedTransformation = val;
-      select.transformMode = val;
-      select.s.helper.update();
+      if (this.selectedTool == "select") {
+        select.s.controls.mode = val;
+        //this maintains the selection from the last used transformation
+        this.selectedTransformation = val;
+        select.transformMode = val;
+        select.s.helper.update();
+      }
+      if (this.selectedTool == "model") {
+        let controls = scene.getObjectByName("canvasTransformControls");
+        console.log(controls);
+        this.selectedTransformation = val;
+        controls.mode = this.selectedTransformation;
+      }
       renderer.render(scene, camera);
     },
     display: function (val) {
       if (val) {
         //this maintains the selection from the last used transformation
-        select.s.controls.mode = this.selectedTransformation;
+        if (this.selectedTool == "select") {
+          select.s.controls.mode = this.selectedTransformation;
+        }
+        if (this.selectedTool == "model") {
+          let controls = scene.getObjectByName("canvasTransformControls");
+          controls.mode = this.selectedTransformation;
+        }
+      }
+    },
+    top: function (val) {
+      //this needs to be improved further
+
+      if (val >= window.innerHeight) {
+        this.posTop = window.innerHeight - 60;
+      } else {
+        this.posTop = val;
+      }
+    },
+    left: function (val) {
+      if (val >= window.innerWidth) {
+        this.posLeft = window.innerWidth;
+      } else {
+        this.posLeft = val;
       }
     },
   },
@@ -89,14 +130,21 @@ export default {
 </script>
 
 <style scoped>
-div {
+.transform-toolbar {
+  padding: 8px;
   position: absolute;
-  z-index: 2;
+  z-index: 999;
   background-color: black;
   color: white;
   width: 220px;
   border-radius: 5px;
   align-content: center;
+  display: flex;
+  flex-direction: row;
+}
+
+.transform-toolbar > span {
+  display: flex;
 }
 
 button {
