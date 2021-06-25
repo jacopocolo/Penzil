@@ -1,3 +1,4 @@
+
 <template>
   <div v-if="previewing" class="fade">
     <div class="fade-controls">
@@ -30,7 +31,6 @@
       >
     </div>
   </div>
-  <button @click="startPreview()">Export video</button>
 </template>
 
 <script>
@@ -39,8 +39,8 @@ import { renderer, camera, scene, cameraControls } from "../App.vue";
 import * as HME from "h264-mp4-encoder";
 
 export default {
-  name: "export-video",
-  props: {},
+  name: "VideoExport",
+  components: {},
   data() {
     return {
       previewing: false,
@@ -52,6 +52,10 @@ export default {
       polarAngle: undefined,
       pos: [],
     };
+  },
+  emits: ["stop-previewing"],
+  props: {
+    show: Boolean,
   },
   methods: {
     easeInOutQuad(t, b, c, d) {
@@ -168,6 +172,7 @@ export default {
       });
     },
     startPreview() {
+      // this.$emit("show", false);
       cameraControls.normalizeRotations();
       this.startAzimuthAngle = cameraControls.azimuthAngle;
       this.polarAngle = cameraControls.polarAngle;
@@ -200,9 +205,15 @@ export default {
         cameraControls.normalizeRotations();
       }, 100);
       renderer.render(scene, camera);
+      this.$emit("stop-previewing", false);
     },
   },
   watch: {
+    show: function (val) {
+      if (val === true) {
+        this.startPreview();
+      }
+    },
     loop: function () {
       this.currentLength = 0;
     },
@@ -211,15 +222,18 @@ export default {
 };
 </script>
 
-<style scoped>
+<style>
 .fade {
-  height: 100vh;
-  width: 100vw;
   position: absolute;
-  bottom: 0px;
-  right: 0px;
-  z-index: 5;
-  background-color: rgba(0, 0, 0, 0.4);
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.2);
+  z-index: 10;
+  display: flex;
+  align-items: center;
+  justify-content: center;
 }
 
 .fade-controls {
@@ -227,17 +241,16 @@ export default {
   color: black;
   margin: 0 auto;
   position: absolute;
-  bottom: -60px;
+  bottom: 0px;
   padding: 10px;
   width: 100vw;
   z-index: 5;
 }
 
-label {
+.rightAlign > label {
   width: 200px;
   display: flex;
   justify-content: center;
-  align-content: center;
   align-items: center;
 }
 

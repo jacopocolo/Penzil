@@ -104,9 +104,9 @@ export default {
   data() {
     return {
       hue: 0,
-      saturation: 50,
-      brightness: 50,
-      width: 2,
+      saturation: 0,
+      brightness: 0,
+      width: 5,
       r: 0,
       g: 0,
       b: 0,

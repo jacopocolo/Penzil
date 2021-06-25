@@ -1,10 +1,11 @@
 <template>
-  <div v-if="show">
-    <About />
+  <div class="popup" v-if="show">
+    <About @modal="showModal" />
+    <Feedback @modal="showModal" />
     <Save />
     <Load />
-    <Export />
-    <export-video />
+    <Export @modal="showModal" />
+    <start-preview @preview="startPreview" />
   </div>
   <button class="toggle-menu" @click="show = !show">···</button>
   <div class="fade" v-if="show" @click="show = false"></div>
@@ -12,12 +13,12 @@
 </template>
 
 <script>
-import About from "./About.vue";
-import Save from "./Save.vue";
-import Load from "./Load.vue";
-import Export from "./Export.vue";
-import ExportVideo from "./ExportVideo.vue";
-import Feedback from "./Feedback.vue";
+import About from "./MenuButtons/About.vue";
+import Save from "./MenuButtons/Save.vue";
+import Load from "./MenuButtons/Load.vue";
+import Export from "./MenuButtons/Export.vue";
+import StartPreview from "./MenuButtons/StartPreview.vue";
+import Feedback from "./MenuButtons/Feedback.vue";
 
 export default {
   name: "Import",
@@ -27,15 +28,28 @@ export default {
     Load,
     Save,
     Export,
-    ExportVideo,
+    StartPreview,
     Feedback,
   },
+  emits: ["modal-set", "preview"],
   data() {
     return {
       show: false,
     };
   },
-  methods: {},
+  methods: {
+    hide: function () {
+      this.show = false;
+    },
+    showModal: function (val) {
+      this.$emit("modal-set", val);
+      this.hide();
+    },
+    startPreview: function (val) {
+      this.$emit("preview", val);
+      this.hide();
+    },
+  },
   watch: {},
   mounted() {},
 };
@@ -82,5 +96,9 @@ button {
   padding-left: 16px;
   padding-right: 16px;
   border-bottom: 1px solid #ffe8b3;
+}
+
+button:last-child {
+  border-bottom: none;
 }
 </style>

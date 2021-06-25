@@ -1,5 +1,5 @@
 <template>
-  <button @click="showAboutModal">About</button>
+  <button @click="showFeedbackModal">Feedback</button>
 </template>
 
 <script>
@@ -10,8 +10,8 @@ export default {
     return {};
   },
   methods: {
-    showAboutModal: function () {
-      console.log("showAboutModal");
+    showFeedbackModal: function () {
+      this.$emit("modal", { display: true, mode: "feedback" });
     },
   },
   watch: {},

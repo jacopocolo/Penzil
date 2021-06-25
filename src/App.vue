@@ -1,4 +1,6 @@
 <template>
+  <video-export-preview :show="previewing" @stop-previewing="setPreview" />
+  <modal :modalProp="modalProp" @modal-set="setModal" />
   <viewport-cube
     :quaternion="quaternion"
     :cameraResetDisabled="cameraResetDisabled"
@@ -20,7 +22,7 @@
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
   <Input :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
   <Canvas ref="raycastCanvas" :enabled="multitouch" />
-  <Menu />
+  <Menu @modal-set="setModal" @preview="setPreview" />
 </template>
 
 <script>
@@ -40,6 +42,8 @@ import { select } from "./components/select.js";
 import LineSettings from "./components/LineSettings.vue";
 import Menu from "./components/Menu.vue";
 import Canvas from "./components/Canvas.vue";
+import Modal from "./components/Modal.vue";
+import VideoExportPreview from "./components/VideoExportPreview.vue";
 
 export let renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -68,6 +72,8 @@ export default {
     Menu,
     Canvas,
     MultitouchSelector,
+    Modal,
+    VideoExportPreview,
   },
   data() {
     return {
@@ -82,8 +88,11 @@ export default {
       selected: undefined,
       transformToolbar: { top: 0, left: 0, location: "above", display: false },
       canvasTransformEnabled: true,
+      modalProp: { show: false, mode: "about" },
+      previewing: false,
     };
   },
+  emits: ["modal-set"],
   methods: {
     init: function () {
       CameraControls.install({ THREE: THREE });
@@ -102,31 +111,6 @@ export default {
       scene.fog = new THREE.Fog(bgCol, 10, 25);
 
       drawingScene = new THREE.Scene(); //this scene is only used for rendering lines as they are being drawn. Lines are then moved to the main scene.
-
-      // var axesHelper = new THREE.AxesHelper();
-      // axesHelper.applyMatrix4(new THREE.Matrix4().makeScale(5, 5, 5));
-      // axesHelper.layers.set(0);
-      // axesHelper.material.fog = false;
-      // scene.add(axesHelper);
-
-      // var axesHelperFlipped = new THREE.AxesHelper();
-      // axesHelperFlipped.applyMatrix4(new THREE.Matrix4().makeScale(-5, -5, -5));
-      // axesHelperFlipped.layers.set(0);
-      // axesHelperFlipped.material.fog = false;
-      // scene.add(axesHelperFlipped);
-
-      // var size = 1;
-      // var divisions = 10;
-      // var gridHelper = new THREE.GridHelper(
-      //   size,
-      //   divisions,
-      //   0x0000ff,
-      //   0x0000ff
-      // );
-      // gridHelper.applyMatrix4(new THREE.Matrix4().makeScale(5, 5, 5));
-      // gridHelper.layers.set(0);
-      // gridHelper.material.fog = false;
-      // scene.add(gridHelper);
 
       const grid = new InfiniteGridHelper(1, 10, new THREE.Color(0x0000ff), 40);
       scene.add(grid);
@@ -311,6 +295,12 @@ export default {
     setFill: function (val) {
       this.fill = val;
     },
+    setModal: function (val) {
+      this.modalProp = val;
+    },
+    setPreview: function (val) {
+      this.previewing = val;
+    },
   },
   mounted() {
     this.init();
@@ -348,6 +338,7 @@ html,
   user-select: none;
   touch-action: manipulation;
   font-weight: 900;
+  color: #1c1c1e;
 }
 
 button {
@@ -391,5 +382,14 @@ input[type="radio"]:not(:checked) + label {
 
 .hidden {
   display: none;
+}
+
+a {
+  color: #ffb000;
+  text-decoration: none;
+}
+
+a:hover {
+  color: #ff8400;
 }
 </style>

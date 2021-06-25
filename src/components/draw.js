@@ -13,9 +13,9 @@ import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 
-let pencil = new THREE.TextureLoader().load(
-    "/pencilVectorWide.png"
-)
+// let pencil = new THREE.TextureLoader().load(
+//     "/pencilVectorWide.png"
+// )
 // let watercolor = new THREE.TextureLoader().load(
 //     "/watercolor.jpg"
 // )
@@ -30,8 +30,8 @@ let draw = {
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
             this.material = new MeshLineMaterial({
-                useMap: true,
-                map: pencil,
+                // useMap: true,
+                // map: pencil,
                 lineWidth: this.stroke.show_stroke ? this.stroke.lineWidth : 0.005,
                 sizeAttenuation: 1,
                 color: this.stroke.show_stroke ? this.stroke.color : 0xFFFFFF,

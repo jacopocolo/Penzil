@@ -105,7 +105,7 @@ export default {
         multiTouched: false,
         eventCancelled: false,
       },
-      displayTouches: true,
+      displayTouches: false,
       touches: [],
     };
   },
@@ -309,11 +309,7 @@ export default {
       }
     },
   },
-  watch: {
-    touches: function (val) {
-      console.log(val);
-    },
-  },
+  watch: {},
   mounted() {},
 };
 </script>

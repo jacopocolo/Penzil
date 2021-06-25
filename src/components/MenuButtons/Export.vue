@@ -1,17 +1,17 @@
 <template>
-  <button @click="showFeedbackModal">Feedback</button>
+  <button @click="showExportModal">Export for Blender</button>
 </template>
 
 <script>
 export default {
-  name: "Import",
+  name: "Export",
   props: {},
   data() {
     return {};
   },
   methods: {
-    showAboutModal: function () {
-      console.log("showFeedbackModal");
+    showExportModal: function () {
+      this.$emit("modal", { display: true, mode: "export" });
     },
   },
   watch: {},

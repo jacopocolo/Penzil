@@ -1,11 +1,11 @@
 <template>
-  <button @click="exportToGp">Export</button>
+  <button @click="exportToJson">Save</button>
 </template>
 
 <script>
 import * as THREE from "three";
 // import { draw } from "./draw.js";
-import { scene } from "../App.vue";
+import { scene } from "../../App.vue";
 
 export default {
   name: "Import",
@@ -14,7 +14,7 @@ export default {
     return {};
   },
   methods: {
-    exportToGp: function () {
+    exportToJson: function () {
       const json = [];
       scene.children.forEach((obj) => {
         //check if it's a line, if it's in the right layer and that we don't already have its original
@@ -25,16 +25,18 @@ export default {
         ) {
           let line = {};
 
-          let geometry = obj.geometry.clone();
-          geometry.applyMatrix(obj.matrix);
+          console.log(obj.geometry);
 
-          line.vertices = Array.from(geometry.attributes.position.array);
+          line.vertices = Array.from(obj.geometry.points);
           line.stroke = obj.userData.stroke;
           line.fill = obj.userData.fill;
           line.mirrorOn = false;
-          line.position = new THREE.Vector3(0, 0, 0);
-          line.quaternion = new THREE.Quaternion(0, 0, 0, 1);
-          line.scale = new THREE.Vector3(1, 1, 1);
+          line.position = new THREE.Vector3();
+          obj.getWorldPosition(line.position);
+          line.quaternion = new THREE.Quaternion();
+          obj.getWorldQuaternion(line.quaternion);
+          line.scale = new THREE.Vector3();
+          obj.getWorldScale(line.scale);
           line.matrix = obj.matrix;
           json.push(line);
         }
@@ -45,7 +47,7 @@ export default {
         "data:text/json;charset=utf-8," +
         encodeURIComponent(JSON.stringify(json));
 
-      var filename = prompt("Enter filename", "gp_");
+      var filename = prompt("Enter filename", "sketch");
 
       if (filename != null) {
         var el = document.createElement("a");

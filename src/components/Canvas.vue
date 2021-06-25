@@ -38,8 +38,7 @@ export default {
         side: THREE.DoubleSide,
         polygonOffset: true,
         polygonOffsetFactor: 2.5,
-        polygonOffsetUnits: 0,
-        blending: THREE.MultiplyBlending,
+        polygonOffsetUnits: -1,
         // wireframe: true,
       }),
       startPosition: new THREE.Vector3(0.001, 0.001, 0.001),
@@ -117,11 +116,9 @@ export default {
       if (val == "canvas") {
         controls.enabled = true;
         this.material.opacity = 0.9;
-        this.material.blending = THREE.MultiplyBlending;
       } else {
         controls.enabled = false;
         this.material.opacity = 0.3;
-        this.material.blending = THREE.NormalBlending;
       }
       renderer.render(scene, camera);
     },
