@@ -747,7 +747,7 @@ function onTouchMove(event) {
 function onMouseMove(event) {
     event.preventDefault();
 
-    if (!this.enabled || event.button != 2) return;
+    if (!this.enabled) return;
 
     const rect = this.domElement.getBoundingClientRect();
     let pointer = {
