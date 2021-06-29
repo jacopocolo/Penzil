@@ -135,8 +135,8 @@ export default {
 .canvasSettings {
   z-index: 2;
   position: absolute;
-  bottom: calc(44px - 16px);
-  left: 16px;
+  bottom: 12px;
+  left: 12px;
   /* background-color: white;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   height: 44px;
