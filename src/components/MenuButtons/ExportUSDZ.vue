@@ -4,10 +4,10 @@
 
 <script>
 import * as THREE from "three";
-import { scene, renderer, camera } from "../../App.vue";
-import { TubeGeometryWithVariableWidth } from "../TubeGeometryWithVariableWidth.js";
-
-// let sceneUSDZ;
+import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
+import { scene } from "../../App.vue";
+// import { TubeGeometryWithVariableWidth } from "../TubeGeometryWithVariableWidth.js";
+let sceneUSDZ;
 
 export default {
   name: "ExportUSDZ",
@@ -16,11 +16,20 @@ export default {
     return {};
   },
   methods: {
-    exportToUsdz: function () {
-      const json = [];
-      scene.children.forEach((obj) => {
-        //check if it's a line, if it's in the right layer and that we don't already have its original
+    exportToUsdz: async function () {
+      sceneUSDZ = new THREE.Scene();
+
+      const group = new THREE.Group();
+
+      function map(n, start1, stop1, start2, stop2) {
+        return ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2;
+      }
+
+      for (let o = 0; o <= scene.children.length; o++) {
+        let obj = scene.children[o];
+
         if (
+          obj != undefined &&
           obj.geometry &&
           obj.geometry.type == "MeshLine" &&
           obj.layers.mask == 2
@@ -44,95 +53,91 @@ export default {
           let force = [];
 
           for (let i = 0; i <= obj.userData.stroke.force.length; i++) {
-            force.push(
-              obj.userData.stroke.lineWidth + obj.userData.stroke.force[i] / 5
-            );
-          }
+            let length = obj.userData.stroke.force.length;
+            let minWidth = 0;
+            let baseWidth = obj.userData.stroke.lineWidth;
+            let width = obj.userData.stroke.force[i] / 16;
+            // let width = obj.userData.stroke.lineWidth;
+            let tailLength = 3;
 
-          //something is off here. I have more vertices than force?
-          console.log(vertices.length);
-          console.log(force.length);
+            //Beginning of the line
+            if (i < tailLength) {
+              let n = map(i, minWidth, tailLength, minWidth, baseWidth + width);
+
+              force.push(n);
+            }
+            //End of the line
+            else if (i > length - tailLength) {
+              let n = map(
+                i,
+                length - tailLength,
+                length - 1,
+                baseWidth + width,
+                minWidth
+              );
+
+              force.push(n);
+            }
+            //bulk of the line
+            else {
+              force.push(baseWidth + width);
+            }
+
+            force
+              .push
+              // obj.userData.stroke.lineWidth + obj.userData.stroke.force[i] / 5
+              ();
+          }
 
           var pathBase = new THREE.CatmullRomCurve3(
             vertices,
             false,
             "catmullrom",
-            1
+            0.5
           );
 
-          const tubeGeometry = new TubeGeometryWithVariableWidth(
+          // const tubeGeometry = new TubeGeometryWithVariableWidth(
+          //   pathBase,
+          //   force.length,
+          //   force,
+          //   8,
+          //   true
+          // );
+
+          const tubeGeometry = new THREE.TubeGeometry(
             pathBase,
             force.length,
-            force,
+            0.01,
             8,
-            true
+            false
           );
-          const material = new THREE.MeshBasicMaterial({
-            color: obj.userData.stroke.color,
+          const material = new THREE.MeshStandardMaterial({
+            // color: 0x00ff00,
+            // color: obj.userData.stroke.color,
           });
           const mesh = new THREE.Mesh(tubeGeometry, material);
-          scene.add(mesh);
+          group.attach(mesh);
           mesh.geometry.computeBoundingSphere();
-          renderer.render(scene, camera);
-
-          //   let line = {};
-          //   console.log(obj.geometry);
-          //   line.vertices = Array.from(obj.geometry.points);
-          //   line.stroke = obj.userData.stroke;
-          //   line.fill = obj.userData.fill;
-          //   line.mirrorOn = false;
-          //   line.position = new THREE.Vector3();
-          //   obj.getWorldPosition(line.position);
-          //   line.quaternion = new THREE.Quaternion();
-          //   obj.getWorldQuaternion(line.quaternion);
-          //   line.scale = new THREE.Vector3();
-          //   obj.getWorldScale(line.scale);
-          //   line.matrix = obj.matrix;
-          //   json.push(line);
+          // renderer.render(scene, camera);
         }
-      });
-      console.log(json);
-
-      var dataStr =
-        "data:text/json;charset=utf-8," +
-        encodeURIComponent(JSON.stringify(json));
-
-      var filename = prompt("Enter filename", "sketch");
-
-      if (filename != null) {
-        var el = document.createElement("a");
-        el.setAttribute("href", dataStr);
-        el.setAttribute("download", filename + ".json");
-        el.click();
       }
-    },
-    test: function () {
-      var path = [
-        new THREE.Vector3(-1, 1, 0),
-        new THREE.Vector3(-1, 1.2, 0),
-        new THREE.Vector3(0, 0, 0.5),
-        new THREE.Vector3(1, 1.2, 0),
-        new THREE.Vector3(1, 1, 0),
-      ];
-      var pathBase = new THREE.CatmullRomCurve3(path);
-      const geometry = new TubeGeometryWithVariableWidth(
-        pathBase,
-        20,
-        [
-          0.01, 0.02, 0.03, 0.04, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01, 0.01,
-          0.02, 0.03, 0.04, 0.05, 0.05, 0.04, 0.03, 0.02, 0.01,
-        ],
-        8,
-        false
-      );
-      const material = new THREE.MeshBasicMaterial({
-        color: 0x00ff00,
-        wireframe: false,
+
+      sceneUSDZ.add(group);
+
+      // const geometry = new THREE.BoxGeometry(1, 1, 1);
+      // const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
+      // const cube = new THREE.Mesh(geometry, material);
+      // sceneUSDZ.add(cube);
+
+      const exporter = new USDZExporter();
+      const arraybuffer = await exporter.parse(sceneUSDZ);
+      const blob = new Blob([arraybuffer], {
+        type: "application/octet-stream",
       });
-      const mesh = new THREE.Mesh(geometry, material);
-      scene.add(mesh);
-      mesh.geometry.computeBoundingSphere();
-      renderer.render(scene, camera);
+      var el = document.createElement("a");
+      el.setAttribute("href", URL.createObjectURL(blob));
+      el.setAttribute("download", "sketch.usdz");
+      el.click();
     },
   },
   watch: {},
