@@ -22,6 +22,15 @@
           :disabled="recording"
         />
         <label for="bf">Back and forth</label>
+        <input
+          type="radio"
+          name="ll"
+          value="ll"
+          id="ll"
+          v-model="loop"
+          :disabled="recording"
+        />
+        <label for="ll">Last line</label>
         <button @click="startRecording()" :disabled="recording" v>
           {{ !recording ? "Start recording" : "Recording..." }}
         </button>
@@ -50,6 +59,9 @@ export default {
       currentLength: 0, //current frame
       startAzimuthAngle: undefined,
       polarAngle: undefined,
+      startPosition: undefined,
+      targetPosition: undefined,
+      lastLine: undefined,
       pos: [],
     };
   },
@@ -98,7 +110,25 @@ export default {
       }
       renderer.render(scene, camera);
       let f = this.easing(this.loop);
-      cameraControls.rotateTo(f, this.polarAngle, false);
+
+      if (this.loop == "360" || this.loop == "bf") {
+        cameraControls.rotateTo(f, this.polarAngle, false);
+        scene.children[scene.children.length - 1].visible = true;
+      }
+
+      if (this.loop == "ll") {
+        scene.children[scene.children.length - 1].visible = false;
+        cameraControls.setLookAt(
+          this.lastLine[this.currentLength].x,
+          this.lastLine[this.currentLength].y,
+          this.lastLine[this.currentLength].z,
+          this.targetPosition.x,
+          this.targetPosition.y,
+          this.targetPosition.z,
+          false
+        );
+      }
+
       if (!this.recording) {
         //animate in loop
         if (this.currentLength < this.length) {
@@ -173,13 +203,32 @@ export default {
     },
     startPreview() {
       // this.$emit("show", false);
+
+      let target = new THREE.Vector3();
+      target = cameraControls.getTarget(target);
+      this.targetPosition = target.clone();
+
       cameraControls.normalizeRotations();
+      this.startPosition = camera.position.clone();
       this.startAzimuthAngle = cameraControls.azimuthAngle;
       this.polarAngle = cameraControls.polarAngle;
       this.previewing = true;
       cameraControls.dampingFactor = 0.5;
       // cameraControls.enabled = false;
       camera.layers.disable(0);
+
+      let points = scene.children[scene.children.length - 1].geometry.points;
+      let v3Array = [];
+
+      for (let i = 0; i <= points.length; i = i + 3) {
+        let v3 = new THREE.Vector3(points[i], points[i + 1], points[i + 2]);
+        v3Array.push(v3);
+      }
+
+      this.lastLine = new THREE.CatmullRomCurve3(v3Array).getPoints(
+        this.length
+      );
+
       this.animate();
     },
     download(url, filename) {
@@ -196,10 +245,25 @@ export default {
       camera.layers.enable(0);
       this.loop = "360";
       cameraControls.dampingFactor = 0.5;
+
+      cameraControls.setLookAt(
+        this.startPosition.x,
+        this.startPosition.y,
+        this.startPosition.z,
+        this.targetPosition.x,
+        this.targetPosition.y,
+        this.targetPosition.z,
+        false
+      );
       cameraControls.rotateTo(this.startAzimuthAngle, this.polarAngle, true);
+
       this.startAzimuthAngle = undefined;
       this.polarAngle = undefined;
+      this.startPosition = undefined;
+      this.targetPosition = undefined;
+
       // cameraControls.enabled = true;
+      scene.children[scene.children.length - 1].visible = true;
       setTimeout(() => {
         cameraControls.dampingFactor = 20;
         cameraControls.normalizeRotations();
@@ -216,6 +280,18 @@ export default {
     },
     loop: function () {
       this.currentLength = 0;
+
+      if (this.loop === "360" || this.loop === "bf") {
+        cameraControls.setLookAt(
+          this.startPosition.x,
+          this.startPosition.y,
+          this.startPosition.z,
+          this.targetPosition.x,
+          this.targetPosition.y,
+          this.targetPosition.z,
+          false
+        );
+      }
     },
   },
   mounted() {},
