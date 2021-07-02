@@ -1,6 +1,3 @@
-# https://blender.stackexchange.com/questions/166952/adding-a-new-material-to-a-grease-pencil
-# https://docs.blender.org/api/current/bpy.ops.gpencil.html
-
 import bpy
 import json
 
@@ -73,8 +70,10 @@ def draw_line(gp_frame, p0, index):
     ob.data.materials.append(mat)
 
     if p0['stroke']['show_stroke'] == True:
-        color = p0['stroke']['color'].lstrip('#')
-        color = tuple(int(color[i:i+2], 16) for i in (0, 2, 4))
+        color = p0['stroke']['color']
+        color = color[4:-1]
+        color = color.split(',')
+        color = list(map(int, color))
         r = color[0] / 255
         g = color[1] / 255
         b = color[2] / 255
@@ -84,8 +83,10 @@ def draw_line(gp_frame, p0, index):
         mat.grease_pencil.show_stroke = False
 
     if p0['fill']['show_fill'] == True:
-        fillcolor = p0['fill']['color'].lstrip('#')
-        fillcolor = tuple(int(fillcolor[i:i+2], 16) for i in (0, 2, 4))
+        fillcolor = p0['fill']['color']
+        fillcolor = fillcolor[4:-1]
+        fillcolor = fillcolor.split(',')
+        fillcolor = list(map(int, fillcolor))
         fr = fillcolor[0] / 255
         fg = fillcolor[1] / 255
         fb = fillcolor[2] / 255
