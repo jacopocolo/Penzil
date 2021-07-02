@@ -1,7 +1,7 @@
 import * as THREE from "three";
 import { scene, renderer, camera } from "../App.vue";
 import { mirror } from "./mirror.js"
-import { MeshLineMaterial } from "three.meshline";
+import { MeshLineMaterial } from "meshline";
 import { draw } from "./draw.js";
 import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 

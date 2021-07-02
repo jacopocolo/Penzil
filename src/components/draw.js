@@ -6,7 +6,7 @@
 
 import * as THREE from "three";
 import { Earcut } from 'three/src/extras/Earcut.js';
-import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
+import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
 import { canvas } from "./Canvas.vue";
 import { erase } from "./erase.js"
@@ -230,7 +230,7 @@ let draw = {
         addVertex(x, y, z, force, unproject) {
 
             //trying to add a bit of noise maybe?
-            force = force * Math.random() * 4;
+            // force = force * Math.random() * 4;
 
             var v3 = new THREE.Vector3(x, y, z);
             if (unproject) {

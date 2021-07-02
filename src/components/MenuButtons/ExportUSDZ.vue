@@ -32,7 +32,8 @@ export default {
           obj != undefined &&
           obj.geometry &&
           obj.geometry.type == "MeshLine" &&
-          obj.layers.mask == 2
+          obj.layers.mask == 2 &&
+          obj.geometry.attributes.position.array.length > 0
         ) {
           //https://github.com/mrdoob/three.js/blob/master/src/geometries/TubeGeometry.js
           let geometry = obj.geometry.clone();
@@ -43,9 +44,9 @@ export default {
 
           for (let i = 0; i <= points.length; i = i + 3) {
             let v3 = new THREE.Vector3(points[i], points[i + 1], points[i + 2]);
-
             //why do I have 0,0,0 points in my positions? :thinking:
             if (v3.x != 0 && v3.y != 0 && v3.z != 0) {
+              // v3.addScalar(0.01);
               vertices.push(v3);
             }
           }
@@ -93,7 +94,7 @@ export default {
             vertices,
             false,
             "catmullrom",
-            0.5
+            1
           );
 
           // const tubeGeometry = new TubeGeometryWithVariableWidth(
@@ -107,15 +108,18 @@ export default {
           const tubeGeometry = new THREE.TubeGeometry(
             pathBase,
             force.length,
-            0.01,
+            0.02,
             8,
             false
           );
+
           const material = new THREE.MeshStandardMaterial({
             // color: 0x00ff00,
-            // color: obj.userData.stroke.color,
+            color: obj.userData.stroke.color,
           });
           const mesh = new THREE.Mesh(tubeGeometry, material);
+          // mesh.scale.set(0.1, 0.1, 0.1);
+          // mesh.geometry.applyMatrix(obj.matrix);
           group.attach(mesh);
           mesh.geometry.computeBoundingSphere();
           // renderer.render(scene, camera);
@@ -123,21 +127,19 @@ export default {
       }
 
       sceneUSDZ.add(group);
-
-      // const geometry = new THREE.BoxGeometry(1, 1, 1);
-      // const material = new THREE.MeshStandardMaterial({ color: 0x00ff00 });
-      // const cube = new THREE.Mesh(geometry, material);
-      // sceneUSDZ.add(cube);
+      // group.children.forEach((obj) => {});
+      console.log(group);
 
       const exporter = new USDZExporter();
       const arraybuffer = await exporter.parse(sceneUSDZ);
       const blob = new Blob([arraybuffer], {
         type: "application/octet-stream",
       });
-      var el = document.createElement("a");
+      // var el = document.createElement("a");
+      var el = document.getElementById("ar");
       el.setAttribute("href", URL.createObjectURL(blob));
       el.setAttribute("download", "sketch.usdz");
-      el.click();
+      // el.click();
     },
   },
   watch: {},

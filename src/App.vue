@@ -24,6 +24,10 @@
   <Canvas ref="raycastCanvas" :enabled="multitouch" />
   <Menu @modal-set="setModal" @preview="setPreview" />
   <show-tutorial @modal-set="setModal" :show="showTutorialButton" />
+  <div>
+    <!-- https://cwervo.com/writing/quicklook-web/ -->
+    <a id="ar" rel="ar"><img src="@/assets/icons/AR.png" /></a>
+  </div>
 </template>
 
 <script>
@@ -31,7 +35,7 @@ import * as THREE from "three";
 //import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import CameraControls from "camera-controls";
 CameraControls.install({ THREE: THREE });
-import InfiniteGridHelper from "./components/InfiniteGridHelper.js";
+// import InfiniteGridHelper from "./components/InfiniteGridHelper.js";
 
 import Input from "./components/Input.vue";
 import ToolSelector from "./components/ToolSelector.vue";
@@ -116,8 +120,8 @@ export default {
 
       drawingScene = new THREE.Scene(); //this scene is only used for rendering lines as they are being drawn. Lines are then moved to the main scene.
 
-      const grid = new InfiniteGridHelper(1, 10, new THREE.Color(0x0000ff), 40);
-      scene.add(grid);
+      // const grid = new InfiniteGridHelper(1, 10, new THREE.Color(0x0000ff), 40);
+      // scene.add(grid);
 
       camera.layers.enable(0); // enabled by default
       camera.layers.enable(1);
@@ -409,6 +413,13 @@ a {
 
 a:hover {
   color: #ff8400;
+}
+
+#ar {
+  position: absolute;
+  z-index: 6;
+  bottom: 12px;
+  right: 56px;
 }
 
 @media (min-width: 320px) and (max-width: 480px) {
