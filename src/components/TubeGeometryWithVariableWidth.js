@@ -1,3 +1,10 @@
+//https://stackoverflow.com/questions/20955852/three-js-tube-with-variable-radius
+//https://mattdesl.svbtle.com/shaping-curves-with-parametric-equations
+//https://twitter.com/acidbeat/status/1395400972394975234
+
+//https://github.com/spite/looper/blob/master/loops/36.js
+//https://github.com/spite/looper/blob/9fc2130c4e087113623c508fefd9d154876bb937/modules/three-tube-geometry.js#L39
+
 import { BufferGeometry } from 'three';
 import { Float32BufferAttribute } from 'three';
 import * as Curves from 'three';
@@ -34,6 +41,7 @@ class TubeGeometryWithVariableWidth extends BufferGeometry {
         const uv = new Vector2();
         let P = new Vector3();
         let R;
+        //let U;
 
         // buffer
 
@@ -84,9 +92,12 @@ class TubeGeometryWithVariableWidth extends BufferGeometry {
         function generateSegment(i) {
 
             // we use getPointAt to sample evenly distributed points from the given path
+            //U = i / (numpoints - 1);
 
             P = path.getPointAt(i / tubularSegments, P);
-            R = radius[i]
+            R = Math.min(1, radius[i]);
+
+            // console.log(R)
 
             // retrieve corresponding normal and binormal
 
