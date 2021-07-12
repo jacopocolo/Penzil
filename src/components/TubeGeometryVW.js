@@ -3,6 +3,9 @@
 //https://github.com/mattdesl/parametric-curves/blob/45f321fd43af3a0786aa2dd4016931cc39325944/lib/shaders/tube.vert#L66-L162
 //https://stackoverflow.com/questions/31660099/threejs-tubegeometry-applying-custom-curve-causes-unexpected-twisting
 
+//https://avikdas.com/2020/09/08/rendering-curves-in-3d.html
+//https://avikdas.com/assets/js/curve-optimization/curve-geometry.mjs
+
 import { BufferGeometry } from 'three';
 import { Float32BufferAttribute } from 'three';
 // import { Vector2 } from 'three';
@@ -125,7 +128,9 @@ class TubeBufferGeometry extends BufferGeometry {
                 normals.push(normal.x, normal.y, normal.z);
 
                 // vertex
-                const r = (typeof radius === 'function') ? radius(i / tubularSegments) : radius;
+                const r = (typeof radius === 'function') ? radius(i / tubularSegments) : radius[i];
+                // const r = (typeof radius === 'function') ? radius(i / tubularSegments) : radius;
+
                 vertex.x = P.x + r * normal.x;
                 vertex.y = P.y + r * normal.y;
                 vertex.z = P.z + r * normal.z;

@@ -6,14 +6,17 @@
 import * as THREE from "three";
 import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
 import { scene, renderer, camera } from "../../App.vue";
-// import { TubeBufferGeometry } from "../TubeGeometryVW.js";
+import { TubeBufferGeometry } from "../TubeGeometryVW.js";
 let sceneUSDZ;
+// import * as simplify from "simplify-3d";
 
 export default {
   name: "ExportUSDZ",
   props: {},
   data() {
-    return {};
+    return {
+      lightbox: false,
+    };
   },
   methods: {
     exportToUsdz: async function () {
@@ -42,7 +45,7 @@ export default {
             let vertices = [];
             let points = Array.from(geometry.attributes.position.array);
 
-            for (let i = 0; i <= points.length; i = i + 3) {
+            for (let i = 0; i <= points.length; i = i + 6) {
               let v3 = new THREE.Vector3(
                 points[i],
                 points[i + 1],
@@ -54,13 +57,18 @@ export default {
               }
             }
 
-            let force = [];
+            //if the line is too short, we skip this iteration
+            if (vertices.length < 2) continue;
 
-            for (let i = 0; i <= obj.userData.stroke.force.length; i++) {
+            let force = [0];
+            for (let i = 0; i < obj.userData.stroke.force.length; i++) {
               let length = obj.userData.stroke.force.length;
               let minWidth = 0;
               let baseWidth = obj.userData.stroke.lineWidth;
-              let width = obj.userData.stroke.force[i] / 16;
+
+              //https://github.com/spite/THREE.MeshLine/blob/master/src/THREE.MeshLine.js#L424
+              //in the shader it seems like it's base witdth * width
+              let width = obj.userData.stroke.force[i] / 100;
               let tailLength = 3;
 
               //Beginning of the line
@@ -93,44 +101,20 @@ export default {
               }
             }
 
-            var pathBase = new THREE.CatmullRomCurve3(
-              vertices,
-              false,
-              "catmullrom",
-              0.1
-            );
-
-            // parabola thinning
-            // (i) =>
-            //     Math.pow(4 * i * (1 - i), 1) *
-            //     obj.userData.stroke.lineWidth *
-            //     2
-
-            // const tubeGeometry = new TubeBufferGeometry(
-            //   pathBase,
-            //   vertices.length,
-            //   (i) =>
-            //     Math.pow(4 * i * (1 - i), 1) * obj.userData.stroke.lineWidth,
-            //   8,
-            //   !true
-            // );
-
-            const tubeGeometry = new THREE.TubeGeometry(
+            var pathBase = new THREE.CatmullRomCurve3(vertices);
+            const tubeGeometry = new TubeBufferGeometry(
               pathBase,
               vertices.length,
-              0.02,
+              force,
               8,
-              false
+              !true
             );
 
             const material = new THREE.MeshStandardMaterial({
               color: obj.userData.stroke.color,
-              wireframe: 1,
-              // metalness: 0,
-              // roughness: 1,
             });
             const mesh = new THREE.Mesh(tubeGeometry, material);
-            mesh.geometry.computeBoundingSphere();
+            // mesh.geometry.computeBoundingSphere();
             group.attach(mesh);
             sceneUSDZ.add(mesh);
           }
@@ -154,10 +138,52 @@ export default {
         }
       }
 
+      function addLightBox(scale) {
+        const geometry = new THREE.PlaneGeometry(scale, scale);
+        const material = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          side: THREE.DoubleSide,
+        });
+        const semiTransparentMaterial = new THREE.MeshStandardMaterial({
+          color: 0xffffff,
+          side: THREE.DoubleSide,
+          transparent: true,
+          opacity: 0.8,
+        });
+
+        const backPlane = new THREE.Mesh(geometry, material);
+        const bottomPlane = new THREE.Mesh(geometry, material);
+        const topPlane = new THREE.Mesh(geometry, semiTransparentMaterial);
+        const leftPlane = new THREE.Mesh(geometry, material);
+        const rightPlane = new THREE.Mesh(geometry, material);
+
+        backPlane.position.set(0, 0, -scale / 2);
+        bottomPlane.position.set(0, -scale / 2, 0);
+        bottomPlane.rotation.set(-Math.PI / 2, 0, 0);
+
+        topPlane.position.set(0, scale / 2, 0);
+        topPlane.rotation.set(Math.PI / 2, 0, 0);
+
+        leftPlane.position.set(scale / 2, 0, 0);
+        leftPlane.rotation.set(0, -Math.PI / 2, 0);
+
+        rightPlane.position.set(-scale / 2, 0, 0);
+        rightPlane.rotation.set(0, Math.PI / 2, 0);
+
+        sceneUSDZ.add(backPlane);
+        sceneUSDZ.add(bottomPlane);
+        sceneUSDZ.add(topPlane);
+        sceneUSDZ.add(leftPlane);
+        sceneUSDZ.add(rightPlane);
+      }
+
+      //need to calculate the widest object of the element and pass it as a scale
+      this.lightbox ? addLightBox(8) : "";
+
       sceneUSDZ.add(group);
       sceneUSDZ.scale.set(0.1, 0.1, 0.1);
       sceneUSDZ.updateMatrixWorld(true);
-      console.log(group);
+      console.log(sceneUSDZ);
 
       const exporter = new USDZExporter();
       const arraybuffer = await exporter.parse(sceneUSDZ);

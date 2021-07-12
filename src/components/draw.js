@@ -20,6 +20,8 @@ import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 //     "/watercolor.jpg"
 // )
 
+let materials = new Set();
+
 let draw = {
     l: undefined,
     draw: class {
@@ -29,18 +31,17 @@ let draw = {
             this.geometry = new THREE.BufferGeometry();
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
+
+            //this.material = materials.has() ? materials.has()
+
             this.material = new MeshLineMaterial({
-                // useMap: true,
-                // map: pencil,
                 lineWidth: this.stroke.show_stroke ? this.stroke.lineWidth : 0.005,
                 sizeAttenuation: 1,
                 color: this.stroke.show_stroke ? this.stroke.color : 0xFFFFFF,
                 side: THREE.DoubleSide,
                 fog: true,
                 wireframe: false,
-                // depthTest: true,
                 alphaTest: 0.9,
-                // transparent: this.stroke.show_stroke ? false : true,
                 blending: THREE.NormalBlending,
                 transparent: false,
                 repeat: new THREE.Vector2(1, 1),
@@ -48,8 +49,6 @@ let draw = {
             });
             this.mesh = new THREE.Mesh(this.line, this.material);
             this.uuid = this.mesh.uuid;
-            // this.line.userData.points = new Array();
-            // this.line.userData.force = new Array();
 
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
@@ -409,7 +408,6 @@ let draw = {
     fromVertices(vertices, stroke, fill, mirrorOn, uuid, position, quaternion, scale, matrix) {
         this.l = new this.draw(stroke, fill);
         this.onStart(0, 0, 0, 0, false, mirrorOn, stroke, fill);
-        console.log(this.l.geometry.attributes.position.array)
         this.l.geometry.attributes.position.array = vertices;
         this.l.geometry.attributes.position.count = vertices.length / 3;
         this.l.geometry.attributes.position.needsUpdate = true;

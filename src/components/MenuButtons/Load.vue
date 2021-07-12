@@ -24,19 +24,21 @@ export default {
           var json = JSON.parse(event.target.result);
           try {
             json.forEach((l) => {
-              console.log(l);
-
-              draw.fromVertices(
-                new Float32Array(l.vertices),
-                l.stroke,
-                l.fill,
-                l.mirrorOn,
-                null, //uuid, not necessary to restore in import
-                l.position,
-                l.quaternion,
-                l.scale,
-                l.matrix
-              );
+              if (l.vertices.length === 0) {
+                console.log(l);
+              } else {
+                draw.fromVertices(
+                  new Float32Array(l.vertices),
+                  l.stroke,
+                  l.fill,
+                  l.mirrorOn,
+                  null, //uuid, not necessary to restore in import
+                  l.position,
+                  l.quaternion,
+                  l.scale,
+                  l.matrix
+                );
+              }
             });
           } catch (err) {
             console.log(err);
