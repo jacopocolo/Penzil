@@ -8,7 +8,7 @@ import * as THREE from "three";
 import { Earcut } from 'three/src/extras/Earcut.js';
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
-import { canvas } from "./Canvas.vue";
+import { controls, canvas } from "./Canvas.vue";
 import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
@@ -240,15 +240,23 @@ let draw = {
             let raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
             try {
-                var intersectedObject = raycaster.intersectObjects([canvas])[0];
-                var nt = intersectedObject.point;
-                // var normal = intersectedObject.face.normal;
-                // let offset = 30;
-                // normal.x = normal.x / offset;
-                // normal.y = normal.y / offset;
-                // normal.z = normal.z / offset;
-                let normal = { x: 0, y: 0, z: 0 };
-                v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
+
+                //is this consistent?
+                var intersectedObject = raycaster.intersectObjects(controls.children[0].children[10].children)[0];
+
+                if (intersectedObject) { return } else {
+                    intersectedObject = raycaster.intersectObjects([canvas])[0];
+                    var nt = intersectedObject.point;
+                    // var normal = intersectedObject.face.normal;
+                    // let offset = 30;
+                    // normal.x = normal.x / offset;
+                    // normal.y = normal.y / offset;
+                    // normal.z = normal.z / offset;
+                    let normal = { x: 0, y: 0, z: 0 };
+                    v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
+
+                }
+
             } catch (err) {
                 console.log(err);
                 return

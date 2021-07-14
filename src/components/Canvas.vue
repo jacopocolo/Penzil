@@ -12,6 +12,7 @@
       />
     </span>
     <select name="mode" id="transform-mode" v-model="mode">
+      <option value="combined">Combined</option>
       <option value="rotate">Rotate</option>
       <option value="translate">Move</option>
     </select>
@@ -20,7 +21,7 @@
 
 <script>
 import * as THREE from "three";
-import { TransformControls } from "./touchTransformControls.js";
+import { TransformControls } from "./transformControls.js";
 import { scene, renderer, camera, vm } from "../App.vue";
 export let canvas, controls;
 let position = new THREE.Vector3(0.001, 0.001, 0.001);
@@ -39,13 +40,15 @@ export default {
         polygonOffset: true,
         polygonOffsetFactor: 2.5,
         polygonOffsetUnits: -1,
+        emissive: new THREE.Color("rgb(255,255,255)"),
+        emissiveIntensity: 0.5,
         // wireframe: true,
       }),
       startPosition: new THREE.Vector3(0.001, 0.001, 0.001),
       startQuaternion: new THREE.Quaternion(0.001, 0.001, 0.001, 1),
       startScale: new THREE.Vector3(1, 1, 1),
       transformationResetDisabled: true,
-      mode: "rotate",
+      mode: "combined",
     };
   },
   props: {
