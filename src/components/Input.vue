@@ -105,7 +105,7 @@ export default {
         multiTouched: false,
         eventCancelled: false,
       },
-      displayTouches: false,
+      displayTouches: true,
       touches: [],
     };
   },

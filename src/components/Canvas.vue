@@ -11,11 +11,6 @@
         alt="Reset canvas position and rotation"
       />
     </span>
-    <select name="mode" id="transform-mode" v-model="mode">
-      <option value="combined">Combined</option>
-      <option value="rotate">Rotate</option>
-      <option value="translate">Move</option>
-    </select>
   </div>
 </template>
 
@@ -51,9 +46,7 @@ export default {
       mode: "combined",
     };
   },
-  props: {
-    enabled: String,
-  },
+  props: {},
   methods: {
     setUp() {
       const geometry = new THREE.PlaneGeometry(5, 5);
@@ -75,7 +68,7 @@ export default {
       });
 
       controls.attach(plane);
-      controls.enabled = this.enabled;
+      controls.enabled = true;
       scene.add(controls);
 
       canvas.position.set(position.x, position.y, position.z);
@@ -114,20 +107,6 @@ export default {
         this.material.visible = true;
       }
       renderer.render(scene, camera);
-    },
-    enabled: function (val) {
-      if (val == "canvas") {
-        controls.enabled = true;
-        this.material.opacity = 0.9;
-      } else {
-        controls.enabled = false;
-        this.material.opacity = 0.3;
-      }
-      renderer.render(scene, camera);
-    },
-    mode: function (val) {
-      console.log(controls);
-      controls.setMode(val);
     },
   },
   mounted() {},

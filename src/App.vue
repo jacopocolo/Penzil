@@ -4,13 +4,8 @@
   <viewport-cube
     :quaternion="quaternion"
     :cameraResetDisabled="cameraResetDisabled"
-    :cameraControlsEnabled="multitouch"
   />
   <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
-  <multitouch-selector
-    @selected-multitouch="setSelectedMultitouch"
-    :selectedMultitouch="multitouch"
-  />
   <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
   <transorm-toolbar
     :top="transformToolbar.top"
@@ -21,7 +16,7 @@
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
   <Input :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
-  <Canvas ref="raycastCanvas" :enabled="multitouch" />
+  <Canvas ref="raycastCanvas" />
   <Menu @modal-set="setModal" @preview="setPreview" />
 </template>
 
@@ -34,7 +29,6 @@ import InfiniteGridHelper from "./components/InfiniteGridHelper.js";
 
 import Input from "./components/Input.vue";
 import ToolSelector from "./components/ToolSelector.vue";
-import MultitouchSelector from "./components/MultitouchSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
@@ -71,7 +65,6 @@ export default {
     UndoRedo,
     Menu,
     Canvas,
-    MultitouchSelector,
     Modal,
     VideoExportPreview,
   },
@@ -133,7 +126,7 @@ export default {
       cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
       cameraControls.maxZoom = 4000;
       cameraControls.minZoom = 2;
-      cameraControls.enabled = false;
+      cameraControls.enabled = true;
 
       this.quaternion = [
         camera.quaternion.x,

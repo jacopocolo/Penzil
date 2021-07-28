@@ -32,7 +32,6 @@ export default {
   props: {
     quaternion: Array,
     cameraResetDisabled: Boolean,
-    cameraControlsEnabled: String,
   },
   data() {
     return {
@@ -154,13 +153,11 @@ export default {
       //This is a slight hack to allow the triangulate function that generates the fill to work in any scenario. See: https://github.com/mapbox/earcut/issues/21
       let adj = 0.0001;
 
-      let restore = this.cameraControlsEnabled === "camera" ? true : false;
-
-      let lookAt = function (x, y, z, restore) {
+      let lookAt = function (x, y, z) {
         cameraControls.dampingFactor = 0.5;
         cameraControls.enabled = false;
         cameraControls.setLookAt(x, y, z, target.x, target.y, target.z, true);
-        cameraControls.enabled = restore;
+        cameraControls.enabled = true;
         setTimeout(() => {
           cameraControls.dampingFactor = 20;
         }, 100);
@@ -170,40 +167,40 @@ export default {
 
       switch (index) {
         case 0:
-          lookAt(target.x + 10, target.y + adj, target.z + adj, restore);
+          lookAt(target.x + 10, target.y + adj, target.z + adj);
           break;
         case 1:
-          lookAt(target.x + 10, target.y + adj, target.z + adj, restore);
+          lookAt(target.x + 10, target.y + adj, target.z + adj);
           break;
         case 2:
-          lookAt(target.x - 10, target.y + adj, target.z + adj, restore);
+          lookAt(target.x - 10, target.y + adj, target.z + adj);
           break;
         case 3:
-          lookAt(target.x - 10, target.y + adj, target.z + adj, restore);
+          lookAt(target.x - 10, target.y + adj, target.z + adj);
           break;
         case 4:
-          lookAt(target.x, target.y + 10, target.z + adj, restore);
+          lookAt(target.x, target.y + 10, target.z + adj);
           break;
         case 5:
-          lookAt(target.x, target.y + 10, target.z + adj, restore);
+          lookAt(target.x, target.y + 10, target.z + adj);
           break;
         case 6:
-          lookAt(target.x, target.y - 10, target.z + adj, restore);
+          lookAt(target.x, target.y - 10, target.z + adj);
           break;
         case 7:
-          lookAt(target.x, target.y - 10, target.z + adj, restore);
+          lookAt(target.x, target.y - 10, target.z + adj);
           break;
         case 8:
-          lookAt(target.x + adj, target.y, target.z + 10, restore);
+          lookAt(target.x + adj, target.y, target.z + 10);
           break;
         case 9:
-          lookAt(target.x + adj, target.y, target.z + 10, restore);
+          lookAt(target.x + adj, target.y, target.z + 10);
           break;
         case 10:
-          lookAt(target.x + adj, target.y, target.z - 10, restore);
+          lookAt(target.x + adj, target.y, target.z - 10);
           break;
         case 11:
-          lookAt(target.x + adj, target.y, target.z - 10, restore);
+          lookAt(target.x + adj, target.y, target.z - 10);
           break;
         default:
           console.log(index);
@@ -268,8 +265,6 @@ export default {
       cameraControls.enabled = false;
       cameraControls.setLookAt(0, 0, 10, 0, 0, 0, true);
       cameraControls.zoomTo(3, true);
-      cameraControls.enabled =
-        this.cameraControlsEnabled === "camera" ? true : false;
       setTimeout(() => {
         cameraControls.dampingFactor = 20;
       }, 100);
@@ -309,9 +304,6 @@ export default {
         new THREE.Quaternion(val[0], val[1], val[2], val[3]).invert()
       );
       this.render();
-    },
-    cameraControlsEnabled: function (val) {
-      console.log(val);
     },
   },
   mounted() {

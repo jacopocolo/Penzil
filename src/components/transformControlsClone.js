@@ -865,19 +865,11 @@ class TransformControlsGizmo extends Object3D {
         lineGeometry2.translate(0, 0.25, 0);
 
         function CircleGeometry(radius, arc) {
-            const geometry = new TorusGeometry(radius, 0.01, 3, 64, arc);
+            const geometry = new TorusGeometry(radius, 0.0075, 3, 64, arc * Math.PI / 3);
             geometry.rotateY(Math.PI / 2);
             geometry.rotateX(Math.PI / 2);
             return geometry;
 
-        }
-
-        //TO DO, this should be converted to a linegeometry, no point in having this as a mesh
-        function ThinCircleGeometry(radius, arc) {
-            const geometry = new TorusGeometry(radius, 0.001, 3, 64, arc);
-            geometry.rotateY(Math.PI / 2);
-            geometry.rotateX(Math.PI / 2);
-            return geometry;
         }
 
         // Special geometry for transform helper. If scaled with position vector it spans from [0,0,0] to position
@@ -1086,39 +1078,35 @@ class TransformControlsGizmo extends Object3D {
         const gizmoCombined = {
             X: [
                 [new Mesh(arrowGeometry, matRed), [0.5, 0, 0], [0, 0, - Math.PI / 2]],
-                [new Mesh(CircleGeometry(0.5, Math.PI / 6), matRed), null, [0, Math.PI - Math.PI / 12, Math.PI / 2]],
-                [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matRedTransparent), null, [0, Math.PI / 2, Math.PI / 2]],
+                [new Mesh(CircleGeometry(0.5, 0.5), matRed), null, [0, Math.PI - Math.PI / 12, Math.PI / 2]],
             ],
             Y: [
                 [new Mesh(arrowGeometry, matGreen), [0, 0.5, 0]],
-                [new Mesh(CircleGeometry(0.5, 0.5), matGreen), null, [-Math.PI / 2, Math.PI / 2.4, Math.PI / 2]],
-                [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matGreenTransparent), null, [-Math.PI / 2, Math.PI / 2, Math.PI / 2]],
+                [new Mesh(CircleGeometry(0.5, 0.5), matGreen), null, [-Math.PI / 2, Math.PI / 2, Math.PI / 2]]
             ],
             Z: [[new Mesh(arrowGeometry, matBlue), [0, 0, 0.5], [Math.PI / 2, 0, 0]],
-            [new Mesh(CircleGeometry(0.5, 0.5), matBlue), null, [Math.PI / 2.4, 0, 0]],
-            [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matBlueTransparent), null,]
-            ],
-
+            [new Mesh(CircleGeometry(0.5, 0.5), matBlue)]]
         }
+
         const pickerCombined = {
             XT: [
                 [new Mesh(arrowPickerGeometry, matRedTransparent), [0.5, 0, 0], [0, 0, - Math.PI / 2]],
             ],
             XR: [[new Mesh(new TorusGeometry(0.5, 0.05, 4, 24,
-                Math.PI / 5), matRedTransparent), [0, 0, 0], [-Math.PI / 2, 0, -Math.PI / 10]]],
+                Math.PI / 6), matRedTransparent), [0, 0, 0], [-Math.PI / 2, 0, -Math.PI / 12]]],
             YT: [
                 [new Mesh(arrowPickerGeometry, matGreenTransparent), [0, 0.5, 0], [0, 0, 0]]
             ],
             YR: [
                 [new Mesh(new TorusGeometry(0.5, 0.05, 4, 24,
-                    Math.PI / 5), matGreenTransparent), [0, 0, 0], [0, 0, Math.PI / 2.5]]],
+                    -Math.PI / 2 + Math.PI), matGreenTransparent), [0, 0, 0], [0, 0, 0]]],
             ZT: [
                 [new Mesh(arrowPickerGeometry, matBlueTransparent), [0, 0, 0.5], [Math.PI / 2, 0, 0]],
 
             ],
             ZR: [
                 [new Mesh(new TorusGeometry(0.5, 0.05, 4, 12,
-                    Math.PI / 5), matBlueTransparent), [0, 0, 0], [0, Math.PI / 2, Math.PI - Math.PI / 10]]
+                    -Math.PI / 2 + Math.PI), matBlueTransparent), [0, 0, 0], [0, Math.PI / 2, Math.PI / 2]]
             ]
         }
         const helperCombined = {

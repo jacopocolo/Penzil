@@ -22,6 +22,7 @@ import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 
 let draw = {
     l: undefined,
+    enabled: true,
     draw: class {
         constructor(stroke, fill) {
             this.stroke = stroke;
@@ -240,25 +241,19 @@ let draw = {
             let raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
             try {
-
-                //is this consistent?
-                var intersectedObject = raycaster.intersectObjects(controls.children[0].children[10].children)[0];
-
-                if (intersectedObject) { return } else {
-                    intersectedObject = raycaster.intersectObjects([canvas])[0];
-                    var nt = intersectedObject.point;
-                    // var normal = intersectedObject.face.normal;
-                    // let offset = 30;
-                    // normal.x = normal.x / offset;
-                    // normal.y = normal.y / offset;
-                    // normal.z = normal.z / offset;
-                    let normal = { x: 0, y: 0, z: 0 };
-                    v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
-
-                }
+                const intersectedObject = raycaster.intersectObjects([canvas])[0];
+                var nt = intersectedObject.point;
+                // var normal = intersectedObject.face.normal;
+                // let offset = 30;
+                // normal.x = normal.x / offset;
+                // normal.y = normal.y / offset;
+                // normal.z = normal.z / offset;
+                let normal = { x: 0, y: 0, z: 0 };
+                v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
 
             } catch (err) {
-                console.log(err);
+                //errors are expected if the raycast doesn't hit anything
+                // console.log(err);
                 return
             }
 
@@ -395,18 +390,47 @@ let draw = {
             renderer.autoClear = true;
             renderer.render(scene, camera);
         }
+        disable() {
+            draw.enabled = false;
+        }
+        enable() {
+            draw.enabled = true
+        }
     },
     onStart: function (x, y, z, force, unproject, mirrorOn, stroke, fill) {
-        //this draw acceppts two arguments: stroke and fill. stroke: { show_stroke: bool, color: 'red', lineWidth: 3 }, fill: { show_fill: bool, color: 'black' },
-        //I should gate the possibility of drawing something without stroke or fill
-        this.l = new this.draw(stroke, fill);
-        this.l.start(mirrorOn);
+
+        let raycaster = new THREE.Raycaster();
+        raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
+        const intersectedObject = raycaster.intersectObjects(controls.children[0].children[10].children)[0];
+        if (intersectedObject) {
+            this.enabled = false;
+        } else {
+            if (stroke.show_stroke === false && fill.show_fill === false) { return } else {
+                controls.enabled = false;
+                controls.visible = false;
+                renderer.render(scene, camera)
+                //this draw acceppts two arguments: stroke and fill. stroke: { show_stroke: bool, color: 'red', lineWidth: 3 }, fill: { show_fill: bool, color: 'black' },
+                this.l = new this.draw(stroke, fill);
+                this.l.start(mirrorOn);
+            }
+        }
     },
     onMove: function (x, y, z, force, unproject) {
-        this.l.move(x, y, z, force, unproject);
+        if (this.enabled == false) { return } else {
+            this.l.move(x, y, z, force, unproject);
+        }
     },
     onEnd: function (mirrorOn) {
-        this.l.end(mirrorOn);
+        if (this.enabled == true) {
+            console.log("onend")
+            //on end we always flip it back to true
+            controls.enabled = true;
+            controls.visible = true;
+            this.l.end(mirrorOn);
+        } else {
+            this.enabled = true;
+            return;
+        }
     },
     onEnd_internal: function (mirrorOn) {
         this.l.end_internal(mirrorOn);
