@@ -17,7 +17,7 @@ import {
     Raycaster,
     // SphereGeometry,
     TorusGeometry,
-    Vector3
+    Vector3,
 } from 'three';
 
 const _raycaster = new Raycaster();
@@ -815,16 +815,29 @@ class TransformControlsGizmo extends Object3D {
 
         const matRed = gizmoMaterial.clone();
         matRed.color.setHex(0xff0000);
+        matRed.side = DoubleSide;
+
+        const matRedArrow = gizmoMaterial.clone();
+        matRedArrow.color.setHex(0xff0000);
 
         const matGreen = gizmoMaterial.clone();
         matGreen.color.setHex(0x00ff00);
+        matGreen.side = DoubleSide;
+
+        const matGreenArrow = gizmoMaterial.clone();
+        matGreenArrow.color.setHex(0x00ff00);
 
         const matBlue = gizmoMaterial.clone();
         matBlue.color.setHex(0x0000ff);
+        matBlue.side = DoubleSide;
+
+        const matBlueArrow = gizmoMaterial.clone();
+        matBlueArrow.color.setHex(0x0000ff);
 
         const matRedTransparent = gizmoMaterial.clone();
         matRedTransparent.color.setHex(0xff0000);
         matRedTransparent.opacity = 0.5;
+        matRedTransparent.name = "matRedTransparent";
 
         const matGreenTransparent = gizmoMaterial.clone();
         matGreenTransparent.color.setHex(0x00ff00);
@@ -865,7 +878,7 @@ class TransformControlsGizmo extends Object3D {
         lineGeometry2.translate(0, 0.25, 0);
 
         function CircleGeometry(radius, arc) {
-            const geometry = new TorusGeometry(radius, 0.01, 3, 64, arc);
+            const geometry = new TorusGeometry(radius, 0.03, 4, 64, arc);
             geometry.rotateY(Math.PI / 2);
             geometry.rotateX(Math.PI / 2);
             return geometry;
@@ -1084,36 +1097,37 @@ class TransformControlsGizmo extends Object3D {
         };
 
         const gizmoCombined = {
-            X: [
-                [new Mesh(arrowGeometry, matRed), [0.5, 0, 0], [0, 0, - Math.PI / 2]],
+            XR: [
                 [new Mesh(CircleGeometry(0.5, Math.PI / 6), matRed), null, [0, Math.PI - Math.PI / 12, Math.PI / 2]],
-                [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matRedTransparent), null, [0, Math.PI / 2, Math.PI / 2]],
+                [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matRedTransparent), null, [0, Math.PI / 2, Math.PI / 2]]
+            ], XT: [
+                [new Mesh(arrowGeometry, matRedArrow), [0.6, 0, 0], [0, 0, - Math.PI / 2]],
             ],
-            Y: [
-                [new Mesh(arrowGeometry, matGreen), [0, 0.5, 0]],
-                [new Mesh(CircleGeometry(0.5, 0.5), matGreen), null, [-Math.PI / 2, Math.PI / 2.4, Math.PI / 2]],
-                [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matGreenTransparent), null, [-Math.PI / 2, Math.PI / 2, Math.PI / 2]],
+            YT: [
+                [new Mesh(arrowGeometry, matGreenArrow), [0, 0.6, 0]],
             ],
-            Z: [[new Mesh(arrowGeometry, matBlue), [0, 0, 0.5], [Math.PI / 2, 0, 0]],
-            [new Mesh(CircleGeometry(0.5, 0.5), matBlue), null, [Math.PI / 2.4, 0, 0]],
+            YR: [[new Mesh(CircleGeometry(0.5, 0.5), matGreen), null, [-Math.PI / 2, Math.PI / 2.4, Math.PI / 2]],
+            [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matGreenTransparent), null, [-Math.PI / 2, Math.PI / 2, Math.PI / 2]]],
+            ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.6], [Math.PI / 2, 0, 0]]
+            ],
+            ZR: [[new Mesh(CircleGeometry(0.5, 0.5), matBlue), null, [Math.PI / 2.4, 0, 0]],
             [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matBlueTransparent), null,]
-            ],
-
+            ]
         }
         const pickerCombined = {
             XT: [
-                [new Mesh(arrowPickerGeometry, matRedTransparent), [0.5, 0, 0], [0, 0, - Math.PI / 2]],
+                [new Mesh(arrowPickerGeometry, matRedTransparent), [0.6, 0, 0], [0, 0, - Math.PI / 2]],
             ],
             XR: [[new Mesh(new TorusGeometry(0.5, 0.05, 4, 24,
                 Math.PI / 5), matRedTransparent), [0, 0, 0], [-Math.PI / 2, 0, -Math.PI / 10]]],
             YT: [
-                [new Mesh(arrowPickerGeometry, matGreenTransparent), [0, 0.5, 0], [0, 0, 0]]
+                [new Mesh(arrowPickerGeometry, matGreenTransparent), [0, 0.6, 0], [0, 0, 0]]
             ],
             YR: [
                 [new Mesh(new TorusGeometry(0.5, 0.05, 4, 24,
                     Math.PI / 5), matGreenTransparent), [0, 0, 0], [0, 0, Math.PI / 2.5]]],
             ZT: [
-                [new Mesh(arrowPickerGeometry, matBlueTransparent), [0, 0, 0.5], [Math.PI / 2, 0, 0]],
+                [new Mesh(arrowPickerGeometry, matBlueTransparent), [0, 0, 0.6], [Math.PI / 2, 0, 0]],
 
             ],
             ZR: [
@@ -1131,13 +1145,13 @@ class TransformControlsGizmo extends Object3D {
             DELTA: [
                 [new Line(TranslateHelperGeometry(), matHelper), null, null, null, 'helper']
             ],
-            X: [
+            XT: [
                 [new Line(lineGeometry, matHelper.clone()), [- 1e3, 0, 0], null, [1e6, 1, 1], 'helper']
             ],
-            Y: [
+            YT: [
                 [new Line(lineGeometry, matHelper.clone()), [0, - 1e3, 0], [0, 0, Math.PI / 2], [1e6, 1, 1], 'helper']
             ],
-            Z: [
+            ZT: [
                 [new Line(lineGeometry, matHelper.clone()), [0, 0, - 1e3], [0, - Math.PI / 2, 0], [1e6, 1, 1], 'helper']
             ]
         }
@@ -1527,19 +1541,24 @@ class TransformControlsGizmo extends Object3D {
 
                 if (handle.name === this.axis) {
 
-                    handle.material.color.setHex(0xffff00);
-                    handle.material.opacity = 1.0;
+                    handle.material.color.setStyle("yellow");
+                    handle.material.opacity = 1;
 
-                } else if (this.axis.split('').some(function (a) {
-
-                    return handle.name === a;
-
-                })) {
-
-                    handle.material.color.setHex(0xffff00);
-                    handle.material.opacity = 1.0;
+                    console.log(handle.material.name)
+                    console.log(handle.material.opacity)
 
                 }
+
+                // else if (this.axis.split('').some(function (a) {
+
+                //     return handle.name === a;
+
+                // })) {
+
+                //     handle.material.color.setHex(0xffff00);
+                //     handle.material.opacity = 1.0;
+
+                // }
 
             }
 

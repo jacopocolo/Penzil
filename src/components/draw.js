@@ -403,8 +403,10 @@ let draw = {
         raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
         const intersectedObject = raycaster.intersectObjects(controls.children[0].children[10].children)[0];
         if (intersectedObject) {
+            //If we are hitting the controls, we do not draw
             this.enabled = false;
         } else {
+            //Otherwise we do draw
             if (stroke.show_stroke === false && fill.show_fill === false) { return } else {
                 controls.enabled = false;
                 controls.visible = false;
