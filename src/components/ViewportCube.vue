@@ -267,6 +267,7 @@ export default {
       cameraControls.zoomTo(3, true);
       setTimeout(() => {
         cameraControls.dampingFactor = 20;
+        cameraControls.enabled = true;
       }, 100);
     },
     handleInput: function (event) {

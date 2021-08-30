@@ -8,7 +8,7 @@ import * as THREE from "three";
 import { Earcut } from 'three/src/extras/Earcut.js';
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
-import { controls, canvas } from "./Canvas.vue";
+import { canvas } from "./Canvas.vue";
 import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
@@ -22,7 +22,6 @@ import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 
 let draw = {
     l: undefined,
-    enabled: true,
     draw: class {
         constructor(stroke, fill) {
             this.stroke = stroke;
@@ -241,7 +240,7 @@ let draw = {
             let raycaster = new THREE.Raycaster();
             raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
             try {
-                const intersectedObject = raycaster.intersectObjects([canvas])[0];
+                var intersectedObject = raycaster.intersectObjects([canvas])[0];
                 var nt = intersectedObject.point;
                 // var normal = intersectedObject.face.normal;
                 // let offset = 30;
@@ -250,10 +249,8 @@ let draw = {
                 // normal.z = normal.z / offset;
                 let normal = { x: 0, y: 0, z: 0 };
                 v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
-
             } catch (err) {
-                //errors are expected if the raycast doesn't hit anything
-                // console.log(err);
+                console.log(err);
                 return
             }
 
@@ -390,49 +387,18 @@ let draw = {
             renderer.autoClear = true;
             renderer.render(scene, camera);
         }
-        disable() {
-            draw.enabled = false;
-        }
-        enable() {
-            draw.enabled = true
-        }
     },
     onStart: function (x, y, z, force, unproject, mirrorOn, stroke, fill) {
-
-        let raycaster = new THREE.Raycaster();
-        raycaster.setFromCamera(new THREE.Vector2(x, y), camera);
-        const intersectedObject = raycaster.intersectObjects(controls.children[0].children[10].children)[0];
-        if (intersectedObject) {
-            //If we are hitting the controls, we do not draw
-            this.enabled = false;
-        } else {
-            //Otherwise we do draw
-            if (stroke.show_stroke === false && fill.show_fill === false) { return } else {
-                controls.enabled = false;
-                controls.visible = false;
-                renderer.render(scene, camera)
-                //this draw acceppts two arguments: stroke and fill. stroke: { show_stroke: bool, color: 'red', lineWidth: 3 }, fill: { show_fill: bool, color: 'black' },
-                this.l = new this.draw(stroke, fill);
-                this.l.start(mirrorOn);
-            }
-        }
+        //this draw acceppts two arguments: stroke and fill. stroke: { show_stroke: bool, color: 'red', lineWidth: 3 }, fill: { show_fill: bool, color: 'black' },
+        //I should gate the possibility of drawing something without stroke or fill
+        this.l = new this.draw(stroke, fill);
+        this.l.start(mirrorOn);
     },
     onMove: function (x, y, z, force, unproject) {
-        if (this.enabled == false) { return } else {
-            this.l.move(x, y, z, force, unproject);
-        }
+        this.l.move(x, y, z, force, unproject);
     },
     onEnd: function (mirrorOn) {
-        if (this.enabled == true) {
-            console.log("onend")
-            //on end we always flip it back to true
-            controls.enabled = true;
-            controls.visible = true;
-            this.l.end(mirrorOn);
-        } else {
-            this.enabled = true;
-            return;
-        }
+        this.l.end(mirrorOn);
     },
     onEnd_internal: function (mirrorOn) {
         this.l.end_internal(mirrorOn);

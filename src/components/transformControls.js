@@ -1100,7 +1100,8 @@ class TransformControlsGizmo extends Object3D {
             XR: [
                 [new Mesh(CircleGeometry(0.5, Math.PI / 6), matRed), null, [0, Math.PI - Math.PI / 12, Math.PI / 2]],
                 [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matRedTransparent), null, [0, Math.PI / 2, Math.PI / 2]]
-            ], XT: [
+            ],
+            XT: [
                 [new Mesh(arrowGeometry, matRedArrow), [0.6, 0, 0], [0, 0, - Math.PI / 2]],
             ],
             YT: [

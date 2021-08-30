@@ -36,6 +36,7 @@ import { select } from "./components/select.js";
 import LineSettings from "./components/LineSettings.vue";
 import Menu from "./components/Menu.vue";
 import Canvas from "./components/Canvas.vue";
+import { controls, canvas } from "./components/Canvas.vue";
 import Modal from "./components/Modal.vue";
 import VideoExportPreview from "./components/VideoExportPreview.vue";
 
@@ -238,6 +239,16 @@ export default {
     },
     setSelectedTool: function (val) {
       this.tool = val;
+
+      if (this.tool === "erase") {
+        canvas.visible = false;
+        controls.visible = false;
+        renderer.render(scene, camera);
+      } else if (this.tool === "draw") {
+        canvas.visible = true;
+        controls.visible = true;
+        renderer.render(scene, camera);
+      }
 
       this.toolHistory.push(val);
       if (this.toolHistory.length > 2) {

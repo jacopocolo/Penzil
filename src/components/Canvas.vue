@@ -3,12 +3,24 @@
   <div class="canvasSettings">
     <span
       v-bind:class="[transformationResetDisabled ? 'disabled ' : '']"
-      class="reset-canvas"
+      class="canvas-button"
       @click="resetTransformation()"
     >
       <img
         src="@/assets/icons/reset.svg"
         alt="Reset canvas position and rotation"
+      />
+    </span>
+    <span class="canvas-button" @click="toggleControls()">
+      <img
+        v-if="transformationEnabled"
+        src="@/assets/icons/hideControls.svg"
+        alt="Hide the canvas controls"
+      />
+      <img
+        v-if="!transformationEnabled"
+        src="@/assets/icons/showControls.svg"
+        alt="Show the canvas controls"
       />
     </span>
   </div>
@@ -43,6 +55,7 @@ export default {
       startQuaternion: new THREE.Quaternion(0.001, 0.001, 0.001, 1),
       startScale: new THREE.Vector3(1, 1, 1),
       transformationResetDisabled: true,
+      transformationEnabled: true,
       mode: "combined",
     };
   },
@@ -97,6 +110,19 @@ export default {
       renderer.render(scene, camera);
       this.transformationResetDisabled = true;
     },
+    toggleControls() {
+      if (controls.visible === true) {
+        this.transformationEnabled = false;
+        controls.enabled = false;
+        controls.visible = false;
+        renderer.render(scene, camera);
+      } else {
+        this.transformationEnabled = true;
+        controls.enabled = true;
+        controls.visible = true;
+        renderer.render(scene, camera);
+      }
+    },
   },
   watch: {
     opacity: function (val) {
@@ -130,6 +156,22 @@ export default {
 }
 
 .reset-canvas {
+  height: 44px;
+  width: 44px;
+  border-radius: 22px;
+  background-color: rgba(255, 255, 255, 1);
+  font-size: 2em;
+  line-height: 1em;
+  color: rgba(255, 255, 255, 1);
+  opacity: 1;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  z-index: 2;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
+}
+
+.canvas-button {
   height: 44px;
   width: 44px;
   border-radius: 22px;
