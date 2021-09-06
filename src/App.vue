@@ -18,6 +18,7 @@
   <Input :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
   <Canvas ref="raycastCanvas" />
   <Menu @modal-set="setModal" @preview="setPreview" />
+  <show-tutorial @modal-set="setModal" :show="showTutorialButton" />
 </template>
 
 <script>
@@ -39,6 +40,7 @@ import Canvas from "./components/Canvas.vue";
 import { controls, canvas } from "./components/Canvas.vue";
 import Modal from "./components/Modal.vue";
 import VideoExportPreview from "./components/VideoExportPreview.vue";
+import ShowTutorial from "./components/ShowTutorial.vue";
 
 export let renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -76,6 +78,7 @@ export default {
     Canvas,
     Modal,
     VideoExportPreview,
+    ShowTutorial,
   },
   data() {
     return {
@@ -92,6 +95,7 @@ export default {
       canvasTransformEnabled: true,
       modalProp: { show: false, mode: "about" },
       previewing: false,
+      showTutorialButton: true,
     };
   },
   emits: ["modal-set"],
@@ -319,6 +323,20 @@ export default {
     this.animate();
     vm = this;
     this.cameraResetDisabled = false; //this is an override, I'm not quite sure what sets it to true on mount
+
+    //check if we need to display the tutorial
+    if (localStorage.getItem("tut01") === null) {
+      localStorage.setItem("tut01", 0);
+      this.showTutorialButton = true;
+    } else {
+      let count = parseInt(window.localStorage.tut01);
+      localStorage.setItem("tut01", ++count);
+      if (count + 1 <= 5) {
+        this.showTutorialButton = true;
+      } else {
+        this.showTutorialButton = false;
+      }
+    }
   },
 };
 </script>
@@ -403,5 +421,23 @@ a {
 
 a:hover {
   color: #ff8400;
+}
+
+@media (min-width: 320px) and (max-width: 480px) {
+  #viewport {
+    display: none;
+  }
+
+  .lineSettings {
+    display: none;
+  }
+
+  .canvasSettings {
+    display: none;
+  }
+
+  .soapbar {
+    display: none;
+  }
 }
 </style>

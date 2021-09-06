@@ -2,9 +2,12 @@
 <template>
   <div v-if="modalProp.display" class="fade" @click.self="hideModal">
     <div class="modal">
-      <Welcome v-if="modalProp.mode === 'about'" />
-      <Feedback v-if="modalProp.mode === 'feedback'" />
-      <ExportForBlender v-if="modalProp.mode === 'export'" />
+      <div class="component-container">
+        <Welcome v-if="modalProp.mode === 'about'" />
+        <Feedback v-if="modalProp.mode === 'feedback'" />
+        <ExportForBlender v-if="modalProp.mode === 'export'" />
+        <Tutorial v-if="modalProp.mode === 'tutorial'" />
+      </div>
     </div>
   </div>
 </template>
@@ -13,6 +16,7 @@
 import Welcome from "./ModalContent/Welcome.vue";
 import Feedback from "./ModalContent/Feedback.vue";
 import ExportForBlender from "./ModalContent/ExportForBlender.vue";
+import Tutorial from "./ModalContent/Tutorial.vue";
 
 export default {
   name: "VideoExportPreview",
@@ -20,6 +24,7 @@ export default {
     Welcome,
     Feedback,
     ExportForBlender,
+    Tutorial,
   },
   data() {
     return {};
@@ -55,8 +60,8 @@ export default {
 }
 
 .modal {
-  width: 40%;
-  height: 40%;
+  width: 50%;
+  height: 50%;
   background-color: white;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   border-radius: 8px;
@@ -66,6 +71,11 @@ export default {
   user-select: none;
   touch-action: none;
   padding: 32px;
-  overflow: scroll;
+}
+
+.component-container {
+  height: 100%;
+  overflow-y: scroll;
+  -webkit-overflow-scrolling: touch;
 }
 </style>

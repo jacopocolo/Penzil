@@ -12,9 +12,9 @@
       /> -->
       <svg
         v-if="active"
-        width="40"
-        height="40"
-        viewBox="0 0 40 40"
+        width="44"
+        height="44"
+        viewBox="0 0 44 44"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -42,9 +42,9 @@
 
       <svg
         v-if="!active"
-        width="40"
-        height="40"
-        viewBox="0 0 40 40"
+        width="44"
+        height="44"
+        viewBox="0 0 44 44"
         fill="none"
         xmlns="http://www.w3.org/2000/svg"
       >
@@ -220,7 +220,7 @@ export default {
   content: " ";
   width: 44px;
   height: 44px;
-  padding: 0px 8px;
+  padding: 0px 0px 0px 8px;
   float: right;
   display: block;
 }
