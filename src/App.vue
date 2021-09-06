@@ -51,6 +51,14 @@ export let camera = new THREE.PerspectiveCamera(
   1,
   1000
 );
+// export let camera = new THREE.OrthographicCamera(
+//   window.innerWidth / -2,
+//   window.innerWidth / 2,
+//   window.innerHeight / 2,
+//   window.innerHeight / -2,
+//   1,
+//   1000
+// );
 export let scene, drawingScene, cameraControls, vm, drawingprop;
 
 var main, clock;

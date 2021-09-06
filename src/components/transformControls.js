@@ -1097,45 +1097,50 @@ class TransformControlsGizmo extends Object3D {
         };
 
         const gizmoCombined = {
+            XT: [
+                [new Mesh(arrowGeometry, matRedArrow), [0.04, 0, 0], [0, 0, - Math.PI / 2]],
+            ],
             XR: [
-                [new Mesh(CircleGeometry(0.5, Math.PI / 6), matRed), null, [0, Math.PI - Math.PI / 12, Math.PI / 2]],
-                [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matRedTransparent), null, [0, Math.PI / 2, Math.PI / 2]]
-            ],
-            XT: [
-                [new Mesh(arrowGeometry, matRedArrow), [0.6, 0, 0], [0, 0, - Math.PI / 2]],
+                [new Mesh(CircleGeometry(0.15, 0.5), matRed), null, [0, Math.PI - 0.25, Math.PI / 2]],
+                // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matRedTransparent), null, [0, Math.PI / 2, Math.PI / 2]]
             ],
             YT: [
-                [new Mesh(arrowGeometry, matGreenArrow), [0, 0.6, 0]],
-            ],
-            YR: [[new Mesh(CircleGeometry(0.5, 0.5), matGreen), null, [-Math.PI / 2, Math.PI / 2.4, Math.PI / 2]],
-            [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matGreenTransparent), null, [-Math.PI / 2, Math.PI / 2, Math.PI / 2]]],
-            ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.6], [Math.PI / 2, 0, 0]]
-            ],
-            ZR: [[new Mesh(CircleGeometry(0.5, 0.5), matBlue), null, [Math.PI / 2.4, 0, 0]],
-            [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matBlueTransparent), null,]
-            ]
-        }
-        const pickerCombined = {
-            XT: [
-                [new Mesh(arrowPickerGeometry, matRedTransparent), [0.6, 0, 0], [0, 0, - Math.PI / 2]],
-            ],
-            XR: [[new Mesh(new TorusGeometry(0.5, 0.05, 4, 24,
-                Math.PI / 5), matRedTransparent), [0, 0, 0], [-Math.PI / 2, 0, -Math.PI / 10]]],
-            YT: [
-                [new Mesh(arrowPickerGeometry, matGreenTransparent), [0, 0.6, 0], [0, 0, 0]]
+                [new Mesh(arrowGeometry, matGreenArrow), [0, 0.04, 0]],
             ],
             YR: [
-                [new Mesh(new TorusGeometry(0.5, 0.05, 4, 24,
-                    Math.PI / 5), matGreenTransparent), [0, 0, 0], [0, 0, Math.PI / 2.5]]],
-            ZT: [
-                [new Mesh(arrowPickerGeometry, matBlueTransparent), [0, 0, 0.6], [Math.PI / 2, 0, 0]],
-
+                [new Mesh(CircleGeometry(0.15, 0.5), matGreen), null, [-Math.PI / 2, Math.PI / 2.4, Math.PI / 2]],
+                // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matGreenTransparent), null, [-Math.PI / 2, Math.PI / 2, Math.PI / 2]]
             ],
-            ZR: [
-                [new Mesh(new TorusGeometry(0.5, 0.05, 4, 12,
-                    Math.PI / 5), matBlueTransparent), [0, 0, 0], [0, Math.PI / 2, Math.PI - Math.PI / 10]]
+            ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.04], [Math.PI / 2, 0, 0]]
+            ],
+            ZR: [[new Mesh(CircleGeometry(0.15, 0.5), matBlue), null, [Math.PI / 2.4, 0, 0]],
+                // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matBlueTransparent), null,]
             ]
         }
+
+        const pickerCombined = gizmoCombined;
+
+        // const pickerCombined = {
+        //     XT: [
+        //         [new Mesh(arrowGeometry, matRedArrow), [0.025, 0, 0], [0, 0, - Math.PI / 2]],
+        //     ],
+        //     XR: [
+        //         [new Mesh(CircleGeometry(0.15, 1), matRed), null, [0, Math.PI - 0.050, Math.PI / 2]],
+        //         // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matRedTransparent), null, [0, Math.PI / 2, Math.PI / 2]]
+        //     ],
+        //     YT: [
+        //         [new Mesh(arrowGeometry, matGreenArrow), [0, 0.025, 0]],
+        //     ],
+        //     YR: [
+        //         [new Mesh(CircleGeometry(0.15, 1), matGreen), null, [-Math.PI / 2, Math.PI / 2.07, Math.PI / 2]],
+        //         // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matGreenTransparent), null, [-Math.PI / 2, Math.PI / 2, Math.PI / 2]]
+        //     ],
+        //     ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.025], [Math.PI / 2, 0, 0]]
+        //     ],
+        //     ZR: [[new Mesh(CircleGeometry(0.15, 1), matBlue), null, [Math.PI / 2.07, 0, 0]],
+        //         // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matBlueTransparent), null,]
+        //     ]
+        // }
         const helperCombined = {
             START: [
                 [new Mesh(new OctahedronGeometry(0.01, 2), matHelper), null, null, null, 'helper']
@@ -1148,6 +1153,9 @@ class TransformControlsGizmo extends Object3D {
             ],
             XT: [
                 [new Line(lineGeometry, matHelper.clone()), [- 1e3, 0, 0], null, [1e6, 1, 1], 'helper']
+            ],
+            XR: [
+                [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matHelper.clone()), null, [0, Math.PI / 2, Math.PI / 2], 'helper']
             ],
             YT: [
                 [new Line(lineGeometry, matHelper.clone()), [0, - 1e3, 0], [0, 0, Math.PI / 2], [1e6, 1, 1], 'helper']

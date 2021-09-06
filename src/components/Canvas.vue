@@ -81,6 +81,8 @@ export default {
       });
 
       controls.attach(plane);
+      // controls.position.set(2.5, 2.5, 0);
+      // controls.scale.set(0.5, 0.5, 0.5);
       controls.enabled = true;
       scene.add(controls);
 
