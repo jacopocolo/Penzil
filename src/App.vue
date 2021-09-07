@@ -18,7 +18,7 @@
   <Input :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
   <Canvas ref="raycastCanvas" />
   <Menu @modal-set="setModal" @preview="setPreview" />
-  <show-tutorial @modal-set="setModal" :show="showTutorialButton" />
+  <show-survey @modal-set="setModal" :show="true" />
 </template>
 
 <script>
@@ -40,7 +40,7 @@ import Canvas from "./components/Canvas.vue";
 import { controls, canvas } from "./components/Canvas.vue";
 import Modal from "./components/Modal.vue";
 import VideoExportPreview from "./components/VideoExportPreview.vue";
-import ShowTutorial from "./components/ShowTutorial.vue";
+import ShowSurvey from "./components/ShowSurvey.vue";
 
 export let renderer = new THREE.WebGLRenderer({
   antialias: true,
