@@ -7,6 +7,7 @@
         <Feedback v-if="modalProp.mode === 'feedback'" />
         <ExportForBlender v-if="modalProp.mode === 'export'" />
         <Tutorial v-if="modalProp.mode === 'tutorial'" />
+        <Survey v-if="modalProp.mode === 'survey'" />
       </div>
     </div>
   </div>
@@ -17,6 +18,7 @@ import Welcome from "./ModalContent/Welcome.vue";
 import Feedback from "./ModalContent/Feedback.vue";
 import ExportForBlender from "./ModalContent/ExportForBlender.vue";
 import Tutorial from "./ModalContent/Tutorial.vue";
+import Survey from "./ModalContent/Survey.vue";
 
 export default {
   name: "VideoExportPreview",
@@ -25,6 +27,7 @@ export default {
     Feedback,
     ExportForBlender,
     Tutorial,
+    Survey,
   },
   data() {
     return {};

@@ -70,6 +70,7 @@ export default {
 
       controls = new TransformControls(camera, renderer.domElement);
       controls.mode = this.mode;
+      controls.scale.set(1.1, 1.1, 1.1);
       // controls.setTranslationSnap(0);
       // controls.setRotationSnap(Math.PI / 10);
       controls.addEventListener("change", () => {

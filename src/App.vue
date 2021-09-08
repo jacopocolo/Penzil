@@ -78,7 +78,7 @@ export default {
     Canvas,
     Modal,
     VideoExportPreview,
-    ShowTutorial,
+    ShowSurvey,
   },
   data() {
     return {
