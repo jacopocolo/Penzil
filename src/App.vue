@@ -135,8 +135,8 @@ export default {
       cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
       cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
       cameraControls.touches.one = CameraControls.ACTION.NONE;
-      cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
-      cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
+      cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_TRUCK;
+      cameraControls.touches.three = CameraControls.ACTION.TOUCH_ROTATE;
       cameraControls.maxZoom = 4000;
       cameraControls.minZoom = 2;
       cameraControls.enabled = true;
