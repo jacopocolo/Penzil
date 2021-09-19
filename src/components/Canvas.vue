@@ -11,18 +11,38 @@
         alt="Reset canvas position and rotation"
       />
     </span>
-    <span class="canvas-button" @click="toggleControls()">
+    <span
+      class="canvas-button"
+      @click="toggleControls()"
+      v-bind:class="[!visible ? 'disabled' : '']"
+    >
       <img
         v-if="transformationEnabled"
-        src="@/assets/icons/hideControls.svg"
+        src="@/assets/icons/lockControls.svg"
         alt="Hide the canvas controls"
       />
       <img
         v-if="!transformationEnabled"
-        src="@/assets/icons/showControls.svg"
+        src="@/assets/icons/unlockControls.svg"
         alt="Show the canvas controls"
       />
     </span>
+    <span class="canvas-button" @click="toggleVisibility()">
+      <img
+        v-if="visible"
+        src="@/assets/icons/hideCanvas.svg"
+        alt="Hide the canvas controls"
+      />
+      <img
+        v-if="!visible"
+        src="@/assets/icons/showCanvas.svg"
+        alt="Show the canvas controls"
+      />
+    </span>
+    <select name="shape" v-model="shape">
+      <option value="plane">Plane</option>
+      <option value="sphere">Sphere</option>
+    </select>
   </div>
 </template>
 
@@ -31,9 +51,10 @@ import * as THREE from "three";
 import { TransformControls } from "./transformControls.js";
 import { scene, renderer, camera, vm } from "../App.vue";
 export let canvas, controls;
-let position = new THREE.Vector3(0.001, 0.001, 0.001);
-let quaternion = new THREE.Quaternion(0.001, 0.002, 0.002, 1);
-let scale = new THREE.Vector3(1, 1, 1);
+// let position = new THREE.Vector3(0.001, 0.001, 0.001);
+// let quaternion = new THREE.Quaternion(0.001, 0.002, 0.002, 1);
+// let scale = new THREE.Vector3(1, 1, 1);
+let geometry = new THREE.PlaneGeometry(5, 5);
 
 export default {
   name: "Canvas",
@@ -56,23 +77,21 @@ export default {
       startScale: new THREE.Vector3(1, 1, 1),
       transformationResetDisabled: true,
       transformationEnabled: true,
+      visible: true,
       mode: "combined",
+      shape: "plane",
     };
   },
   props: {},
   methods: {
     setUp() {
-      const geometry = new THREE.PlaneGeometry(5, 5);
       const material = this.material;
-      const plane = new THREE.Mesh(geometry, material);
-      canvas = plane;
-      scene.add(plane);
+      canvas = new THREE.Mesh(geometry, material);
+      scene.add(canvas);
 
       controls = new TransformControls(camera, renderer.domElement);
-      controls.mode = this.mode;
+      controls.mode = "combined";
       controls.scale.set(1.1, 1.1, 1.1);
-      // controls.setTranslationSnap(0);
-      // controls.setRotationSnap(Math.PI / 10);
       controls.addEventListener("change", () => {
         renderer.render(scene, camera);
         //this is not very elegant but…
@@ -80,21 +99,18 @@ export default {
           vm.$refs.raycastCanvas.transformationResetDisabled = false;
         }
       });
-
-      controls.attach(plane);
-      // controls.position.set(2.5, 2.5, 0);
-      // controls.scale.set(0.5, 0.5, 0.5);
       controls.enabled = true;
       scene.add(controls);
+      controls.attach(canvas);
 
-      canvas.position.set(position.x, position.y, position.z);
-      canvas.quaternion.set(
-        quaternion.x,
-        quaternion.y,
-        quaternion.z,
-        quaternion.w
-      );
-      canvas.scale.set(scale.x, scale.y, scale.z);
+      // canvas.position.set(position.x, position.y, position.z);
+      // canvas.quaternion.set(
+      //   quaternion.x,
+      //   quaternion.y,
+      //   quaternion.z,
+      //   quaternion.w
+      // );
+      // canvas.scale.set(scale.x, scale.y, scale.z);
       renderer.render(scene, camera);
     },
     resetTransformation() {
@@ -126,6 +142,23 @@ export default {
         renderer.render(scene, camera);
       }
     },
+    toggleVisibility() {
+      if (canvas.visible === true) {
+        this.visible = false;
+        this.transformationEnabled = false;
+        controls.enabled = false;
+        controls.visible = false;
+        canvas.visible = false;
+        renderer.render(scene, camera);
+      } else {
+        this.transformationEnabled = true;
+        this.visible = true;
+        controls.enabled = true;
+        controls.visible = true;
+        canvas.visible = true;
+        renderer.render(scene, camera);
+      }
+    },
   },
   watch: {
     opacity: function (val) {
@@ -136,6 +169,21 @@ export default {
         this.material.visible = true;
       }
       renderer.render(scene, camera);
+    },
+    shape: function (val) {
+      if (val === "plane") {
+        canvas.geometry.dispose();
+        canvas.geometry = new THREE.PlaneGeometry(5, 5);
+        canvas.geometry.needsUpdate = true;
+        renderer.render(scene, camera);
+        console.log("val");
+      } else if (val === "sphere") {
+        canvas.geometry.dispose();
+        canvas.geometry = new THREE.SphereGeometry(2.5, 15, 15);
+        canvas.geometry.needsUpdate = true;
+        renderer.render(scene, camera);
+        console.log("val");
+      }
     },
   },
   mounted() {},

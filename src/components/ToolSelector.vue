@@ -1,11 +1,6 @@
 
 <template>
   <div class="mainToolbar">
-    <img
-      class="oneDot"
-      src="@/assets/icons/1dot.svg"
-      alt="One dot indicator: these tools can be used with one finger"
-    />
     <div class="oneDot"></div>
     <div class="toolSelection">
       <span @click="setTool('draw', true)">

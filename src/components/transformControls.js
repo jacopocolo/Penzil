@@ -811,28 +811,28 @@ class TransformControlsGizmo extends Object3D {
 
         const matHelper = gizmoLineMaterial.clone();
         matHelper.opacity = 1;
-        matHelper.color.setHex(0xffff00);
+        matHelper.color.setHex(0xFFD880);
 
         const matRed = gizmoMaterial.clone();
-        matRed.color.setHex(0xff0000);
+        matRed.color.setHex(0xFF8080);
         matRed.side = DoubleSide;
 
         const matRedArrow = gizmoMaterial.clone();
-        matRedArrow.color.setHex(0xff0000);
+        matRedArrow.color.setHex(0xFF8080);
 
         const matGreen = gizmoMaterial.clone();
-        matGreen.color.setHex(0x00ff00);
+        matGreen.color.setHex(0x80FFC9);
         matGreen.side = DoubleSide;
 
         const matGreenArrow = gizmoMaterial.clone();
-        matGreenArrow.color.setHex(0x00ff00);
+        matGreenArrow.color.setHex(0x80FFC9);
 
         const matBlue = gizmoMaterial.clone();
-        matBlue.color.setHex(0x0000ff);
+        matBlue.color.setHex(0x809CFF);
         matBlue.side = DoubleSide;
 
         const matBlueArrow = gizmoMaterial.clone();
-        matBlueArrow.color.setHex(0x0000ff);
+        matBlueArrow.color.setHex(0x809CFF);
 
         const matRedTransparent = gizmoMaterial.clone();
         matRedTransparent.color.setHex(0xff0000);
@@ -851,11 +851,11 @@ class TransformControlsGizmo extends Object3D {
         matWhiteTransparent.opacity = 0.25;
 
         const matYellowTransparent = gizmoMaterial.clone();
-        matYellowTransparent.color.setHex(0xffff00);
+        matYellowTransparent.color.setHex(0xFFD880);
         matYellowTransparent.opacity = 0.25;
 
         const matYellow = gizmoMaterial.clone();
-        matYellow.color.setHex(0xffff00);
+        matYellow.color.setHex(0xFFD880);
 
         const matGray = gizmoMaterial.clone();
         matGray.color.setHex(0x787878);
@@ -1550,12 +1550,8 @@ class TransformControlsGizmo extends Object3D {
 
                 if (handle.name === this.axis) {
 
-                    handle.material.color.setStyle("yellow");
+                    handle.material.color.setHex(0xFFD880);
                     handle.material.opacity = 1;
-
-                    console.log(handle.material.name)
-                    console.log(handle.material.opacity)
-
                 }
 
                 // else if (this.axis.split('').some(function (a) {
