@@ -39,29 +39,66 @@
         alt="Show the canvas controls"
       />
     </span>
-    <select name="shape" v-model="shape">
-      <option value="plane">Plane</option>
-      <option value="sphere">Sphere</option>
-    </select>
+    <div class="canvasShapeSelection">
+      <span @click="setCanvasShape('plane')">
+        <input
+          type="radio"
+          id="shapePlane"
+          name="shape"
+          value="plane"
+          v-model="shape"
+        /><label for="plane"
+          ><img
+            src="@/assets/icons/Canvas-Plane.svg"
+            alt="Set the 3d canvas shape to plane"
+        /></label> </span
+      ><span @click="setCanvasShape('sphere')">
+        <input
+          type="radio"
+          id="shapeSphere"
+          name="shape"
+          value="sphere"
+          v-model="shape"
+        /><label for="sphere"
+          ><img
+            src="@/assets/icons/Canvas-Sphere.svg"
+            alt="Set the 3d canvas shape to shphere"
+        /></label> </span
+      ><span @click="setCanvasShape('head')">
+        <input
+          type="radio"
+          id="shapeHead"
+          name="shape"
+          value="head"
+          v-model="shape"
+        /><label for="head"
+          ><img
+            src="@/assets/icons/Canvas-Head.svg"
+            alt="Set the 3d canvas shape to head"
+        /></label>
+      </span>
+    </div>
   </div>
 </template>
 
 <script>
 import * as THREE from "three";
 import { TransformControls } from "./transformControls.js";
+import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { scene, renderer, camera, vm } from "../App.vue";
 export let canvas, controls;
 // let position = new THREE.Vector3(0.001, 0.001, 0.001);
 // let quaternion = new THREE.Quaternion(0.001, 0.002, 0.002, 1);
 // let scale = new THREE.Vector3(1, 1, 1);
 let geometry = new THREE.PlaneGeometry(5, 5);
+let headGeometry;
 
 export default {
   name: "Canvas",
   data() {
     return {
-      material: new THREE.MeshPhongMaterial({
-        color: 0xfefefe,
+      material: new THREE.MeshToonMaterial({
+        color: 0xeeeeee,
         transparent: true,
         opacity: 0.9,
         side: THREE.DoubleSide,
@@ -82,7 +119,9 @@ export default {
       shape: "plane",
     };
   },
-  props: {},
+  props: {
+    selectedCanvasShape: String,
+  },
   methods: {
     setUp() {
       const material = this.material;
@@ -102,15 +141,6 @@ export default {
       controls.enabled = true;
       scene.add(controls);
       controls.attach(canvas);
-
-      // canvas.position.set(position.x, position.y, position.z);
-      // canvas.quaternion.set(
-      //   quaternion.x,
-      //   quaternion.y,
-      //   quaternion.z,
-      //   quaternion.w
-      // );
-      // canvas.scale.set(scale.x, scale.y, scale.z);
       renderer.render(scene, camera);
     },
     resetTransformation() {
@@ -159,6 +189,10 @@ export default {
         renderer.render(scene, camera);
       }
     },
+    setCanvasShape(val) {
+      this.shape = val;
+      this.$emit("selected-canvas-shape", val);
+    },
   },
   watch: {
     opacity: function (val) {
@@ -176,21 +210,37 @@ export default {
         canvas.geometry = new THREE.PlaneGeometry(5, 5);
         canvas.geometry.needsUpdate = true;
         renderer.render(scene, camera);
-        console.log("val");
       } else if (val === "sphere") {
         canvas.geometry.dispose();
         canvas.geometry = new THREE.SphereGeometry(2.5, 15, 15);
         canvas.geometry.needsUpdate = true;
         renderer.render(scene, camera);
-        console.log("val");
+      } else if (val === "head") {
+        if (headGeometry === undefined) {
+          const loader = new GLTFLoader();
+          loader.load("/asaro.glb", function (gltf) {
+            headGeometry = gltf.scene.children[0].geometry;
+            canvas.geometry.dispose();
+            canvas.geometry = headGeometry;
+            canvas.geometry.needsUpdate = true;
+            renderer.render(scene, camera);
+          });
+        } else {
+          canvas.geometry.dispose();
+          canvas.geometry = headGeometry;
+          canvas.geometry.needsUpdate = true;
+          renderer.render(scene, camera);
+        }
       }
     },
   },
-  mounted() {},
+  mounted() {
+    this.setCanvasShape("plane");
+  },
 };
 </script>
 
-<style>
+<style scoped>
 .canvasSettings {
   z-index: 2;
   position: absolute;
@@ -204,6 +254,15 @@ export default {
   display: flex;
   flex-direction: row;
   gap: 16px;
+}
+
+.canvasShapeSelection {
+  white-space: discard;
+  display: flex;
+  float: left;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
+  border-radius: 8px;
+  overflow: hidden;
 }
 
 .reset-canvas {

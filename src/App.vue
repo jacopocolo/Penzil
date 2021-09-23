@@ -16,7 +16,11 @@
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
   <Input :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
-  <Canvas ref="raycastCanvas" />
+  <Canvas
+    ref="raycastCanvas"
+    @selected-canvas-shape="setSelectedCanvasShape"
+    :selectedShape="canvasShape"
+  />
   <Menu @modal-set="setModal" @preview="setPreview" />
   <show-survey @modal-set="setModal" :show="true" />
 </template>
@@ -83,6 +87,7 @@ export default {
   data() {
     return {
       tool: "draw",
+      canvasShape: "plane",
       multitouch: "canvas",
       toolHistory: ["draw"],
       stroke: {}, //filled by the component on mount
@@ -212,8 +217,8 @@ export default {
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
 
-      const light = new THREE.HemisphereLight(0xffffff, 0x222222, 1); //0x080820
-      light.position.set(0, 1, 5);
+      const light = new THREE.HemisphereLight(0xffffff, 0x222222, 0.8); //0x080820
+      light.position.set(0, 50, 50);
       scene.add(light);
 
       this.$.refs.raycastCanvas.setUp();
@@ -280,6 +285,9 @@ export default {
       });
 
       this.$.refs.undoRedo.updateUi();
+    },
+    setSelectedCanvasShape: function (val) {
+      this.canvasShape = val;
     },
     setSelectedTool_internal: function (val) {
       //this is a version without undo so that it can be called by the setCenter tool
