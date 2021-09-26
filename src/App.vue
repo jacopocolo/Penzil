@@ -403,6 +403,7 @@ label {
   height: 44px;
   align-content: center;
   justify-content: center;
+  margin: 0px;
 }
 
 input[type="radio"]:checked + label {

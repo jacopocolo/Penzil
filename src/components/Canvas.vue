@@ -1,15 +1,59 @@
 
 <template>
   <div class="canvasSettings">
-    <span
-      v-bind:class="[transformationResetDisabled ? 'disabled ' : '']"
-      class="canvas-button"
-      @click="resetTransformation()"
-    >
+    <span class="canvas-button" @click="toggleShapeSelectionVisibility()">
       <img
-        src="@/assets/icons/reset.svg"
-        alt="Reset canvas position and rotation"
+        v-if="shape === 'plane'"
+        src="@/assets/icons/Canvas-Plane.svg"
+        alt="Plane shape selected"
       />
+      <img
+        v-if="shape === 'sphere'"
+        src="@/assets/icons/Canvas-Sphere.svg"
+        alt="Sphere shape selected"
+      />
+      <img
+        v-if="shape === 'head'"
+        src="@/assets/icons/Canvas-Head.svg"
+        alt="Head shape selected"
+      />
+      <div class="canvasShapeSelection" v-if="shapeSelectionVisibility">
+        <span @click="setCanvasShape('plane')">
+          <input
+            type="radio"
+            id="shapePlane"
+            name="shape"
+            value="plane"
+            v-model="shape"
+          /><label for="plane"
+            ><img
+              src="@/assets/icons/Canvas-Plane.svg"
+              alt="Set the 3d canvas shape to plane"
+          /></label> </span
+        ><span @click="setCanvasShape('sphere')">
+          <input
+            type="radio"
+            id="shapeSphere"
+            name="shape"
+            value="sphere"
+            v-model="shape" /><label for="sphere"
+            ><img
+              src="@/assets/icons/Canvas-Sphere.svg"
+              alt="Set the 3d canvas shape to shphere" /></label></span
+        ><span @click="setCanvasShape('head')">
+          <input
+            type="radio"
+            id="shapeHead"
+            name="shape"
+            value="head"
+            v-model="shape"
+          /><label for="head"
+            ><img
+              src="@/assets/icons/Canvas-Head.svg"
+              alt="Set the 3d canvas shape to head"
+          /></label>
+        </span>
+      </div>
     </span>
     <span
       class="canvas-button"
@@ -37,47 +81,17 @@
         v-if="!visible"
         src="@/assets/icons/showCanvas.svg"
         alt="Show the canvas controls"
+      /> </span
+    ><span
+      v-bind:class="[transformationResetDisabled ? 'disabled ' : '']"
+      class="canvas-button"
+      @click="resetTransformation()"
+    >
+      <img
+        src="@/assets/icons/reset.svg"
+        alt="Reset canvas position and rotation"
       />
     </span>
-    <div class="canvasShapeSelection">
-      <span @click="setCanvasShape('plane')">
-        <input
-          type="radio"
-          id="shapePlane"
-          name="shape"
-          value="plane"
-          v-model="shape"
-        /><label for="plane"
-          ><img
-            src="@/assets/icons/Canvas-Plane.svg"
-            alt="Set the 3d canvas shape to plane"
-        /></label> </span
-      ><span @click="setCanvasShape('sphere')">
-        <input
-          type="radio"
-          id="shapeSphere"
-          name="shape"
-          value="sphere"
-          v-model="shape"
-        /><label for="sphere"
-          ><img
-            src="@/assets/icons/Canvas-Sphere.svg"
-            alt="Set the 3d canvas shape to shphere"
-        /></label> </span
-      ><span @click="setCanvasShape('head')">
-        <input
-          type="radio"
-          id="shapeHead"
-          name="shape"
-          value="head"
-          v-model="shape"
-        /><label for="head"
-          ><img
-            src="@/assets/icons/Canvas-Head.svg"
-            alt="Set the 3d canvas shape to head"
-        /></label>
-      </span>
-    </div>
   </div>
 </template>
 
@@ -117,6 +131,7 @@ export default {
       visible: true,
       mode: "combined",
       shape: "plane",
+      shapeSelectionVisibility: false,
     };
   },
   props: {
@@ -189,6 +204,9 @@ export default {
         renderer.render(scene, camera);
       }
     },
+    toggleShapeSelectionVisibility() {
+      this.shapeSelectionVisibility = !this.shapeSelectionVisibility;
+    },
     setCanvasShape(val) {
       this.shape = val;
       this.$emit("selected-canvas-shape", val);
@@ -244,7 +262,7 @@ export default {
 .canvasSettings {
   z-index: 2;
   position: absolute;
-  bottom: 12px;
+  top: 12px;
   left: 12px;
   /* background-color: white;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
@@ -253,17 +271,42 @@ export default {
   font-weight: 900;
   display: flex;
   flex-direction: row;
-  gap: 16px;
+  gap: 8px;
 }
 
 .canvasShapeSelection {
+  font-size: 0.5em;
+  color: #1c1c1e;
   white-space: discard;
   display: flex;
-  float: left;
+  flex-direction: column;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   border-radius: 8px;
   overflow: hidden;
+  position: relative;
+  top: 12px;
 }
+
+.canvasShapeSelection > span > label {
+  display: flex;
+  flex-direction: row;
+  /* width: 100px; */
+  /* align-items: center; */
+  align-items: initial;
+}
+
+/* .canvasShapeSelection > span > label > span {
+  flex-grow: 1;
+} */
+
+/* .canvasShapeSelection > span > label {
+  min-width: 200px;
+} */
+
+/* #shapeSphere > img {
+  left: 0;
+  margin-left: 12px;
+} */
 
 .reset-canvas {
   height: 44px;

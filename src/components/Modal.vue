@@ -48,7 +48,7 @@ export default {
 };
 </script>
 
-<style>
+<style scoped>
 .fade {
   position: absolute;
   width: 100%;

@@ -320,6 +320,7 @@ export default {
   height: 150px;
   width: 150px;
   top: 0;
+  right: 12px;
   z-index: 2;
 }
 

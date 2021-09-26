@@ -221,7 +221,7 @@ export default {
   width: 44px;
   height: 44px;
   padding: 0px 0px 0px 8px;
-  float: right;
+  float: left;
   display: block;
 }
 
