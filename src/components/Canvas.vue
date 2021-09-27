@@ -17,43 +17,16 @@
         src="@/assets/icons/Canvas-Head.svg"
         alt="Head shape selected"
       />
-      <div class="canvasShapeSelection" v-if="shapeSelectionVisibility">
-        <span @click="setCanvasShape('plane')">
-          <input
-            type="radio"
-            id="shapePlane"
-            name="shape"
-            value="plane"
-            v-model="shape"
-          /><label for="plane"
-            ><img
-              src="@/assets/icons/Canvas-Plane.svg"
-              alt="Set the 3d canvas shape to plane"
-          /></label> </span
-        ><span @click="setCanvasShape('sphere')">
-          <input
-            type="radio"
-            id="shapeSphere"
-            name="shape"
-            value="sphere"
-            v-model="shape" /><label for="sphere"
-            ><img
-              src="@/assets/icons/Canvas-Sphere.svg"
-              alt="Set the 3d canvas shape to shphere" /></label></span
-        ><span @click="setCanvasShape('head')">
-          <input
-            type="radio"
-            id="shapeHead"
-            name="shape"
-            value="head"
-            v-model="shape"
-          /><label for="head"
-            ><img
-              src="@/assets/icons/Canvas-Head.svg"
-              alt="Set the 3d canvas shape to head"
-          /></label>
-        </span>
-      </div>
+      <img
+        src="@/assets/icons/Dropdown.svg"
+        v-bind:style="[
+          shapeSelectionVisibility
+            ? { transform: 'rotate(180deg)' }
+            : { transform: 'rotate(0deg)' },
+        ]"
+        style="margin-right: 10px"
+        alt="Click to show options"
+      />
     </span>
     <span
       class="canvas-button"
@@ -92,6 +65,43 @@
         alt="Reset canvas position and rotation"
       />
     </span>
+    <div class="canvasShapeSelection" v-if="shapeSelectionVisibility">
+      <span @click="setCanvasShape('plane')">
+        <input
+          type="radio"
+          id="shapePlane"
+          name="shape"
+          value="plane"
+          v-model="shape"
+        /><label for="plane"
+          ><img
+            src="@/assets/icons/Canvas-Plane.svg"
+            alt="Set the 3d canvas shape to plane"
+        /></label> </span
+      ><span @click="setCanvasShape('sphere')">
+        <input
+          type="radio"
+          id="shapeSphere"
+          name="shape"
+          value="sphere"
+          v-model="shape" /><label for="sphere"
+          ><img
+            src="@/assets/icons/Canvas-Sphere.svg"
+            alt="Set the 3d canvas shape to shphere" /></label></span
+      ><span @click="setCanvasShape('head')">
+        <input
+          type="radio"
+          id="shapeHead"
+          name="shape"
+          value="head"
+          v-model="shape"
+        /><label for="head"
+          ><img
+            src="@/assets/icons/Canvas-Head.svg"
+            alt="Set the 3d canvas shape to head"
+        /></label>
+      </span>
+    </div>
   </div>
 </template>
 
@@ -283,8 +293,9 @@ export default {
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   border-radius: 8px;
   overflow: hidden;
-  position: relative;
-  top: 12px;
+  position: absolute;
+  top: calc(44px + 8px + 8px);
+  width: 60px;
 }
 
 .canvasShapeSelection > span > label {
@@ -338,6 +349,9 @@ export default {
   text-align: center;
   z-index: 2;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
+  display: flex;
+  align-items: center;
+  width: auto;
 }
 
 #transform-mode {
