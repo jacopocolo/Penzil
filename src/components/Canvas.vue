@@ -54,7 +54,18 @@
         v-if="!visible"
         src="@/assets/icons/showCanvas.svg"
         alt="Show the canvas controls"
-      /> </span
+      /></span
+    ><span class="canvas-button" @click="toggleSnap()">
+      <img
+        v-if="snap"
+        src="@/assets/icons/snapOn.svg"
+        alt="Turn on snap"
+      />
+      <img
+        v-if="!snap"
+        src="@/assets/icons/snapOff.svg"
+        alt="Turn off snap"
+      /></span
     ><span
       v-bind:class="[transformationResetDisabled ? 'disabled ' : '']"
       class="canvas-button"
@@ -144,6 +155,7 @@ export default {
       visible: true,
       mode: "combined",
       shape: "plane",
+      snap: false,
       shapeSelectionVisibility: false,
     };
   },
@@ -216,6 +228,18 @@ export default {
         canvas.visible = true;
         renderer.render(scene, camera);
       }
+    },
+    toggleSnap() {
+      if (this.snap === true) {
+        this.snap = !this.snap;
+        controls.translationSnap = null;
+        controls.rotationSnap = null;
+      } else {
+        this.snap = !this.snap;
+        controls.translationSnap = 1;
+        controls.rotationSnap = Math.PI/4;
+      }
+
     },
     toggleShapeSelectionVisibility() {
       this.shapeSelectionVisibility = !this.shapeSelectionVisibility;
