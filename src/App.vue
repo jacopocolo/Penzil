@@ -57,14 +57,17 @@ export let camera = new THREE.PerspectiveCamera(
   1,
   1000
 );
-// export let camera = new THREE.OrthographicCamera(
-//   window.innerWidth / -2,
-//   window.innerWidth / 2,
-//   window.innerHeight / 2,
-//   window.innerHeight / -2,
-//   1,
-//   1000
-// );
+
+//source for this is https://stackoverflow.com/questions/48758959/what-is-required-to-convert-threejs-perspective-camera-to-orthographic
+// const aspect = window.innerWidth / window.innerHeight;
+// const height_ortho = 6 * 2 * Math.atan( 100*(Math.PI/180) / 2 )
+// const width_ortho  = height_ortho * aspect;
+
+// let cameraOrtho = new THREE.OrthographicCamera(
+//     width_ortho  / -2, width_ortho   /  2,
+//     height_ortho /  2, height_ortho  / -2,
+//     1, 1000 );
+
 export let scene, drawingScene, cameraControls, vm, drawingprop;
 
 var main, clock;
@@ -103,7 +106,7 @@ export default {
       showTutorialButton: true,
     };
   },
-  emits: ["modal-set"],
+  emits: ["modal-set", "selected-canvas-shape"],
   methods: {
     init: function () {
       CameraControls.install({ THREE: THREE });
@@ -209,6 +212,9 @@ export default {
           this.cameraResetDisabled = false;
         } else {
           this.cameraResetDisabled = true;
+          // cameraOrtho.position.copy(camera.position)
+          // cameraOrtho.zoom = camera.zoom*10;
+          // renderer.render(scene, cameraOrtho);
         }
       });
 

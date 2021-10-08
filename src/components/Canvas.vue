@@ -103,6 +103,8 @@
       </span>
     </div>
   </div>
+  <div class="click-outside" v-if="shapeSelectionVisibility" @click="toggleShapeSelectionVisibility()"></div>
+    
 </template>
 
 <script>
@@ -110,6 +112,7 @@ import * as THREE from "three";
 import { TransformControls } from "./transformControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { scene, renderer, camera, vm } from "../App.vue";
+
 export let canvas, controls;
 // let position = new THREE.Vector3(0.001, 0.001, 0.001);
 // let quaternion = new THREE.Quaternion(0.001, 0.002, 0.002, 1);
@@ -306,18 +309,14 @@ export default {
   align-items: initial;
 }
 
-/* .canvasShapeSelection > span > label > span {
-  flex-grow: 1;
-} */
-
-/* .canvasShapeSelection > span > label {
-  min-width: 200px;
-} */
-
-/* #shapeSphere > img {
+.click-outside {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
   left: 0;
-  margin-left: 12px;
-} */
+  background-color: rgba(0, 0, 0, 0.08);
+}
 
 .reset-canvas {
   height: 44px;

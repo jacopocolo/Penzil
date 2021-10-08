@@ -15,6 +15,7 @@ import {
     PlaneGeometry,
     Quaternion,
     Raycaster,
+    RingGeometry,
     // SphereGeometry,
     TorusGeometry,
     Vector3,
@@ -789,16 +790,16 @@ class TransformControlsGizmo extends Object3D {
         // shared materials
 
         const gizmoMaterial = new MeshBasicMaterial({
-            depthTest: false,
-            depthWrite: false,
+            // depthTest: false,
+            // depthWrite: false,
             fog: false,
             toneMapped: false,
             transparent: true
         });
 
         const gizmoLineMaterial = new LineBasicMaterial({
-            depthTest: false,
-            depthWrite: false,
+            // depthTest: false,
+            // depthWrite: false,
             fog: false,
             toneMapped: false,
             transparent: true
@@ -877,17 +878,17 @@ class TransformControlsGizmo extends Object3D {
         const lineGeometry2 = new CylinderGeometry(0.0075, 0.0075, 0.5, 3);
         lineGeometry2.translate(0, 0.25, 0);
 
-        function CircleGeometry(radius, arc) {
-            const geometry = new TorusGeometry(radius, 0.03, 4, 64, arc);
+        function CircleGeometry(radius) {
+            const geometry = new RingGeometry(radius, radius+0.05, 10, 10, 0.5, Math.PI/2-1);
             geometry.rotateY(Math.PI / 2);
             geometry.rotateX(Math.PI / 2);
             return geometry;
-
         }
 
         //TO DO, this should be converted to a linegeometry, no point in having this as a mesh
-        function ThinCircleGeometry(radius, arc) {
-            const geometry = new TorusGeometry(radius, 0.001, 3, 64, arc);
+        function ThinCircleGeometry(radius) {
+            console.log(radius)
+            const geometry = new RingGeometry(10, 20, 10, 10, 0, Math.PI/2);
             geometry.rotateY(Math.PI / 2);
             geometry.rotateX(Math.PI / 2);
             return geometry;
@@ -1098,49 +1099,28 @@ class TransformControlsGizmo extends Object3D {
 
         const gizmoCombined = {
             XT: [
-                [new Mesh(arrowGeometry, matRedArrow), [0.04, 0, 0], [0, 0, - Math.PI / 2]],
+                [new Mesh(arrowGeometry, matRedArrow), [0.15, 0, 0], [0, 0, - Math.PI / 2]],
             ],
             XR: [
-                [new Mesh(CircleGeometry(0.15, 0.5), matRed), null, [0, Math.PI - 0.25, Math.PI / 2]],
+                [new Mesh(CircleGeometry(0.15, 0.5), matRed), null, [0, Math.PI/2, Math.PI / 2]],
                 // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matRedTransparent), null, [0, Math.PI / 2, Math.PI / 2]]
             ],
             YT: [
-                [new Mesh(arrowGeometry, matGreenArrow), [0, 0.04, 0]],
+                [new Mesh(arrowGeometry, matGreenArrow), [0, 0.15, 0]],
             ],
             YR: [
-                [new Mesh(CircleGeometry(0.15, 0.5), matGreen), null, [-Math.PI / 2, Math.PI / 2.4, Math.PI / 2]],
+                [new Mesh(CircleGeometry(0.15, 0.5), matGreen), null, [Math.PI / 2, Math.PI, Math.PI / 2]],
                 // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matGreenTransparent), null, [-Math.PI / 2, Math.PI / 2, Math.PI / 2]]
             ],
-            ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.04], [Math.PI / 2, 0, 0]]
+            ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.15], [Math.PI / 2, 0, 0]]
             ],
-            ZR: [[new Mesh(CircleGeometry(0.15, 0.5), matBlue), null, [Math.PI / 2.4, 0, 0]],
+            ZR: [[new Mesh(CircleGeometry(0.15, 0.5), matBlue), null, [0, 0, 0]],
                 // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matBlueTransparent), null,]
-            ]
+            ],
         }
 
         const pickerCombined = gizmoCombined;
 
-        // const pickerCombined = {
-        //     XT: [
-        //         [new Mesh(arrowGeometry, matRedArrow), [0.025, 0, 0], [0, 0, - Math.PI / 2]],
-        //     ],
-        //     XR: [
-        //         [new Mesh(CircleGeometry(0.15, 1), matRed), null, [0, Math.PI - 0.050, Math.PI / 2]],
-        //         // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matRedTransparent), null, [0, Math.PI / 2, Math.PI / 2]]
-        //     ],
-        //     YT: [
-        //         [new Mesh(arrowGeometry, matGreenArrow), [0, 0.025, 0]],
-        //     ],
-        //     YR: [
-        //         [new Mesh(CircleGeometry(0.15, 1), matGreen), null, [-Math.PI / 2, Math.PI / 2.07, Math.PI / 2]],
-        //         // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matGreenTransparent), null, [-Math.PI / 2, Math.PI / 2, Math.PI / 2]]
-        //     ],
-        //     ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.025], [Math.PI / 2, 0, 0]]
-        //     ],
-        //     ZR: [[new Mesh(CircleGeometry(0.15, 1), matBlue), null, [Math.PI / 2.07, 0, 0]],
-        //         // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matBlueTransparent), null,]
-        //     ]
-        // }
         const helperCombined = {
             START: [
                 [new Mesh(new OctahedronGeometry(0.01, 2), matHelper), null, null, null, 'helper']
@@ -1170,6 +1150,7 @@ class TransformControlsGizmo extends Object3D {
         function setupGizmo(gizmoMap) {
 
             const gizmo = new Object3D();
+            // gizmo.renderOrder = 1000;
 
             for (const name in gizmoMap) {
 
@@ -1183,24 +1164,19 @@ class TransformControlsGizmo extends Object3D {
 
                     // name and tag properties are essential for picking and updating logic.
                     object.name = name;
+                    console.log(object.name)
                     object.tag = tag;
 
                     if (position) {
-
                         object.position.set(position[0], position[1], position[2]);
-
                     }
 
                     if (rotation) {
-
                         object.rotation.set(rotation[0], rotation[1], rotation[2]);
-
                     }
 
                     if (scale) {
-
                         object.scale.set(scale[0], scale[1], scale[2]);
-
                     }
 
                     object.updateMatrix();
@@ -1208,14 +1184,14 @@ class TransformControlsGizmo extends Object3D {
                     const tempGeometry = object.geometry.clone();
                     tempGeometry.applyMatrix4(object.matrix);
                     object.geometry = tempGeometry;
-                    object.renderOrder = Infinity;
+                    // object.renderOrder = Infinity;
 
                     object.position.set(0, 0, 0);
                     object.rotation.set(0, 0, 0);
                     object.scale.set(1, 1, 1);
 
                     gizmo.add(object);
-
+                    
                 }
 
             }
@@ -1286,6 +1262,7 @@ class TransformControlsGizmo extends Object3D {
             // hide aligned to camera
 
             handle.visible = true;
+            handle.renderOrder = 10000;
             handle.rotation.set(0, 0, 0);
             handle.position.copy(this.worldPosition);
 
@@ -1420,45 +1397,51 @@ class TransformControlsGizmo extends Object3D {
 
             handle.quaternion.copy(quaternion);
 
-            if (this.mode === 'translate' || this.mode === 'scale') {
+            if (this.mode === 'translate' || this.mode === 'scale' || this.mode === 'combined') {
 
                 // Hide translate and scale axis facing the camera
 
-                const AXIS_HIDE_TRESHOLD = 0.99;
+                const AXIS_FLIP_TRESHOLD = 0.5;
                 const PLANE_HIDE_TRESHOLD = 0.2;
 
-                if (handle.name === 'X') {
+                if (handle.name === 'XT' || handle.name === 'XR') {
 
-                    if (Math.abs(_alignVector.copy(_unitX).applyQuaternion(quaternion).dot(this.eye)) > AXIS_HIDE_TRESHOLD) {
+                    if (Math.abs(_alignVector.copy(_unitX).applyQuaternion(quaternion).dot(this.eye)) > AXIS_FLIP_TRESHOLD) {
 
-                        handle.scale.set(1e-10, 1e-10, 1e-10);
-                        handle.visible = false;
+                        // handle.scale.set(1e-10, 1e-10, 1e-10);
+                        // handle.scale.set(-handle.scale.x,handle.scale.y,handle.scale.z);
+                        // handle.visible = false;
+                        handle.renderOrder = 10000+1
+
+                    } 
+
+                }
+
+                if (handle.name === 'YT' || handle.name === 'YR') {
+
+                    if (Math.abs(_alignVector.copy(_unitY).applyQuaternion(quaternion).dot(this.eye)) > AXIS_FLIP_TRESHOLD) {
+
+                        // handle.scale.set(1e-10, 1e-10, 1e-10);
+                        // handle.visible = false;
+                        //handle.scale.set(handle.scale.x,-handle.scale.y,handle.scale.z);
+                        handle.renderOrder = 10001
 
                     }
 
                 }
 
-                if (handle.name === 'Y') {
+                if (handle.name === 'ZT' || handle.name === 'ZR') {
 
-                    if (Math.abs(_alignVector.copy(_unitY).applyQuaternion(quaternion).dot(this.eye)) > AXIS_HIDE_TRESHOLD) {
+                    if (Math.abs(_alignVector.copy(_unitZ).applyQuaternion(quaternion).dot(this.eye)) > AXIS_FLIP_TRESHOLD) {
 
-                        handle.scale.set(1e-10, 1e-10, 1e-10);
-                        handle.visible = false;
-
-                    }
-
-                }
-
-                if (handle.name === 'Z') {
-
-                    if (Math.abs(_alignVector.copy(_unitZ).applyQuaternion(quaternion).dot(this.eye)) > AXIS_HIDE_TRESHOLD) {
-
-                        handle.scale.set(1e-10, 1e-10, 1e-10);
-                        handle.visible = false;
+                        // handle.scale.set(1e-10, 1e-10, 1e-10);
+                        // handle.visible = false;
+                        //handle.scale.set(handle.scale.x,handle.scale.y,-handle.scale.z);
+                        handle.renderOrder = 10001
 
                     }
 
-                }
+                } 
 
                 if (handle.name === 'XY') {
 
@@ -1539,7 +1522,6 @@ class TransformControlsGizmo extends Object3D {
             handle.visible = handle.visible && (handle.name.indexOf('E') === - 1 || (this.showX && this.showY && this.showZ));
 
             // highlight selected axis
-
             handle.material._color = handle.material._color || handle.material.color.clone();
             handle.material._opacity = handle.material._opacity || handle.material.opacity;
 
