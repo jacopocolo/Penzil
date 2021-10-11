@@ -1,7 +1,7 @@
 
 <template>
   <div class="canvasSettings">
-    <span class="canvas-button" @click="toggleShapeSelectionVisibility()">
+    <span class="canvas-button" id="canvasShapeDropdown" @click="toggleShapeSelectionVisibility()">
       <img
         v-if="shape === 'plane'"
         src="@/assets/icons/Canvas-Plane.svg"
@@ -27,11 +27,23 @@
         style="margin-right: 10px"
         alt="Click to show options"
       />
-    </span>
+    </span><span class="canvas-button" @click="toggleTransformMode()" v-if="!shapeSelectionVisibility">
+      <img
+        v-if="mode==='combined'"
+        src="@/assets/icons/scale.svg"
+        alt="Switch to scale"
+      />
+      <img
+        v-if="mode==='scale'"
+        src="@/assets/icons/translate.svg"
+        alt="Switch to move and rotate"
+      /></span
+    >
     <span
       class="canvas-button"
       @click="toggleControls()"
       v-bind:class="[!visible ? 'disabled' : '']"
+      v-if="!shapeSelectionVisibility"
     >
       <img
         v-if="transformationEnabled"
@@ -44,7 +56,7 @@
         alt="Show the canvas controls"
       />
     </span>
-    <span class="canvas-button" @click="toggleVisibility()">
+    <span class="canvas-button" @click="toggleVisibility()" v-if="!shapeSelectionVisibility">
       <img
         v-if="visible"
         src="@/assets/icons/hideCanvas.svg"
@@ -55,7 +67,7 @@
         src="@/assets/icons/showCanvas.svg"
         alt="Show the canvas controls"
       /></span
-    ><span class="canvas-button" @click="toggleSnap()">
+    ><span class="canvas-button" @click="toggleSnap()" v-if="!shapeSelectionVisibility">
       <img
         v-if="snap"
         src="@/assets/icons/snapOn.svg"
@@ -69,7 +81,7 @@
     ><span
       v-bind:class="[transformationResetDisabled ? 'disabled ' : '']"
       class="canvas-button"
-      @click="resetTransformation()"
+      @click="resetTransformation()" v-if="!shapeSelectionVisibility"
     >
       <img
         src="@/assets/icons/reset.svg"
@@ -136,15 +148,15 @@ export default {
   data() {
     return {
       material: new THREE.MeshToonMaterial({
-        color: 0xeeeeee,
+        color: 0xffffff,
         transparent: true,
-        opacity: 0.9,
+        opacity: 0.95,
         side: THREE.DoubleSide,
         polygonOffset: true,
         polygonOffsetFactor: 2.5,
         polygonOffsetUnits: -1,
         emissive: new THREE.Color("rgb(255,255,255)"),
-        emissiveIntensity: 0.5,
+        emissiveIntensity: 0.3,
         // wireframe: true,
       }),
       startPosition: new THREE.Vector3(0.001, 0.001, 0.001),
@@ -199,6 +211,19 @@ export default {
       renderer.render(scene, camera);
       this.transformationResetDisabled = true;
     },
+    toggleTransformMode(){
+      if (this.mode === "combined") {
+        this.mode = "scale"
+        controls.mode = "scale";
+        controls.scale.set(0.7, 0.7, 0.7);
+        renderer.render(scene, camera);
+      } else {
+        this.mode = "combined"
+        controls.mode = "combined";
+        controls.scale.set(1.1, 1.1, 1.1);
+        renderer.render(scene, camera);
+      }
+    },
     toggleControls() {
       if (controls.visible === true) {
         this.transformationEnabled = false;
@@ -237,7 +262,7 @@ export default {
       } else {
         this.snap = !this.snap;
         controls.translationSnap = 1;
-        controls.rotationSnap = Math.PI/4;
+        controls.rotationSnap = Math.PI/6;
       }
 
     },
@@ -290,7 +315,7 @@ export default {
     },
   },
   mounted() {
-    this.setCanvasShape("plane");
+    this.setCanvasShape(this.shape);
   },
 };
 </script>
@@ -307,8 +332,12 @@ export default {
   border-radius: 8px; */
   font-weight: 900;
   display: flex;
-  flex-direction: row;
+  flex-direction: column;
   gap: 8px;
+}
+
+#canvasShapeDropdown {
+  max-width: 80px;
 }
 
 .canvasShapeSelection {
@@ -321,6 +350,7 @@ export default {
   border-radius: 8px;
   overflow: hidden;
   position: absolute;
+  z-index: 4;
   top: calc(44px + 8px + 8px);
   width: 60px;
 }
@@ -339,7 +369,7 @@ export default {
   height: 100%;
   top: 0;
   left: 0;
-  background-color: rgba(0, 0, 0, 0.08);
+  background-color: rgba(0, 0, 0, 0.2);
 }
 
 .reset-canvas {
@@ -360,13 +390,12 @@ export default {
 
 .canvas-button {
   height: 44px;
-  width: 44px;
+  max-width: 44px;
   border-radius: 22px;
   background-color: rgba(255, 255, 255, 1);
   font-size: 2em;
   line-height: 1em;
   color: rgba(255, 255, 255, 1);
-  opacity: 1;
   justify-content: center;
   align-content: center;
   text-align: center;

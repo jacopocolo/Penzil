@@ -224,7 +224,7 @@ export default {
       scene.add(targetSphere);
 
       const light = new THREE.HemisphereLight(0xffffff, 0x222222, 0.8); //0x080820
-      light.position.set(0, 50, 50);
+      light.position.set(0, 50, 150);
       scene.add(light);
 
       this.$.refs.raycastCanvas.setUp();

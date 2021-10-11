@@ -175,9 +175,11 @@ export default {
               camera
             );
             if (
-              raycaster.intersectObjects(
+              (controls.mode === 'combined' && raycaster.intersectObjects(
                 controls.children[0].children[10].children
-              )[0] !== undefined
+              )[0] !== undefined) || (controls.mode === 'scale' && raycaster.intersectObjects(
+                controls.children[0].children[5].children
+              )[0] !== undefined)
             ) {
               this.movingCanvas = true;
               return;

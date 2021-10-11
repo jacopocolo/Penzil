@@ -790,16 +790,16 @@ class TransformControlsGizmo extends Object3D {
         // shared materials
 
         const gizmoMaterial = new MeshBasicMaterial({
-            // depthTest: false,
-            // depthWrite: false,
+            depthTest: false,
+            depthWrite: false,
             fog: false,
             toneMapped: false,
             transparent: true
         });
 
         const gizmoLineMaterial = new LineBasicMaterial({
-            // depthTest: false,
-            // depthWrite: false,
+            depthTest: false,
+            depthWrite: false,
             fog: false,
             toneMapped: false,
             transparent: true
@@ -836,16 +836,16 @@ class TransformControlsGizmo extends Object3D {
         matBlueArrow.color.setHex(0x809CFF);
 
         const matRedTransparent = gizmoMaterial.clone();
-        matRedTransparent.color.setHex(0xff0000);
+        matRedTransparent.color.setHex(0xFF8080);
         matRedTransparent.opacity = 0.5;
         matRedTransparent.name = "matRedTransparent";
 
         const matGreenTransparent = gizmoMaterial.clone();
-        matGreenTransparent.color.setHex(0x00ff00);
+        matGreenTransparent.color.setHex(0x80FFC9);
         matGreenTransparent.opacity = 0.5;
 
         const matBlueTransparent = gizmoMaterial.clone();
-        matBlueTransparent.color.setHex(0x0000ff);
+        matBlueTransparent.color.setHex(0x809CFF);
         matBlueTransparent.opacity = 0.5;
 
         const matWhiteTransparent = gizmoMaterial.clone();
@@ -1401,7 +1401,7 @@ class TransformControlsGizmo extends Object3D {
 
                 // Hide translate and scale axis facing the camera
 
-                const AXIS_FLIP_TRESHOLD = 0.5;
+                const AXIS_FLIP_TRESHOLD = 0.2;
                 const PLANE_HIDE_TRESHOLD = 0.2;
 
                 if (handle.name === 'XT' || handle.name === 'XR') {
@@ -1411,7 +1411,7 @@ class TransformControlsGizmo extends Object3D {
                         // handle.scale.set(1e-10, 1e-10, 1e-10);
                         // handle.scale.set(-handle.scale.x,handle.scale.y,handle.scale.z);
                         // handle.visible = false;
-                        handle.renderOrder = 10000+1
+                        handle.renderOrder = 10001
 
                     } 
 

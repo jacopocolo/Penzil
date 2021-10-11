@@ -94,7 +94,7 @@ export default {
 .lineSettings {
   z-index: 2;
   position: absolute;
-  top: 25%;
+  bottom: 12px;
   left: 12px;
   display: flex;
   flex-direction: column;

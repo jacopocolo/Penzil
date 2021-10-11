@@ -49,8 +49,9 @@ export default {
   },
   methods: {
     updateMouseCoordinates: function (event) {
+
       if (event.touches) {
-        this.mouse.tx = (event.changedTouches[0].pageX / 150) * 2 - 1;
+        this.mouse.tx = ((event.changedTouches[0].pageX  - window.innerWidth + 12 + 150) / 150) * 2 - 1;
         this.mouse.ty = -(event.changedTouches[0].pageY / 150) * 2 + 1;
         this.mouse.cx = event.changedTouches[0].pageX;
         this.mouse.cy = event.changedTouches[0].pageY;
@@ -62,9 +63,9 @@ export default {
         }
       } else {
         if (event.button == 0) {
-          this.mouse.tx = (event.clientX / 150) * 2 - 1;
+          this.mouse.tx = ((event.clientX - window.innerWidth + 12 + 150) / 150 ) * 2 - 1;
           this.mouse.ty = -(event.clientY / 150) * 2 + 1;
-          this.mouse.cx = event.clientX;
+          this.mouse.cx = event.clientX - window.innerWidth + 12 + 150;
           this.mouse.cy = event.clientY;
         }
       }
