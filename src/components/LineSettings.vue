@@ -4,6 +4,20 @@
     class="lineSettings"
     v-bind:class="[selectedTool != 'draw' ? 'hidden ' : '']"
   >
+    <svg
+      width="40"
+      height="40"
+      viewBox="0 0 40 40"
+      :fill="fill ? fillColor : 'none'"
+      xmlns="http://www.w3.org/2000/svg"
+    >
+      <path
+        d="M34.5 20C34.5 28.0081 28.0081 34.5 20 34.5C11.9919 34.5 5.5 28.0081 5.5 20C5.5 11.9919 11.9919 5.5 20 5.5C28.0081 5.5 34.5 11.9919 34.5 20Z"
+        :stroke="stroke ? strokeColor : 'none'"
+        :stroke-width="strokeWidth / 1.8"
+      />
+    </svg>
+
     <line-sliders
       mode="stroke"
       :active="stroke"
