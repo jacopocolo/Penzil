@@ -4,34 +4,42 @@
     class="lineSettings"
     v-bind:class="[selectedTool != 'draw' ? 'hidden ' : '']"
   >
-    <svg
-      width="40"
-      height="40"
-      viewBox="0 0 40 40"
-      :fill="fill ? fillColor : 'none'"
-      xmlns="http://www.w3.org/2000/svg"
-    >
-      <path
-        d="M34.5 20C34.5 28.0081 28.0081 34.5 20 34.5C11.9919 34.5 5.5 28.0081 5.5 20C5.5 11.9919 11.9919 5.5 20 5.5C28.0081 5.5 34.5 11.9919 34.5 20Z"
-        :stroke="stroke ? strokeColor : 'none'"
-        :stroke-width="strokeWidth / 1.8"
+    <div class="toggle" @click="togglePanelVisibility">
+      <svg
+        width="40"
+        height="40"
+        viewBox="0 0 40 40"
+        :fill="fill ? fillColor : 'none'"
+        xmlns="http://www.w3.org/2000/svg"
+      >
+        <path
+          d="M34.5 20C34.5 28.0081 28.0081 34.5 20 34.5C11.9919 34.5 5.5 28.0081 5.5 20C5.5 11.9919 11.9919 5.5 20 5.5C28.0081 5.5 34.5 11.9919 34.5 20Z"
+          :stroke="stroke ? strokeColor : 'none'"
+          :stroke-width="strokeWidth / 1.8"
+        />
+      </svg>
+    </div>
+    <div class="panel" v-bind:class="[panelVisible ? '' : 'hidden']">
+      <line-sliders
+        mode="stroke"
+        :active="stroke"
+        @color="setStrokeColor"
+        @active="setStrokeActive"
+        @width="setStrokeWidth"
+      /><br />
+      <line-sliders
+        :active="fill"
+        mode="fill"
+        @color="setFillColor"
+        @active="setFillActive"
       />
-    </svg>
-
-    <line-sliders
-      mode="stroke"
-      :active="stroke"
-      @color="setStrokeColor"
-      @active="setStrokeActive"
-      @width="setStrokeWidth"
-    /><br />
-    <line-sliders
-      :active="fill"
-      mode="fill"
-      @color="setFillColor"
-      @active="setFillActive"
-    />
+    </div>
   </div>
+  <div
+    class="click-outside"
+    v-if="panelVisible"
+    @click="togglePanelVisibility()"
+  ></div>
 </template>
 
 <script>
@@ -48,6 +56,7 @@ export default {
       strokeWidth: 2,
       fill: false,
       fillColor: "#000000",
+      panelVisible: false,
     };
   },
   props: {
@@ -79,6 +88,9 @@ export default {
     emitFill: function () {
       this.$emit("fill", { show_fill: this.fill, color: this.fillColor });
     },
+    togglePanelVisibility: function () {
+      this.panelVisible = !this.panelVisible;
+    },
   },
   watch: {
     stroke: function () {
@@ -108,10 +120,45 @@ export default {
 .lineSettings {
   z-index: 2;
   position: absolute;
-  bottom: 12px;
-  left: 12px;
+  top: 12px;
+  left: calc(50% - 192px);
+  display: flex;
+  flex-direction: column;
+  width: 44px;
+  height: 44px;
+  background-color: white;
+  border-radius: 8px;
+  gap: 8px;
+}
+
+.toggle {
+  display: flex;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
+  align-items: center;
+  vertical-align: bottom;
+  justify-content: center;
+  align-content: center;
+  text-align: center;
+  padding-top: 2px;
+}
+
+.panel {
   display: flex;
   flex-direction: column;
   gap: 8px;
+  background-color: white;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
+  width: fit-content;
+  padding: 8px;
+  border-radius: 8px;
+}
+
+.click-outside {
+  position: absolute;
+  width: 100%;
+  height: 100%;
+  top: 0;
+  left: 0;
+  background-color: rgba(0, 0, 0, 0.2);
 }
 </style>

@@ -1,7 +1,6 @@
 
 <template>
   <div class="mainToolbar">
-    <div class="oneDot"></div>
     <div class="toolSelection">
       <span @click="setTool('draw', true)">
         <input
