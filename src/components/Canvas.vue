@@ -365,7 +365,7 @@ export default {
   overflow: hidden;
   position: absolute;
   z-index: 10;
-  top: calc(44px + 8px + 8px);
+  top: calc(44px + 8px);
   width: 60px;
 }
 
