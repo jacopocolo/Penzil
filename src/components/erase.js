@@ -207,6 +207,7 @@ let erase = {
             );
             if (pickedObjects != undefined && pickedObjects.length > 0) {
                 pickedObjects.forEach((object) => {
+                    console.log(object)
                     erase.deleteObject(object);
                 });
             }

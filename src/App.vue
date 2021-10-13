@@ -22,7 +22,6 @@
     :selectedShape="canvasShape"
   />
   <Menu @modal-set="setModal" @preview="setPreview" />
-  <show-survey @modal-set="setModal" :show="true" />
 </template>
 
 <script>
@@ -44,7 +43,6 @@ import Canvas from "./components/Canvas.vue";
 import { controls, canvas } from "./components/Canvas.vue";
 import Modal from "./components/Modal.vue";
 import VideoExportPreview from "./components/VideoExportPreview.vue";
-import ShowSurvey from "./components/ShowSurvey.vue";
 
 export let renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -85,7 +83,6 @@ export default {
     Canvas,
     Modal,
     VideoExportPreview,
-    ShowSurvey,
   },
   data() {
     return {

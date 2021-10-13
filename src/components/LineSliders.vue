@@ -1,60 +1,15 @@
 
 <template>
   <div class="color" :style="cssProps">
-    <div class="color-container" @click="setActive">
-      <!-- <div
-        class="color-bubble"
-        :style="{
-          'background-color': active
-            ? `rgb(${r},${g},${b})`
-            : `rgba(255,255,255,0)`,
-        }"
-      /> -->
-      <svg
+    <div class="toggle" @click="setActive">
+      <img src="@/assets/icons/checkbox.svg" v-if="!active" alt="Enable" />
+      <img
+        src="@/assets/icons/checkbox-checked.svg"
         v-if="active"
-        width="44"
-        height="44"
-        viewBox="0 0 44 44"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          v-if="mode === 'stroke'"
-          d="M20 38C29.9411 38 38 29.9411 38 20C38 10.0589 29.9411 2 20 2C10.0589 2 2 10.0589 2 20C2 29.9411 10.0589 38 20 38Z"
-          fill="#CCCCCC"
-          :stroke="'rgb(' + r + ',' + g + ',' + b + ')'"
-          stroke-width="2"
-        />
-        <circle
-          v-if="mode === 'stroke'"
-          cx="20"
-          cy="20"
-          :r="width / 2"
-          :fill="'rgb(' + r + ',' + g + ',' + b + ')'"
-        />
-
-        <path
-          v-if="mode === 'fill'"
-          d="M20 38C29.9411 38 38 29.9411 38 20C38 10.0589 29.9411 2 20 2C10.0589 2 2 10.0589 2 20C2 29.9411 10.0589 38 20 38Z"
-          :fill="'rgb(' + r + ',' + g + ',' + b + ')'"
-        />
-      </svg>
-
-      <svg
-        v-if="!active"
-        width="44"
-        height="44"
-        viewBox="0 0 44 44"
-        fill="none"
-        xmlns="http://www.w3.org/2000/svg"
-      >
-        <path
-          d="M37.5 20C37.5 29.665 29.665 37.5 20 37.5C10.335 37.5 2.5 29.665 2.5 20C2.5 10.335 10.335 2.5 20 2.5C29.665 2.5 37.5 10.335 37.5 20Z"
-          stroke="#1c1c1e"
-          stroke-width="2"
-        />
-        <path d="M8 32.3431L32.3431 8" stroke="#1c1c1e" stroke-width="8" />
-      </svg>
+        alt="Disable"
+      /><span>{{
+        this.mode.charAt(0).toUpperCase() + this.mode.substr(1).toLowerCase()
+      }}</span>
     </div>
     <div class="sliders" v-if="active">
       <span class="width-slider" v-if="mode === 'stroke'"
@@ -105,7 +60,7 @@ export default {
     return {
       hue: 0,
       saturation: 0,
-      brightness: 0,
+      brightness: 25,
       width: 5,
       r: 0,
       g: 0,
@@ -116,6 +71,8 @@ export default {
   computed: {
     cssProps() {
       return {
+        "--width-margin": this.map(this.width, 1, 20, -6, +6) + "px",
+        "--width-radius": this.calcRadius(this.width * 4, 1, 80), //workaround because range is othewise so low
         "--hue-margin": this.map(this.hue, 0, 359, -6, +6) + "px",
         "--hue-radius": this.calcRadius(this.hue, 0, 359),
         "--saturation-margin": this.map(this.saturation, 0, 99, -6, +6) + "px",
@@ -216,13 +173,12 @@ export default {
 </script>
 
 <style scoped>
-.color-container {
-  content: " ";
-  width: 44px;
-  height: 44px;
-  padding: 0px 0px 0px 8px;
+.toggle {
+  height: 32px;
   float: left;
-  display: block;
+  display: flex;
+  flex-direction: row;
+  gap: 8px;
 }
 
 .color-bubble {
@@ -239,6 +195,15 @@ export default {
   flex-direction: column;
 }
 
+input {
+  width: 200px;
+}
+
+.width-slider > input[type="range"] {
+  border: 1px solid #1c1c1e;
+  border-radius: 4px;
+}
+
 .hsb-slider,
 .width-slider {
   display: flex;
@@ -249,7 +214,8 @@ export default {
 
 .hsb-slider span,
 .width-slider span {
-  width: 8px;
+  width: 20px;
+  text-align: center;
 }
 
 input[type="range"] {
@@ -268,6 +234,14 @@ input[type="range"]::-webkit-slider-thumb {
   margin-top: 0px;
   overflow: visible;
   position: relative;
+}
+
+#width-slider {
+  border-radius: var(--width-radius);
+}
+
+#width-slider::-webkit-slider-thumb {
+  left: var(--width-margin);
 }
 
 #hue-slider {

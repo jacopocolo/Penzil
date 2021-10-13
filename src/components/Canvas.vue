@@ -1,7 +1,14 @@
 
 <template>
-  <div class="canvasSettings">
-    <span class="canvas-button" id="canvasShapeDropdown" @click="toggleShapeSelectionVisibility()">
+  <div
+    class="canvasSettings"
+    v-bind:style="[shapeSelectionVisibility === true ? 'z-index: 10' : '']"
+  >
+    <span
+      class="canvas-button"
+      id="canvasShapeDropdown"
+      @click="toggleShapeSelectionVisibility()"
+    >
       <img
         v-if="shape === 'plane'"
         src="@/assets/icons/Canvas-Plane.svg"
@@ -26,19 +33,21 @@
         ]"
         style="margin-right: 10px"
         alt="Click to show options"
-      />
-    </span><span class="canvas-button" @click="toggleTransformMode()" v-if="!shapeSelectionVisibility">
+      /> </span
+    ><span
+      class="canvas-button"
+      @click="toggleTransformMode()"
+      v-if="!shapeSelectionVisibility"
+    >
       <img
-        v-if="mode==='combined'"
+        v-if="mode === 'combined'"
         src="@/assets/icons/scale.svg"
-        alt="Switch to scale"
-      />
+        alt="Switch to scale" />
       <img
-        v-if="mode==='scale'"
+        v-if="mode === 'scale'"
         src="@/assets/icons/translate.svg"
         alt="Switch to move and rotate"
-      /></span
-    >
+    /></span>
     <span
       class="canvas-button"
       @click="toggleControls()"
@@ -56,32 +65,34 @@
         alt="Show the canvas controls"
       />
     </span>
-    <span class="canvas-button" @click="toggleVisibility()" v-if="!shapeSelectionVisibility">
+    <span
+      class="canvas-button"
+      @click="toggleVisibility()"
+      v-if="!shapeSelectionVisibility"
+    >
       <img
         v-if="visible"
         src="@/assets/icons/hideCanvas.svg"
-        alt="Hide the canvas controls"
-      />
+        alt="Hide the canvas controls" />
       <img
         v-if="!visible"
         src="@/assets/icons/showCanvas.svg"
-        alt="Show the canvas controls"
-      /></span
-    ><span class="canvas-button" @click="toggleSnap()" v-if="!shapeSelectionVisibility">
-      <img
-        v-if="snap"
-        src="@/assets/icons/snapOn.svg"
-        alt="Turn on snap"
-      />
+        alt="Show the canvas controls" /></span
+    ><span
+      class="canvas-button"
+      @click="toggleSnap()"
+      v-if="!shapeSelectionVisibility"
+    >
+      <img v-if="snap" src="@/assets/icons/snapOn.svg" alt="Turn on snap" />
       <img
         v-if="!snap"
         src="@/assets/icons/snapOff.svg"
-        alt="Turn off snap"
-      /></span
+        alt="Turn off snap" /></span
     ><span
       v-bind:class="[transformationResetDisabled ? 'disabled ' : '']"
       class="canvas-button"
-      @click="resetTransformation()" v-if="!shapeSelectionVisibility"
+      @click="resetTransformation()"
+      v-if="!shapeSelectionVisibility"
     >
       <img
         src="@/assets/icons/reset.svg"
@@ -126,8 +137,12 @@
       </span>
     </div>
   </div>
-  <div class="click-outside" v-if="shapeSelectionVisibility" @click="toggleShapeSelectionVisibility()"></div>
-    
+  <div
+    class="click-outside"
+    v-if="shapeSelectionVisibility"
+    @click="toggleShapeSelectionVisibility()"
+    v-bind:style="[shapeSelectionVisibility ? 'z-index: 9' : '']"
+  ></div>
 </template>
 
 <script>
@@ -211,14 +226,14 @@ export default {
       renderer.render(scene, camera);
       this.transformationResetDisabled = true;
     },
-    toggleTransformMode(){
+    toggleTransformMode() {
       if (this.mode === "combined") {
-        this.mode = "scale"
+        this.mode = "scale";
         controls.mode = "scale";
         controls.scale.set(0.7, 0.7, 0.7);
         renderer.render(scene, camera);
       } else {
-        this.mode = "combined"
+        this.mode = "combined";
         controls.mode = "combined";
         controls.scale.set(1.1, 1.1, 1.1);
         renderer.render(scene, camera);
@@ -261,10 +276,9 @@ export default {
         controls.rotationSnap = null;
       } else {
         this.snap = !this.snap;
-        controls.translationSnap = 1;
-        controls.rotationSnap = Math.PI/6;
+        controls.translationSnap = 1 / 3;
+        controls.rotationSnap = Math.PI / 6;
       }
-
     },
     toggleShapeSelectionVisibility() {
       this.shapeSelectionVisibility = !this.shapeSelectionVisibility;
@@ -350,7 +364,7 @@ export default {
   border-radius: 8px;
   overflow: hidden;
   position: absolute;
-  z-index: 4;
+  z-index: 10;
   top: calc(44px + 8px + 8px);
   width: 60px;
 }

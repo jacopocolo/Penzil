@@ -175,11 +175,14 @@ export default {
               camera
             );
             if (
-              (controls.mode === 'combined' && raycaster.intersectObjects(
-                controls.children[0].children[10].children
-              )[0] !== undefined) || (controls.mode === 'scale' && raycaster.intersectObjects(
-                controls.children[0].children[5].children
-              )[0] !== undefined)
+              (controls.mode === "combined" &&
+                raycaster.intersectObjects(
+                  controls.children[0].children[10].children
+                )[0] !== undefined) ||
+              (controls.mode === "scale" &&
+                raycaster.intersectObjects(
+                  controls.children[0].children[5].children
+                )[0] !== undefined)
             ) {
               this.movingCanvas = true;
               return;
@@ -188,6 +191,7 @@ export default {
                 controls.visible = false;
                 renderer.render(scene, camera);
               }
+
               draw.onStart(
                 this.mouse.tx,
                 this.mouse.ty,

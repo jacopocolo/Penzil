@@ -184,6 +184,7 @@ let draw = {
         end(mirrorOn) {
 
             if (this.stroke.show_stroke === false && this.fill.show_stroke === false) return
+            if (this.geometry.attributes.position.array.length < 3) return
 
             this.end_internal(mirrorOn);
 

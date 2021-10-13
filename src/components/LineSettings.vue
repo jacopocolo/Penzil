@@ -2,7 +2,10 @@
 <template>
   <div
     class="lineSettings"
-    v-bind:class="[selectedTool != 'draw' ? 'hidden ' : '']"
+    v-bind:class="[
+      selectedTool != 'draw' ? 'hidden ' : '',
+      panelVisible ? 'top' : '',
+    ]"
   >
     <div class="toggle" @click="togglePanelVisibility">
       <svg
@@ -26,7 +29,7 @@
         @color="setStrokeColor"
         @active="setStrokeActive"
         @width="setStrokeWidth"
-      /><br />
+      />
       <line-sliders
         :active="fill"
         mode="fill"
@@ -38,6 +41,7 @@
   <div
     class="click-outside"
     v-if="panelVisible"
+    v-bind:style="[panelVisible ? 'z-index: 6' : '']"
     @click="togglePanelVisibility()"
   ></div>
 </template>
@@ -129,6 +133,7 @@ export default {
   background-color: white;
   border-radius: 8px;
   gap: 8px;
+  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
 }
 
 .toggle {
@@ -150,7 +155,12 @@ export default {
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   width: fit-content;
   padding: 8px;
+  padding-bottom: 12px;
   border-radius: 8px;
+}
+
+.top {
+  z-index: 10;
 }
 
 .click-outside {
