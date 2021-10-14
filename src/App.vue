@@ -384,6 +384,7 @@ html,
 
 button {
   font-weight: 900;
+  color: #1c1c1e;
 }
 
 #app {

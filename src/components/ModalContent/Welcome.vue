@@ -2,7 +2,7 @@
 <template>
   <div>
     <h1>Penzil</h1>
-    <h2>Ver 0.1</h2>
+    <h2>Ver 0.2</h2>
 
     <h2>
       Penzil is a 3d sketching app designed and developed by

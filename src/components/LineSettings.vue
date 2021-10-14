@@ -16,9 +16,9 @@
         xmlns="http://www.w3.org/2000/svg"
       >
         <path
-          d="M34.5 20C34.5 28.0081 28.0081 34.5 20 34.5C11.9919 34.5 5.5 28.0081 5.5 20C5.5 11.9919 11.9919 5.5 20 5.5C28.0081 5.5 34.5 11.9919 34.5 20Z"
+          d="M31.5 20C31.5 26.3513 26.3513 31.5 20 31.5C13.6487 31.5 8.5 26.3513 8.5 20C8.5 13.6487 13.6487 8.5 20 8.5C26.3513 8.5 31.5 13.6487 31.5 20Z"
           :stroke="stroke ? strokeColor : 'none'"
-          :stroke-width="strokeWidth / 1.8"
+          :stroke-width="strokeWidth / 1.6"
         />
       </svg>
     </div>
@@ -57,7 +57,7 @@ export default {
     return {
       stroke: true,
       strokeColor: "#1C1C1E",
-      strokeWidth: 2,
+      strokeWidth: 5,
       fill: false,
       fillColor: "#000000",
       panelVisible: false,

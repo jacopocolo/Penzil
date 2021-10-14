@@ -91,7 +91,7 @@ import { select } from "./select.js";
 import { setCenter } from "./setCenter.js";
 
 import * as THREE from "three";
-import { controls } from "./Canvas.vue";
+import { canvas, controls } from "./Canvas.vue";
 import { renderer, scene, camera } from "../App.vue";
 
 export default {
@@ -187,7 +187,10 @@ export default {
               this.movingCanvas = true;
               return;
             } else {
-              if (controls.enabled === true) {
+              if (
+                controls.enabled === true &&
+                raycaster.intersectObjects([canvas])[0] !== undefined
+              ) {
                 controls.visible = false;
                 renderer.render(scene, camera);
               }
