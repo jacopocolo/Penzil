@@ -15,6 +15,16 @@
         alt="Plane shape selected"
       />
       <img
+        v-if="shape === 'cube'"
+        src="@/assets/icons/Canvas-Cube.svg"
+        alt="Cube shape selected"
+      />
+      <img
+        v-if="shape === 'cylinder'"
+        src="@/assets/icons/Canvas-Cylinder.svg"
+        alt="Cylinder shape selected"
+      />
+      <img
         v-if="shape === 'sphere'"
         src="@/assets/icons/Canvas-Sphere.svg"
         alt="Sphere shape selected"
@@ -111,6 +121,31 @@
           ><img
             src="@/assets/icons/Canvas-Plane.svg"
             alt="Set the 3d canvas shape to plane"
+        /></label>
+      </span>
+      <span @click="setCanvasShape('cube')">
+        <input
+          type="radio"
+          id="shapeCube"
+          name="shape"
+          value="cube"
+          v-model="shape"
+        /><label for="cube"
+          ><img
+            src="@/assets/icons/Canvas-Cube.svg"
+            alt="Set the 3d canvas shape to cube"
+        /></label> </span
+      ><span @click="setCanvasShape('cylinder')">
+        <input
+          type="radio"
+          id="shapeCylinder"
+          name="shape"
+          value="cylinder"
+          v-model="shape"
+        /><label for="cylinder"
+          ><img
+            src="@/assets/icons/Canvas-Cylinder.svg"
+            alt="Set the 3d canvas shape to cylinder"
         /></label> </span
       ><span @click="setCanvasShape('sphere')">
         <input
@@ -187,8 +222,9 @@ export default {
     };
   },
   props: {
-    selectedCanvasShape: String,
+    selectedShape: String,
   },
+  emits: ["selected-canvas-shape"],
   methods: {
     setUp() {
       const material = this.material;
@@ -299,33 +335,74 @@ export default {
       renderer.render(scene, camera);
     },
     shape: function (val) {
-      if (val === "plane") {
-        canvas.geometry.dispose();
-        canvas.geometry = new THREE.PlaneGeometry(5, 5);
-        canvas.geometry.needsUpdate = true;
-        renderer.render(scene, camera);
-      } else if (val === "sphere") {
-        canvas.geometry.dispose();
-        canvas.geometry = new THREE.SphereGeometry(2.5, 15, 15);
-        canvas.geometry.needsUpdate = true;
-        renderer.render(scene, camera);
-      } else if (val === "head") {
-        if (headGeometry === undefined) {
-          const loader = new GLTFLoader();
-          loader.load("/asaro.glb", function (gltf) {
-            headGeometry = gltf.scene.children[0].geometry;
+      canvas.geometry.dispose();
+
+      switch (val) {
+        case "plane":
+          canvas.geometry = new THREE.PlaneGeometry(5, 5);
+
+          break;
+        case "cube":
+          canvas.geometry = new THREE.BoxGeometry(5, 5, 5);
+          break;
+        case "cylinder":
+          canvas.geometry = new THREE.CylinderGeometry(2.5, 2.5, 5);
+          break;
+        case "sphere":
+          canvas.geometry = new THREE.SphereGeometry(2.5, 15, 15);
+          break;
+        case "head":
+          if (headGeometry === undefined) {
+            const loader = new GLTFLoader();
+            loader.load("/asaro.glb", function (gltf) {
+              headGeometry = gltf.scene.children[0].geometry;
+              canvas.geometry.dispose();
+              canvas.geometry = headGeometry;
+              canvas.geometry.needsUpdate = true;
+              renderer.render(scene, camera);
+            });
+          } else {
             canvas.geometry.dispose();
             canvas.geometry = headGeometry;
             canvas.geometry.needsUpdate = true;
             renderer.render(scene, camera);
-          });
-        } else {
-          canvas.geometry.dispose();
-          canvas.geometry = headGeometry;
-          canvas.geometry.needsUpdate = true;
-          renderer.render(scene, camera);
-        }
+          }
+          break;
+
+        default:
+          break;
       }
+
+      canvas.geometry.needsUpdate = true;
+      renderer.render(scene, camera);
+
+      // if (val === "plane") {
+      //   canvas.geometry.dispose();
+      //   canvas.geometry = new THREE.PlaneGeometry(5, 5);
+      //   canvas.geometry.needsUpdate = true;
+      //   renderer.render(scene, camera);
+      // } else if (val === "sphere") {
+      //   canvas.geometry.dispose();
+      //   canvas.geometry = new THREE.SphereGeometry(2.5, 15, 15);
+      //   canvas.geometry.needsUpdate = true;
+      //   renderer.render(scene, camera);
+      // } else if (val === "head") {
+      //   if (headGeometry === undefined) {
+      //     const loader = new GLTFLoader();
+      //     loader.load("/asaro.glb", function (gltf) {
+      //       headGeometry = gltf.scene.children[0].geometry;
+      //       canvas.geometry.dispose();
+      //       canvas.geometry = headGeometry;
+      //       canvas.geometry.needsUpdate = true;
+      //       renderer.render(scene, camera);
+      //     });
+      //   } else {
+      //     canvas.geometry.dispose();
+      //     canvas.geometry = headGeometry;
+      //     canvas.geometry.needsUpdate = true;
+      //     renderer.render(scene, camera);
+      //   }
+      // }
     },
   },
   mounted() {

@@ -68,6 +68,7 @@ export default {
     };
   },
   props: { mode: String, active: Boolean },
+  emits: ["color", "active", "width"],
   computed: {
     cssProps() {
       return {

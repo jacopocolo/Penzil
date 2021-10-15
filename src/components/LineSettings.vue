@@ -66,6 +66,7 @@ export default {
   props: {
     selectedTool: String,
   },
+  emits: ["stroke", "fill"],   
   methods: {
     setStrokeColor: function (val) {
       this.strokeColor = "rgb(" + val.r + "," + val.g + "," + val.b + ")";

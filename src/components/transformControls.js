@@ -885,15 +885,6 @@ class TransformControlsGizmo extends Object3D {
             return geometry;
         }
 
-        //TO DO, this should be converted to a linegeometry, no point in having this as a mesh
-        function ThinCircleGeometry(radius) {
-            console.log(radius)
-            const geometry = new RingGeometry(10, 20, 10, 10, 0, Math.PI/2);
-            geometry.rotateY(Math.PI / 2);
-            geometry.rotateX(Math.PI / 2);
-            return geometry;
-        }
-
         // Special geometry for transform helper. If scaled with position vector it spans from [0,0,0] to position
 
         function TranslateHelperGeometry() {
@@ -1103,19 +1094,16 @@ class TransformControlsGizmo extends Object3D {
             ],
             XR: [
                 [new Mesh(CircleGeometry(0.15, 0.5), matRed), null, [0, Math.PI/2, Math.PI / 2]],
-                // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matRedTransparent), null, [0, Math.PI / 2, Math.PI / 2]]
             ],
             YT: [
                 [new Mesh(arrowGeometry, matGreenArrow), [0, 0.15, 0]],
             ],
             YR: [
                 [new Mesh(CircleGeometry(0.15, 0.5), matGreen), null, [Math.PI / 2, Math.PI, Math.PI / 2]],
-                // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matGreenTransparent), null, [-Math.PI / 2, Math.PI / 2, Math.PI / 2]]
             ],
             ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.15], [Math.PI / 2, 0, 0]]
             ],
             ZR: [[new Mesh(CircleGeometry(0.15, 0.5), matBlue), null, [0, 0, 0]],
-                // [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matBlueTransparent), null,]
             ],
         }
 
@@ -1133,9 +1121,6 @@ class TransformControlsGizmo extends Object3D {
             ],
             XT: [
                 [new Line(lineGeometry, matHelper.clone()), [- 1e3, 0, 0], null, [1e6, 1, 1], 'helper']
-            ],
-            XR: [
-                [new Mesh(ThinCircleGeometry(0.5, Math.PI * 2), matHelper.clone()), null, [0, Math.PI / 2, Math.PI / 2], 'helper']
             ],
             YT: [
                 [new Line(lineGeometry, matHelper.clone()), [0, - 1e3, 0], [0, 0, Math.PI / 2], [1e6, 1, 1], 'helper']
@@ -1164,7 +1149,6 @@ class TransformControlsGizmo extends Object3D {
 
                     // name and tag properties are essential for picking and updating logic.
                     object.name = name;
-                    console.log(object.name)
                     object.tag = tag;
 
                     if (position) {

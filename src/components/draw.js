@@ -251,7 +251,8 @@ let draw = {
                 let normal = { x: 0, y: 0, z: 0 };
                 v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
             } catch (err) {
-                console.log(err);
+                //expected if the line leaves the 3d canvas
+                // console.log(err);
                 return
             }
 

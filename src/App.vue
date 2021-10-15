@@ -138,6 +138,7 @@ export default {
       cameraControls.draggingDampingFactor = 200;
       cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
       cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
+      cameraControls.mouseButtons.middle = CameraControls.ACTION.DOLLY;
       cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
       cameraControls.touches.one = CameraControls.ACTION.NONE;
       cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;

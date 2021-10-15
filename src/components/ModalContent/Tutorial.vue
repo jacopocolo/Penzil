@@ -121,6 +121,7 @@ h1 {
 
 h2 {
   font-size: 18px;
+  line-height: 120%;
 }
 
 p {
