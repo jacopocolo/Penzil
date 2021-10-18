@@ -109,7 +109,7 @@ export default {
         multiTouched: false,
         eventCancelled: false,
       },
-      displayTouches: true,
+      displayTouches: false,
       touches: [],
       movingCanvas: false,
     };
@@ -368,7 +368,14 @@ export default {
     },
   },
   watch: {},
-  mounted() {},
+  mounted() {
+    if (window.location.hash) {
+      var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+      if (hash === "displayTouches") {
+        this.displayTouches = true;
+      }
+    }
+  },
 };
 </script>
 
