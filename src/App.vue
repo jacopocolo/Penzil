@@ -15,13 +15,21 @@
     :selectedTool="tool"
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
-  <Input :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
+  <Input
+    :selectedTool="tool"
+    :mirror="mirror"
+    :stroke="stroke"
+    :fill="fill"
+    :toolEnabled="toolEnabled"
+  />
   <Canvas
     ref="raycastCanvas"
     @selected-canvas-shape="setSelectedCanvasShape"
     :selectedShape="canvasShape"
+    :selectedTool="tool"
   />
   <Menu @modal-set="setModal" @preview="setPreview" />
+  <show-tutorial @modal-set="setModal" :show="showTutorialButton" />
 </template>
 
 <script>
@@ -43,6 +51,7 @@ import Canvas from "./components/Canvas.vue";
 import { controls, canvas } from "./components/Canvas.vue";
 import Modal from "./components/Modal.vue";
 import VideoExportPreview from "./components/VideoExportPreview.vue";
+import ShowTutorial from "./components/ShowTutorial.vue";
 
 export let renderer = new THREE.WebGLRenderer({
   antialias: true,
@@ -83,10 +92,12 @@ export default {
     Canvas,
     Modal,
     VideoExportPreview,
+    ShowTutorial,
   },
   data() {
     return {
       tool: "draw",
+      toolEnabled: true,
       canvasShape: "plane",
       multitouch: "canvas",
       toolHistory: ["draw"],
@@ -138,13 +149,25 @@ export default {
       cameraControls.draggingDampingFactor = 200;
       cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
       cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
+      document.addEventListener("keydown", (event) => {
+        if (event.code === "Space") {
+          cameraControls.mouseButtons.left = CameraControls.ACTION.TRUCK;
+          this.toolEnabled = false;
+        }
+      });
+      document.addEventListener("keyup", (event) => {
+        if (event.code === "Space") {
+          cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
+          this.toolEnabled = true;
+        }
+      });
       cameraControls.mouseButtons.middle = CameraControls.ACTION.DOLLY;
       cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
       cameraControls.touches.one = CameraControls.ACTION.NONE;
       cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
       cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
       cameraControls.maxZoom = 4000;
-      cameraControls.minZoom = 2;
+      cameraControls.minZoom = 1.5;
       cameraControls.enabled = true;
 
       this.quaternion = [
@@ -266,8 +289,19 @@ export default {
         controls.visible = false;
         renderer.render(scene, camera);
       } else if (this.tool === "draw") {
-        canvas.visible = true;
-        controls.visible = true;
+        if (this.$.refs.raycastCanvas.visible === true) {
+          canvas.visible = true;
+        } else {
+          canvas.visible = false;
+        }
+        if (
+          this.$.refs.raycastCanvas.transformationEnabled === true &&
+          this.$.refs.raycastCanvas.visible === true
+        ) {
+          controls.visible = true;
+        } else {
+          controls.visible = false;
+        }
         renderer.render(scene, camera);
       }
 
@@ -337,12 +371,12 @@ export default {
     this.cameraResetDisabled = false; //this is an override, I'm not quite sure what sets it to true on mount
 
     //check if we need to display the tutorial
-    if (localStorage.getItem("tut01") === null) {
-      localStorage.setItem("tut01", 0);
+    if (localStorage.getItem("tut02") === null) {
+      localStorage.setItem("tut02", 0);
       this.showTutorialButton = true;
     } else {
-      let count = parseInt(window.localStorage.tut01);
-      localStorage.setItem("tut01", ++count);
+      let count = parseInt(window.localStorage.tut02);
+      localStorage.setItem("tut02", ++count);
       if (count + 1 <= 5) {
         this.showTutorialButton = true;
       } else {

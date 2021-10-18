@@ -54,7 +54,7 @@ let draw = {
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
             this.bufferPoints = new Array();
-            this.size = 6;
+            this.size = 8;
 
             this.mesh.userData.vertices = new Array();
             this.mesh.userData.stroke = { show_stroke: stroke.show_stroke, color: stroke.color, lineWidth: stroke.lineWidth };
@@ -231,7 +231,7 @@ let draw = {
         addVertex(x, y, z, force, unproject) {
 
             //trying to add a bit of noise maybe?
-            force = force * Math.random() * 4;
+            // force = force * Math.random() * 4;
 
             var v3 = new THREE.Vector3(x, y, z);
             if (unproject) {

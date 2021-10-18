@@ -2,38 +2,47 @@
 <template>
   <div
     class="canvasSettings"
-    v-bind:style="[shapeSelectionVisibility === true ? 'z-index: 10' : '']"
+    v-bind:style="[
+      shapeSelectionVisibility === true ? 'z-index: 10' : '',
+      selectedTool != 'draw' ? 'display: none' : '',
+    ]"
   >
     <span
       class="canvas-button"
       id="canvasShapeDropdown"
       @click="toggleShapeSelectionVisibility()"
+      v-bind:class="[!visible ? 'disabled' : '']"
     >
-      <img
-        v-if="shape === 'plane'"
-        src="@/assets/icons/Canvas-Plane.svg"
-        alt="Plane shape selected"
-      />
-      <img
-        v-if="shape === 'cube'"
-        src="@/assets/icons/Canvas-Cube.svg"
-        alt="Cube shape selected"
-      />
-      <img
-        v-if="shape === 'cylinder'"
-        src="@/assets/icons/Canvas-Cylinder.svg"
-        alt="Cylinder shape selected"
-      />
-      <img
-        v-if="shape === 'sphere'"
-        src="@/assets/icons/Canvas-Sphere.svg"
-        alt="Sphere shape selected"
-      />
-      <img
-        v-if="shape === 'head'"
-        src="@/assets/icons/Canvas-Head.svg"
-        alt="Head shape selected"
-      />
+      <span class="icon-and-label" v-if="shape === 'plane'"
+        ><img
+          src="@/assets/icons/Canvas-Plane.svg"
+          alt="Plane shape selected"
+        />Plane</span
+      >
+      <span class="icon-and-label" v-if="shape === 'cube'"
+        ><img
+          src="@/assets/icons/Canvas-Cube.svg"
+          alt="Cube shape selected"
+        />Cube</span
+      >
+      <span class="icon-and-label" v-if="shape === 'cylinder'"
+        ><img
+          src="@/assets/icons/Canvas-Cylinder.svg"
+          alt="Cylinder shape selected"
+        />Cylinder</span
+      >
+      <span class="icon-and-label" v-if="shape === 'sphere'"
+        ><img
+          src="@/assets/icons/Canvas-Sphere.svg"
+          alt="Sphere shape selected"
+        />Sphere</span
+      >
+      <span class="icon-and-label" v-if="shape === 'head'">
+        <img
+          src="@/assets/icons/Canvas-Head.svg"
+          alt="Head shape selected"
+        />Head</span
+      >
       <img
         src="@/assets/icons/Dropdown.svg"
         v-bind:style="[
@@ -43,63 +52,81 @@
         ]"
         style="margin-right: 10px"
         alt="Click to show options"
-      /> </span
-    ><span
+      />
+    </span>
+    <span
       class="canvas-button"
       @click="toggleTransformMode()"
+      v-bind:class="[!visible ? 'disabled' : '']"
       v-if="!shapeSelectionVisibility"
     >
-      <img
-        v-if="mode === 'combined'"
-        src="@/assets/icons/scale.svg"
-        alt="Switch to scale" />
-      <img
-        v-if="mode === 'scale'"
-        src="@/assets/icons/translate.svg"
-        alt="Switch to move and rotate"
-    /></span>
+      <span v-if="mode === 'combined'" class="icon-and-label"
+        ><img
+          src="@/assets/icons/translate.svg"
+          alt="Switch to scale"
+        />Move</span
+      >
+      <span v-if="mode === 'scale'" class="icon-and-label"
+        ><img
+          src="@/assets/icons/scale.svg"
+          alt="Switch to move and rotate"
+        />Scale</span
+      ></span
+    >
     <span
       class="canvas-button"
       @click="toggleControls()"
       v-bind:class="[!visible ? 'disabled' : '']"
       v-if="!shapeSelectionVisibility"
-    >
-      <img
-        v-if="transformationEnabled"
-        src="@/assets/icons/lockControls.svg"
-        alt="Hide the canvas controls"
-      />
-      <img
-        v-if="!transformationEnabled"
-        src="@/assets/icons/unlockControls.svg"
-        alt="Show the canvas controls"
-      />
+      ><span v-if="transformationEnabled" class="icon-and-label"
+        ><img
+          src="@/assets/icons/lockControls.svg"
+          alt="Hide the canvas controls"
+        />Unlocked</span
+      >
+      <span v-if="!transformationEnabled" class="icon-and-label"
+        ><img
+          src="@/assets/icons/unlockControls.svg"
+          alt="Show the canvas controls"
+        />Locked</span
+      >
     </span>
     <span
       class="canvas-button"
       @click="toggleVisibility()"
       v-if="!shapeSelectionVisibility"
     >
-      <img
-        v-if="visible"
-        src="@/assets/icons/hideCanvas.svg"
-        alt="Hide the canvas controls" />
-      <img
-        v-if="!visible"
-        src="@/assets/icons/showCanvas.svg"
-        alt="Show the canvas controls" /></span
-    ><span
+      <span v-if="visible" class="icon-and-label"
+        ><img
+          src="@/assets/icons/hideCanvas.svg"
+          alt="Hide the canvas controls"
+        />Visible</span
+      >
+      <span v-if="!visible" class="icon-and-label"
+        ><img
+          src="@/assets/icons/showCanvas.svg"
+          alt="Show the canvas controls"
+        />Hidden</span
+      ></span
+    >
+    <span
       class="canvas-button"
       @click="toggleSnap()"
       v-if="!shapeSelectionVisibility"
+      v-bind:class="[!visible ? 'disabled' : '']"
+      ><span v-if="!snap" class="icon-and-label"
+        ><img src="@/assets/icons/snapOff.svg" alt="Turn off snap" />Snap
+        off</span
+      >
+      <span v-if="snap" class="icon-and-label">
+        <img src="@/assets/icons/snapOn.svg" alt="Turn on snap" />Snap on</span
+      ></span
     >
-      <img v-if="snap" src="@/assets/icons/snapOn.svg" alt="Turn on snap" />
-      <img
-        v-if="!snap"
-        src="@/assets/icons/snapOff.svg"
-        alt="Turn off snap" /></span
-    ><span
-      v-bind:class="[transformationResetDisabled ? 'disabled ' : '']"
+    <span
+      v-bind:class="[
+        transformationResetDisabled ? 'disabled ' : '',
+        !visible ? 'disabled' : '',
+      ]"
       class="canvas-button"
       @click="resetTransformation()"
       v-if="!shapeSelectionVisibility"
@@ -187,9 +214,6 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { scene, renderer, camera, vm } from "../App.vue";
 
 export let canvas, controls;
-// let position = new THREE.Vector3(0.001, 0.001, 0.001);
-// let quaternion = new THREE.Quaternion(0.001, 0.002, 0.002, 1);
-// let scale = new THREE.Vector3(1, 1, 1);
 let geometry = new THREE.PlaneGeometry(5, 5);
 let headGeometry;
 
@@ -223,6 +247,7 @@ export default {
   },
   props: {
     selectedShape: String,
+    selectedTool: String,
   },
   emits: ["selected-canvas-shape"],
   methods: {
@@ -233,7 +258,7 @@ export default {
 
       controls = new TransformControls(camera, renderer.domElement);
       controls.mode = "combined";
-      controls.scale.set(1.1, 1.1, 1.1);
+      // controls.scale.set(1.1, 1.1, 1.1);
       controls.addEventListener("change", () => {
         renderer.render(scene, camera);
         //this is not very elegant but…
@@ -266,12 +291,10 @@ export default {
       if (this.mode === "combined") {
         this.mode = "scale";
         controls.mode = "scale";
-        controls.scale.set(0.7, 0.7, 0.7);
         renderer.render(scene, camera);
       } else {
         this.mode = "combined";
         controls.mode = "combined";
-        controls.scale.set(1.1, 1.1, 1.1);
         renderer.render(scene, camera);
       }
     },
@@ -291,16 +314,16 @@ export default {
     toggleVisibility() {
       if (canvas.visible === true) {
         this.visible = false;
-        this.transformationEnabled = false;
-        controls.enabled = false;
-        controls.visible = false;
+        if (this.transformationEnabled === true) {
+          controls.visible = false;
+        }
         canvas.visible = false;
         renderer.render(scene, camera);
       } else {
-        this.transformationEnabled = true;
         this.visible = true;
-        controls.enabled = true;
-        controls.visible = true;
+        if (this.transformationEnabled === true) {
+          controls.visible = true;
+        }
         canvas.visible = true;
         renderer.render(scene, camera);
       }
@@ -346,7 +369,7 @@ export default {
           canvas.geometry = new THREE.BoxGeometry(5, 5, 5);
           break;
         case "cylinder":
-          canvas.geometry = new THREE.CylinderGeometry(2.5, 2.5, 5);
+          canvas.geometry = new THREE.CylinderGeometry(2.5, 2.5, 5, 15);
           break;
         case "sphere":
           canvas.geometry = new THREE.SphereGeometry(2.5, 15, 15);
@@ -428,11 +451,11 @@ export default {
 }
 
 #canvasShapeDropdown {
-  max-width: 80px;
+  max-width: 140px;
 }
 
 .canvasShapeSelection {
-  font-size: 0.5em;
+  font-size: 0.45em;
   color: #1c1c1e;
   white-space: discard;
   display: flex;
@@ -481,7 +504,7 @@ export default {
 
 .canvas-button {
   height: 44px;
-  max-width: 44px;
+  /* max-width: 44px; */
   border-radius: 22px;
   background-color: rgba(255, 255, 255, 1);
   font-size: 2em;
@@ -494,7 +517,17 @@ export default {
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   display: flex;
   align-items: center;
-  width: auto;
+  width: fit-content;
+}
+
+.icon-and-label {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  gap: 4px;
+  font-size: 0.5em;
+  color: #1c1c1e;
+  padding: 0px 12px 0px 4px;
 }
 
 #transform-mode {

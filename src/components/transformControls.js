@@ -863,7 +863,7 @@ class TransformControlsGizmo extends Object3D {
 
         // reusable geometry
 
-        const arrowGeometry = new CylinderGeometry(0, 0.04, 0.1, 12);
+        const arrowGeometry = new CylinderGeometry(0, 0.045, 0.125, 12);
         arrowGeometry.translate(0, 0.05, 0);
 
         const arrowPickerGeometry = new CylinderGeometry(0.02, 0.06, 0.15, 12);
@@ -879,7 +879,7 @@ class TransformControlsGizmo extends Object3D {
         lineGeometry2.translate(0, 0.25, 0);
 
         function CircleGeometry(radius) {
-            const geometry = new RingGeometry(radius, radius+0.05, 10, 10, 0.5, Math.PI/2-1);
+            const geometry = new RingGeometry(radius + 0.01, radius + 0.07, 10, 10, 0.5, Math.PI / 2 - 1);
             geometry.rotateY(Math.PI / 2);
             geometry.rotateX(Math.PI / 2);
             return geometry;
@@ -1090,18 +1090,18 @@ class TransformControlsGizmo extends Object3D {
 
         const gizmoCombined = {
             XT: [
-                [new Mesh(arrowGeometry, matRedArrow), [0.15, 0, 0], [0, 0, - Math.PI / 2]],
+                [new Mesh(arrowGeometry, matRedArrow), [0.175, 0, 0], [0, 0, - Math.PI / 2]],
             ],
             XR: [
-                [new Mesh(CircleGeometry(0.15, 0.5), matRed), null, [0, Math.PI/2, Math.PI / 2]],
+                [new Mesh(CircleGeometry(0.15, 0.5), matRed), null, [0, Math.PI / 2, Math.PI / 2]],
             ],
             YT: [
-                [new Mesh(arrowGeometry, matGreenArrow), [0, 0.15, 0]],
+                [new Mesh(arrowGeometry, matGreenArrow), [0, 0.175, 0]],
             ],
             YR: [
                 [new Mesh(CircleGeometry(0.15, 0.5), matGreen), null, [Math.PI / 2, Math.PI, Math.PI / 2]],
             ],
-            ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.15], [Math.PI / 2, 0, 0]]
+            ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.175], [Math.PI / 2, 0, 0]]
             ],
             ZR: [[new Mesh(CircleGeometry(0.15, 0.5), matBlue), null, [0, 0, 0]],
             ],
@@ -1175,7 +1175,7 @@ class TransformControlsGizmo extends Object3D {
                     object.scale.set(1, 1, 1);
 
                     gizmo.add(object);
-                    
+
                 }
 
             }
@@ -1397,7 +1397,7 @@ class TransformControlsGizmo extends Object3D {
                         // handle.visible = false;
                         handle.renderOrder = 10001
 
-                    } 
+                    }
 
                 }
 
@@ -1425,7 +1425,7 @@ class TransformControlsGizmo extends Object3D {
 
                     }
 
-                } 
+                }
 
                 if (handle.name === 'XY') {
 

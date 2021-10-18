@@ -292,5 +292,6 @@ input[type="range"]::-webkit-slider-thumb {
 
 label {
   display: flex;
+  font-size: 0.45em;
 }
 </style>

@@ -25,16 +25,6 @@
         /></label>
         <div></div>
       </span>
-      <!-- <span @click="setTool('select', true)">
-        <input
-          type="radio"
-          id="toolSelect"
-          name="tools"
-          value="select"
-          v-model="tool"
-        /><label for="toolSelect"> Select </label>
-        <div></div>
-      </span> -->
     </div>
   </div>
 </template>

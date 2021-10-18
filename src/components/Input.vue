@@ -109,13 +109,14 @@ export default {
         multiTouched: false,
         eventCancelled: false,
       },
-      displayTouches: false,
+      displayTouches: true,
       touches: [],
       movingCanvas: false,
     };
   },
   props: {
     selectedTool: String,
+    toolEnabled: Boolean,
     mirror: [Boolean, String],
     stroke: [Object],
     fill: [Object],
@@ -148,7 +149,8 @@ export default {
       }
     },
     onStart: function (event) {
-      if (event.button && event.button != 0) return;
+      if ((event.button && event.button != 0) || this.toolEnabled === false)
+        return;
 
       this.touches = [];
       //this is just to display the touches event
@@ -252,7 +254,8 @@ export default {
       }
     },
     onMove: function (event) {
-      if (event.button && event.button != 0) return;
+      if ((event.button && event.button != 0) || this.toolEnabled === false)
+        return;
 
       this.touches = [];
       if (event.touches?.length > 0 && this.displayTouches == true) {
@@ -297,12 +300,13 @@ export default {
       }
     },
     onEnd: function (event) {
+      if (this.toolEnabled === false) return;
       this.touches = [];
 
       if (event.button && event.button != 0) return;
 
       if (this.mouse.multiTouched || this.mouse.eventCancelled) {
-        if (controls.enabled === true) {
+        if (controls.enabled === true && canvas.visible === true) {
           controls.visible = true;
           renderer.render(scene, camera);
         }
@@ -314,7 +318,7 @@ export default {
               this.movingCanvas = false;
             } else {
               draw.onEnd(this.mirror);
-              if (controls.enabled === true) {
+              if (controls.enabled === true && canvas.visible === true) {
                 controls.visible = true;
                 renderer.render(scene, camera);
               }
