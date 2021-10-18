@@ -4,13 +4,8 @@
   <viewport-cube
     :quaternion="quaternion"
     :cameraResetDisabled="cameraResetDisabled"
-    :cameraControlsEnabled="multitouch"
   />
   <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
-  <multitouch-selector
-    @selected-multitouch="setSelectedMultitouch"
-    :selectedMultitouch="multitouch"
-  />
   <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
   <transorm-toolbar
     :top="transformToolbar.top"
@@ -20,8 +15,19 @@
     :selectedTool="tool"
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
-  <Input :selectedTool="tool" :mirror="mirror" :stroke="stroke" :fill="fill" />
-  <Canvas ref="raycastCanvas" :enabled="multitouch" />
+  <Input
+    :selectedTool="tool"
+    :mirror="mirror"
+    :stroke="stroke"
+    :fill="fill"
+    :toolEnabled="toolEnabled"
+  />
+  <Canvas
+    ref="raycastCanvas"
+    @selected-canvas-shape="setSelectedCanvasShape"
+    :selectedShape="canvasShape"
+    :selectedTool="tool"
+  />
   <Menu @modal-set="setModal" @preview="setPreview" />
   <show-tutorial @modal-set="setModal" :show="showTutorialButton" />
 </template>
@@ -35,7 +41,6 @@ import InfiniteGridHelper from "./components/InfiniteGridHelper.js";
 
 import Input from "./components/Input.vue";
 import ToolSelector from "./components/ToolSelector.vue";
-import MultitouchSelector from "./components/MultitouchSelector.vue";
 import ViewportCube from "./components/ViewportCube.vue";
 import UndoRedo, { undoManager } from "./components/UndoRedo.vue";
 import TransormToolbar from "./components/TransformToolbar.vue";
@@ -43,6 +48,7 @@ import { select } from "./components/select.js";
 import LineSettings from "./components/LineSettings.vue";
 import Menu from "./components/Menu.vue";
 import Canvas from "./components/Canvas.vue";
+import { controls, canvas } from "./components/Canvas.vue";
 import Modal from "./components/Modal.vue";
 import VideoExportPreview from "./components/VideoExportPreview.vue";
 import ShowTutorial from "./components/ShowTutorial.vue";
@@ -58,6 +64,17 @@ export let camera = new THREE.PerspectiveCamera(
   1,
   1000
 );
+
+//source for this is https://stackoverflow.com/questions/48758959/what-is-required-to-convert-threejs-perspective-camera-to-orthographic
+// const aspect = window.innerWidth / window.innerHeight;
+// const height_ortho = 6 * 2 * Math.atan( 100*(Math.PI/180) / 2 )
+// const width_ortho  = height_ortho * aspect;
+
+// let cameraOrtho = new THREE.OrthographicCamera(
+//     width_ortho  / -2, width_ortho   /  2,
+//     height_ortho /  2, height_ortho  / -2,
+//     1, 1000 );
+
 export let scene, drawingScene, cameraControls, vm, drawingprop;
 
 var main, clock;
@@ -73,7 +90,6 @@ export default {
     UndoRedo,
     Menu,
     Canvas,
-    MultitouchSelector,
     Modal,
     VideoExportPreview,
     ShowTutorial,
@@ -81,6 +97,8 @@ export default {
   data() {
     return {
       tool: "draw",
+      toolEnabled: true,
+      canvasShape: "plane",
       multitouch: "canvas",
       toolHistory: ["draw"],
       stroke: {}, //filled by the component on mount
@@ -96,7 +114,7 @@ export default {
       showTutorialButton: true,
     };
   },
-  emits: ["modal-set"],
+  emits: ["modal-set", "selected-canvas-shape"],
   methods: {
     init: function () {
       CameraControls.install({ THREE: THREE });
@@ -131,13 +149,26 @@ export default {
       cameraControls.draggingDampingFactor = 200;
       cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
       cameraControls.mouseButtons.wheel = CameraControls.ACTION.ROTATE;
+      document.addEventListener("keydown", (event) => {
+        if (event.code === "Space") {
+          cameraControls.mouseButtons.left = CameraControls.ACTION.TRUCK;
+          this.toolEnabled = false;
+        }
+      });
+      document.addEventListener("keyup", (event) => {
+        if (event.code === "Space") {
+          cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
+          this.toolEnabled = true;
+        }
+      });
+      cameraControls.mouseButtons.middle = CameraControls.ACTION.DOLLY;
       cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
       cameraControls.touches.one = CameraControls.ACTION.NONE;
       cameraControls.touches.two = CameraControls.ACTION.TOUCH_ZOOM_ROTATE;
       cameraControls.touches.three = CameraControls.ACTION.TOUCH_DOLLY_TRUCK;
       cameraControls.maxZoom = 4000;
-      cameraControls.minZoom = 2;
-      cameraControls.enabled = false;
+      cameraControls.minZoom = 1.5;
+      cameraControls.enabled = true;
 
       this.quaternion = [
         camera.quaternion.x,
@@ -202,6 +233,9 @@ export default {
           this.cameraResetDisabled = false;
         } else {
           this.cameraResetDisabled = true;
+          // cameraOrtho.position.copy(camera.position)
+          // cameraOrtho.zoom = camera.zoom*10;
+          // renderer.render(scene, cameraOrtho);
         }
       });
 
@@ -210,8 +244,8 @@ export default {
       var targetSphere = new THREE.Mesh(geometry, material);
       scene.add(targetSphere);
 
-      const light = new THREE.HemisphereLight(0xffffff, 0x222222, 1); //0x080820
-      light.position.set(0, 1, 5);
+      const light = new THREE.HemisphereLight(0xffffff, 0x222222, 0.8); //0x080820
+      light.position.set(0, 50, 150);
       scene.add(light);
 
       this.$.refs.raycastCanvas.setUp();
@@ -250,6 +284,27 @@ export default {
     setSelectedTool: function (val) {
       this.tool = val;
 
+      if (this.tool === "erase") {
+        canvas.visible = false;
+        controls.visible = false;
+        renderer.render(scene, camera);
+      } else if (this.tool === "draw") {
+        if (this.$.refs.raycastCanvas.visible === true) {
+          canvas.visible = true;
+        } else {
+          canvas.visible = false;
+        }
+        if (
+          this.$.refs.raycastCanvas.transformationEnabled === true &&
+          this.$.refs.raycastCanvas.visible === true
+        ) {
+          controls.visible = true;
+        } else {
+          controls.visible = false;
+        }
+        renderer.render(scene, camera);
+      }
+
       this.toolHistory.push(val);
       if (this.toolHistory.length > 2) {
         this.toolHistory.shift();
@@ -268,6 +323,9 @@ export default {
       });
 
       this.$.refs.undoRedo.updateUi();
+    },
+    setSelectedCanvasShape: function (val) {
+      this.canvasShape = val;
     },
     setSelectedTool_internal: function (val) {
       //this is a version without undo so that it can be called by the setCenter tool
@@ -313,12 +371,12 @@ export default {
     this.cameraResetDisabled = false; //this is an override, I'm not quite sure what sets it to true on mount
 
     //check if we need to display the tutorial
-    if (localStorage.getItem("tut01") === null) {
-      localStorage.setItem("tut01", 0);
+    if (localStorage.getItem("tut02") === null) {
+      localStorage.setItem("tut02", 0);
       this.showTutorialButton = true;
     } else {
-      let count = parseInt(window.localStorage.tut01);
-      localStorage.setItem("tut01", ++count);
+      let count = parseInt(window.localStorage.tut02);
+      localStorage.setItem("tut02", ++count);
       if (count + 1 <= 5) {
         this.showTutorialButton = true;
       } else {
@@ -361,6 +419,7 @@ html,
 
 button {
   font-weight: 900;
+  color: #1c1c1e;
 }
 
 #app {
@@ -383,6 +442,7 @@ label {
   height: 44px;
   align-content: center;
   justify-content: center;
+  margin: 0px;
 }
 
 input[type="radio"]:checked + label {

@@ -1,12 +1,6 @@
 
 <template>
   <div class="mainToolbar">
-    <img
-      class="oneDot"
-      src="@/assets/icons/1dot.svg"
-      alt="One dot indicator: these tools can be used with one finger"
-    />
-    <div class="oneDot"></div>
     <div class="toolSelection">
       <span @click="setTool('draw', true)">
         <input
@@ -31,16 +25,6 @@
         /></label>
         <div></div>
       </span>
-      <!-- <span @click="setTool('select', true)">
-        <input
-          type="radio"
-          id="toolSelect"
-          name="tools"
-          value="select"
-          v-model="tool"
-        /><label for="toolSelect"> Select </label>
-        <div></div>
-      </span> -->
     </div>
   </div>
 </template>
