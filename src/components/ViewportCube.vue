@@ -32,7 +32,6 @@ export default {
   props: {
     quaternion: Array,
     cameraResetDisabled: Boolean,
-    cameraControlsEnabled: String,
   },
   data() {
     return {
@@ -51,7 +50,11 @@ export default {
   methods: {
     updateMouseCoordinates: function (event) {
       if (event.touches) {
-        this.mouse.tx = (event.changedTouches[0].pageX / 150) * 2 - 1;
+        this.mouse.tx =
+          ((event.changedTouches[0].pageX - window.innerWidth + 12 + 150) /
+            150) *
+            2 -
+          1;
         this.mouse.ty = -(event.changedTouches[0].pageY / 150) * 2 + 1;
         this.mouse.cx = event.changedTouches[0].pageX;
         this.mouse.cy = event.changedTouches[0].pageY;
@@ -63,9 +66,10 @@ export default {
         }
       } else {
         if (event.button == 0) {
-          this.mouse.tx = (event.clientX / 150) * 2 - 1;
+          this.mouse.tx =
+            ((event.clientX - window.innerWidth + 12 + 150) / 150) * 2 - 1;
           this.mouse.ty = -(event.clientY / 150) * 2 + 1;
-          this.mouse.cx = event.clientX;
+          this.mouse.cx = event.clientX - window.innerWidth + 12 + 150;
           this.mouse.cy = event.clientY;
         }
       }
@@ -154,59 +158,55 @@ export default {
       //This is a slight hack to allow the triangulate function that generates the fill to work in any scenario. See: https://github.com/mapbox/earcut/issues/21
       let adj = 0.0001;
 
-      let restore = this.cameraControlsEnabled === "camera" ? true : false;
-
-      let lookAt = function (x, y, z, restore) {
+      let lookAt = function (x, y, z) {
         cameraControls.dampingFactor = 0.5;
         cameraControls.enabled = false;
         cameraControls.setLookAt(x, y, z, target.x, target.y, target.z, true);
-        cameraControls.enabled = restore;
+        cameraControls.enabled = true;
         setTimeout(() => {
           cameraControls.dampingFactor = 20;
         }, 100);
         // cameraControls.update();
-        console.log(cameraControls.enabled);
       };
 
       switch (index) {
         case 0:
-          lookAt(target.x + 10, target.y + adj, target.z + adj, restore);
+          lookAt(target.x + 10, target.y + adj, target.z + adj);
           break;
         case 1:
-          lookAt(target.x + 10, target.y + adj, target.z + adj, restore);
+          lookAt(target.x + 10, target.y + adj, target.z + adj);
           break;
         case 2:
-          lookAt(target.x - 10, target.y + adj, target.z + adj, restore);
+          lookAt(target.x - 10, target.y + adj, target.z + adj);
           break;
         case 3:
-          lookAt(target.x - 10, target.y + adj, target.z + adj, restore);
+          lookAt(target.x - 10, target.y + adj, target.z + adj);
           break;
         case 4:
-          lookAt(target.x, target.y + 10, target.z + adj, restore);
+          lookAt(target.x, target.y + 10, target.z + adj);
           break;
         case 5:
-          lookAt(target.x, target.y + 10, target.z + adj, restore);
+          lookAt(target.x, target.y + 10, target.z + adj);
           break;
         case 6:
-          lookAt(target.x, target.y - 10, target.z + adj, restore);
+          lookAt(target.x, target.y - 10, target.z + adj);
           break;
         case 7:
-          lookAt(target.x, target.y - 10, target.z + adj, restore);
+          lookAt(target.x, target.y - 10, target.z + adj);
           break;
         case 8:
-          lookAt(target.x + adj, target.y, target.z + 10, restore);
+          lookAt(target.x + adj, target.y, target.z + 10);
           break;
         case 9:
-          lookAt(target.x + adj, target.y, target.z + 10, restore);
+          lookAt(target.x + adj, target.y, target.z + 10);
           break;
         case 10:
-          lookAt(target.x + adj, target.y, target.z - 10, restore);
+          lookAt(target.x + adj, target.y, target.z - 10);
           break;
         case 11:
-          lookAt(target.x + adj, target.y, target.z - 10, restore);
+          lookAt(target.x + adj, target.y, target.z - 10);
           break;
         default:
-          console.log(index);
       }
     },
     onTapStart: function () {
@@ -268,10 +268,9 @@ export default {
       cameraControls.enabled = false;
       cameraControls.setLookAt(0, 0, 10, 0, 0, 0, true);
       cameraControls.zoomTo(3, true);
-      cameraControls.enabled =
-        this.cameraControlsEnabled === "camera" ? true : false;
       setTimeout(() => {
         cameraControls.dampingFactor = 20;
+        cameraControls.enabled = true;
       }, 100);
     },
     handleInput: function (event) {
@@ -310,9 +309,6 @@ export default {
       );
       this.render();
     },
-    cameraControlsEnabled: function (val) {
-      console.log(val);
-    },
   },
   mounted() {
     this.init();
@@ -327,6 +323,7 @@ export default {
   height: 150px;
   width: 150px;
   top: 0;
+  right: 12px;
   z-index: 2;
 }
 

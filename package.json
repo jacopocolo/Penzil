@@ -9,6 +9,7 @@
   },
   "dependencies": {
     "camera-controls": "../camera-controls",
+    "caniuse-lite": "^1.0.30001248",
     "core-js": "^3.6.5",
     "earcut": "^2.2.2",
     "h264-mp4-encoder": "^1.0.12",
@@ -20,8 +21,8 @@
   "devDependencies": {
     "@typescript-eslint/typescript-estree": "^4.14.1",
     "@vue/cli-plugin-babel": "~4.5.0",
-    "@vue/cli-plugin-eslint": "~4.5.0",
-    "@vue/cli-service": "~4.5.0",
+    "@vue/cli-plugin-eslint": "^3.1.1",
+    "@vue/cli-service": "^4.5.13",
     "@vue/compiler-sfc": "^3.0.0",
     "babel-eslint": "^10.1.0",
     "eslint": "^7.16.0",
