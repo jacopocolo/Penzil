@@ -54,7 +54,7 @@ let draw = {
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
             this.bufferPoints = new Array();
-            this.size = 8;
+            this.size = 4;
 
             this.mesh.userData.vertices = new Array();
             this.mesh.userData.stroke = { show_stroke: stroke.show_stroke, color: stroke.color, lineWidth: stroke.lineWidth };
