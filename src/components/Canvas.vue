@@ -222,7 +222,7 @@ export default {
   data() {
     return {
       material: new THREE.MeshToonMaterial({
-        color: 0xffffff,
+        color: 0xe6edf5,
         transparent: true,
         opacity: 0.95,
         side: THREE.DoubleSide,

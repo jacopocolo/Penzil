@@ -60,11 +60,12 @@
 
     <h2>Look around and pan</h2>
     <p>
-      You can look around using two fingers, using a trackpad or a trackball.
-      You can pan by swiping with three fingers or by pressing the spacebar and
-      clicking with the left button.<br />You can also use the cube in the top
-      right corner to look around. To position the camera precisely, tap on any
-      of the faces of the cube.
+      You can look around using two fingers, using a trackpad, a trackball or by
+      pressing the Option key ("Alt") and using the left mouse button. You can
+      pan by swiping with three fingers or by pressing the spacebar and clicking
+      with the left button.<br />You can also use the cube in the top right
+      corner to look around. To position the camera precisely, tap on any of the
+      faces of the cube.
     </p>
 
     <div class="container">

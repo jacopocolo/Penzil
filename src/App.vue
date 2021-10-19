@@ -161,6 +161,18 @@ export default {
           this.toolEnabled = true;
         }
       });
+      document.addEventListener("keydown", (event) => {
+        if (event.code === "AltLeft") {
+          cameraControls.mouseButtons.left = CameraControls.ACTION.ROTATE;
+          this.toolEnabled = false;
+        }
+      });
+      document.addEventListener("keyup", (event) => {
+        if (event.code === "AltLeft") {
+          cameraControls.mouseButtons.left = CameraControls.ACTION.NONE;
+          this.toolEnabled = true;
+        }
+      });
       cameraControls.mouseButtons.middle = CameraControls.ACTION.DOLLY;
       cameraControls.mouseButtons.right = CameraControls.ACTION.ZOOM;
       cameraControls.touches.one = CameraControls.ACTION.NONE;
