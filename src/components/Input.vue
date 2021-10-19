@@ -90,6 +90,10 @@ import { erase } from "./erase.js";
 import { select } from "./select.js";
 import { setCenter } from "./setCenter.js";
 
+import * as THREE from "three";
+import { canvas, controls } from "./Canvas.vue";
+import { renderer, scene, camera } from "../App.vue";
+
 export default {
   name: "Input",
   data() {
@@ -107,10 +111,12 @@ export default {
       },
       displayTouches: false,
       touches: [],
+      movingCanvas: false,
     };
   },
   props: {
     selectedTool: String,
+    toolEnabled: Boolean,
     mirror: [Boolean, String],
     stroke: [Object],
     fill: [Object],
@@ -143,31 +149,65 @@ export default {
       }
     },
     onStart: function (event) {
-      if (event.button && event.button != 0) return;
+      if ((event.button && event.button != 0) || this.toolEnabled === false)
+        return;
 
       this.touches = [];
+      //this is just to display the touches event
       if (event.touches?.length > 0 && this.displayTouches == true) {
         for (let i = 0; i < event.touches.length; i++) {
           this.touches.push(event.touches[i]);
         }
       }
 
-      if (event.button == 0 || event.touches.length == 1) {
+      if (
+        event.button == 0 ||
+        event.touches.length == 1 ||
+        event.touches.force > 0
+      ) {
         this.mouse.down = true;
         this.mouse.eventCancelled = false;
         this.mouse.multiTouched = false;
+        let raycaster;
         switch (this.selectedTool) {
           case "draw":
-            draw.onStart(
-              this.mouse.tx,
-              this.mouse.ty,
-              0,
-              this.mouse.force,
-              true,
-              this.mirror,
-              this.stroke,
-              this.fill
+            raycaster = new THREE.Raycaster();
+            raycaster.setFromCamera(
+              new THREE.Vector2(this.mouse.tx, this.mouse.ty),
+              camera
             );
+            if (
+              (controls.mode === "combined" &&
+                raycaster.intersectObjects(
+                  controls.children[0].children[10].children
+                )[0] !== undefined) ||
+              (controls.mode === "scale" &&
+                raycaster.intersectObjects(
+                  controls.children[0].children[5].children
+                )[0] !== undefined)
+            ) {
+              this.movingCanvas = true;
+              return;
+            } else {
+              if (
+                controls.enabled === true &&
+                raycaster.intersectObjects([canvas])[0] !== undefined
+              ) {
+                controls.visible = false;
+                renderer.render(scene, camera);
+              }
+
+              draw.onStart(
+                this.mouse.tx,
+                this.mouse.ty,
+                0,
+                this.mouse.force,
+                true,
+                this.mirror,
+                this.stroke,
+                this.fill
+              );
+            }
             break;
           case "erase":
             erase.onStart(this.mouse.cx, this.mouse.cy);
@@ -214,7 +254,8 @@ export default {
       }
     },
     onMove: function (event) {
-      if (event.button && event.button != 0) return;
+      if ((event.button && event.button != 0) || this.toolEnabled === false)
+        return;
 
       this.touches = [];
       if (event.touches?.length > 0 && this.displayTouches == true) {
@@ -227,13 +268,17 @@ export default {
         if (event.button == 0 || event.touches.length == 1) {
           switch (this.selectedTool) {
             case "draw":
-              draw.onMove(
-                this.mouse.tx,
-                this.mouse.ty,
-                0,
-                this.mouse.force,
-                true
-              );
+              if (this.movingCanvas === false) {
+                draw.onMove(
+                  this.mouse.tx,
+                  this.mouse.ty,
+                  0,
+                  this.mouse.force,
+                  true
+                );
+              } else {
+                return;
+              }
               break;
             case "erase":
               erase.onMove(this.mouse.cx, this.mouse.cy);
@@ -255,16 +300,29 @@ export default {
       }
     },
     onEnd: function (event) {
+      if (this.toolEnabled === false) return;
       this.touches = [];
 
       if (event.button && event.button != 0) return;
 
       if (this.mouse.multiTouched || this.mouse.eventCancelled) {
+        if (controls.enabled === true && canvas.visible === true) {
+          controls.visible = true;
+          renderer.render(scene, camera);
+        }
         return;
       } else {
         switch (this.selectedTool) {
           case "draw":
-            draw.onEnd(this.mirror);
+            if (this.movingCanvas === true) {
+              this.movingCanvas = false;
+            } else {
+              draw.onEnd(this.mirror);
+              if (controls.enabled === true && canvas.visible === true) {
+                controls.visible = true;
+                renderer.render(scene, camera);
+              }
+            }
             break;
           case "erase":
             erase.onEnd();
@@ -310,7 +368,14 @@ export default {
     },
   },
   watch: {},
-  mounted() {},
+  mounted() {
+    if (window.location.hash) {
+      var hash = window.location.hash.substring(1); //Puts hash in variable, and removes the # character
+      if (hash === "displayTouches") {
+        this.displayTouches = true;
+      }
+    }
+  },
 };
 </script>
 

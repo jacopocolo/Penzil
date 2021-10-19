@@ -53,7 +53,7 @@ let draw = {
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
             this.bufferPoints = new Array();
-            this.size = 8;
+            this.size = 4;
 
             this.mesh.userData.vertices = new Array();
             this.mesh.userData.stroke = { show_stroke: stroke.show_stroke, color: stroke.color, lineWidth: stroke.lineWidth };
@@ -183,6 +183,7 @@ let draw = {
         end(mirrorOn) {
 
             if (this.stroke.show_stroke === false && this.fill.show_stroke === false) return
+            if (this.geometry.attributes.position.array.length < 3) return
 
             this.end_internal(mirrorOn);
 
@@ -249,7 +250,8 @@ let draw = {
                 let normal = { x: 0, y: 0, z: 0 };
                 v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
             } catch (err) {
-                console.log(err);
+                //expected if the line leaves the 3d canvas
+                // console.log(err);
                 return
             }
 
