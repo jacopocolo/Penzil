@@ -10,7 +10,7 @@ See the [Roadmap](https://github.com/jacopocolo/Penzil/projects/1) for upcoming 
 
 - You can draw/erase with left mouse button, finger or pen on top of the "3d canvas", the white plane in the 3d scene.
 - You can adjust the position of the "3d canvas" with the arrow-heads or the arcs at the center.
-- You can move and rotate the camera using the touchpad, two fingers and by pressing the alt key and dragging with the left mouse button. Panning is done with three fingers or by pressing the Spacebar and dragging with the left mouse button.
+- You can move and rotate the camera using the touchpad, two fingers or by pressing the alt key and dragging with the left mouse button. Panning is done with three fingers or by pressing the Spacebar and dragging with the left mouse button.
 - You can swap your primary tool between pencil and eraser from the selector at the top.
 
 ## Saving, loading and exporting
