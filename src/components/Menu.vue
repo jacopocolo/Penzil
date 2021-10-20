@@ -6,6 +6,7 @@
     <Load />
     <Export @modal="showModal" />
     <ExportUSDZ />
+    <ExportGLTF />
     <start-preview @preview="startPreview" />
   </div>
   <button class="toggle-menu" @click="show = !show">
@@ -31,6 +32,7 @@ import Save from "./MenuButtons/Save.vue";
 import Load from "./MenuButtons/Load.vue";
 import Export from "./MenuButtons/Export.vue";
 import ExportUSDZ from "./MenuButtons/ExportUSDZ.vue";
+import ExportGLTF from "./MenuButtons/ExportGLTF.vue";
 import StartPreview from "./MenuButtons/StartPreview.vue";
 import Feedback from "./MenuButtons/Feedback.vue";
 
@@ -45,6 +47,7 @@ export default {
     StartPreview,
     Feedback,
     ExportUSDZ,
+    ExportGLTF,
   },
   emits: ["modal-set", "preview"],
   data() {
@@ -116,7 +119,8 @@ button {
   border-bottom: 1px solid #ffe8b3;
 }
 
-button:last-child {
+button:last-child,
+.toggle-menu {
   border-bottom: none;
 }
 </style>

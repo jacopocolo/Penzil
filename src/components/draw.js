@@ -20,8 +20,6 @@ import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 //     "/watercolor.jpg"
 // )
 
-let materials = new Set();
-
 let draw = {
     l: undefined,
     draw: class {

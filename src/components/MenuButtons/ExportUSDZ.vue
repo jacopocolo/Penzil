@@ -1,5 +1,17 @@
 <template>
-  <button @click="exportToUsdz">Export USDZ</button>
+  <button
+    v-bind:class="[text === 'Export to USDZ' ? '' : 'hidden']"
+    @click="text === 'Export to USDZ' ? exportToUsdz() : ''"
+  >
+    {{ text }}
+  </button>
+  <a
+    v-bind:class="[text != 'Export to USDZ' ? 'ar' : 'ar hidden']"
+    id="ar"
+    rel="ar"
+  >
+    <img src="@/assets/icons/View_in_AR.svg" />
+  </a>
 </template>
 
 <script>
@@ -8,7 +20,6 @@ import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
 import { scene, renderer, camera } from "../../App.vue";
 import { TubeBufferGeometry } from "../TubeGeometryVW.js";
 let sceneUSDZ;
-// import * as simplify from "simplify-3d";
 
 export default {
   name: "ExportUSDZ",
@@ -16,10 +27,12 @@ export default {
   data() {
     return {
       lightbox: false,
+      text: "Export to USDZ",
     };
   },
   methods: {
     exportToUsdz: async function () {
+      this.text = "Exporting...";
       sceneUSDZ = new THREE.Scene();
 
       const group = new THREE.Group();
@@ -68,7 +81,7 @@ export default {
 
               //https://github.com/spite/THREE.MeshLine/blob/master/src/THREE.MeshLine.js#L424
               //in the shader it seems like it's base witdth * width
-              let width = obj.userData.stroke.force[i] / 100;
+              let width = obj.userData.stroke.force[i] / 80;
               let tailLength = 3;
 
               //Beginning of the line
@@ -195,7 +208,12 @@ export default {
       var el = document.getElementById("ar");
       el.setAttribute("href", URL.createObjectURL(blob));
       el.setAttribute("download", "sketch.usdz");
+
+      this.text = "Open in AR";
       // el.click();
+    },
+    destroy: function () {
+      this.text = "Export to USDZ";
     },
   },
   watch: {},
@@ -204,4 +222,25 @@ export default {
 </script>
 
 <style scoped>
+button {
+  border-bottom: 1px solid #ffe8b3;
+}
+
+.ar {
+  width: 100%;
+  align-content: center;
+  align-items: center;
+  background-color: rgba(0, 0, 0, 0);
+  border: none;
+  height: 44px;
+  padding-top: 6px;
+  padding-left: 12px;
+  padding-right: 12px;
+  border-bottom: 1px solid #ffe8b3;
+  box-sizing: border-box;
+}
+
+.ar > img {
+  width: auto;
+}
 </style>
