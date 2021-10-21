@@ -54,7 +54,7 @@ class TubeBufferGeometry extends BufferGeometry {
 
         var vertices = [];
         var normals = [];
-        // var uvs = [];
+        var uvs = [];
         var indices = [];
 
         // create buffer data
@@ -66,8 +66,8 @@ class TubeBufferGeometry extends BufferGeometry {
         this.setIndex(indices);
         this.setAttribute('position', new Float32BufferAttribute(vertices, 3));
         // Commenting out normals and UVs. For exporting to USDZ the result is better if the object has none of them
-        // this.setAttribute('normal', new Float32BufferAttribute(normals, 3));
-        // this.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
+        this.setAttribute('normal', new Float32BufferAttribute(normals, 3));
+        this.setAttribute('uv', new Float32BufferAttribute(uvs, 2));
 
         // functions
 

@@ -1,5 +1,5 @@
 <template>
-  <button @click="importFromJson">Load</button>
+  <button @click="importFromJson">{{ text }}</button>
 </template>
 
 <script>
@@ -9,7 +9,9 @@ export default {
   name: "Import",
   props: {},
   data() {
-    return {};
+    return {
+      text: "Load",
+    };
   },
   methods: {
     importFromJson: function () {
@@ -19,14 +21,16 @@ export default {
       input.type = "file";
       document.body.appendChild(input);
       input.onchange = (event) => {
+        let _this = this;
         file = event.target.files[0];
         function onReaderLoad(event) {
           var json = JSON.parse(event.target.result);
           try {
-            json.forEach((l) => {
-              if (l.vertices.length === 0) {
-                console.log(l);
-              } else {
+            for (let i = 0; i < json.length; i++) {
+              console.log(i);
+              _this.text = "Loading";
+              let l = json[i];
+              setTimeout(() => {
                 draw.fromVertices(
                   new Float32Array(l.vertices),
                   l.stroke,
@@ -38,8 +42,27 @@ export default {
                   l.scale,
                   l.matrix
                 );
-              }
-            });
+              }, 1);
+            }
+            // json.forEach((l, index) => {
+            //   if (l.vertices.length === 0) {
+            //     console.log(l);
+            //   } else {
+            //     _this.updateText(index, json.length);
+            //     draw.fromVertices(
+            //       new Float32Array(l.vertices),
+            //       l.stroke,
+            //       l.fill,
+            //       l.mirrorOn,
+            //       null, //uuid, not necessary to restore in import
+            //       l.position,
+            //       l.quaternion,
+            //       l.scale,
+            //       l.matrix
+            //     );
+            //   }
+            // });
+            _this.text = "Load";
           } catch (err) {
             console.log(err);
             // app.toast.show = true;
@@ -63,6 +86,9 @@ export default {
       };
       input.click();
     },
+    // updateText: function (index, length) {
+    //   this.text = "Loading " + index + "/" + length;
+    // },
   },
   watch: {},
   mounted() {},

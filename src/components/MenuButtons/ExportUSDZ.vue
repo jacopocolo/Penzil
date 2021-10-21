@@ -125,6 +125,10 @@ export default {
 
             const material = new THREE.MeshStandardMaterial({
               color: obj.userData.stroke.color,
+              flatShading: true,
+              roughness: 1,
+              shininess: 0,
+              metalness: 1,
             });
             const mesh = new THREE.Mesh(tubeGeometry, material);
             // mesh.geometry.computeBoundingSphere();
@@ -143,6 +147,7 @@ export default {
             fill.scale.set(1, 1, 1);
             fill.material = new THREE.MeshStandardMaterial({
               color: obj.userData.fill.color,
+              side: THREE.DoubleSide,
             });
             sceneUSDZ.add(fill);
           }
