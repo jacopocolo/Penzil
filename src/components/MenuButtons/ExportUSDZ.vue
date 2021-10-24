@@ -1,12 +1,12 @@
 <template>
   <button
-    v-bind:class="[text === 'Export to USDZ' ? '' : 'hidden']"
-    @click="text === 'Export to USDZ' ? exportToUsdz() : ''"
+    v-bind:class="[text === 'Export for AR' ? '' : 'hidden']"
+    @click="text === 'Export for AR' ? exportToUsdz() : ''"
   >
     {{ text }}
   </button>
   <a
-    v-bind:class="[text != 'Export to USDZ' ? 'ar' : 'ar hidden']"
+    v-bind:class="[text != 'Export for AR' ? 'ar' : 'ar hidden']"
     id="ar"
     rel="ar"
   >
@@ -27,7 +27,7 @@ export default {
   data() {
     return {
       lightbox: false,
-      text: "Export to USDZ",
+      text: "Export for AR",
     };
   },
   methods: {
@@ -218,7 +218,7 @@ export default {
       // el.click();
     },
     destroy: function () {
-      this.text = "Export to USDZ";
+      this.text = "Export for AR";
     },
   },
   watch: {},
