@@ -27,6 +27,7 @@
     @selected-canvas-shape="setSelectedCanvasShape"
     :selectedShape="canvasShape"
     :selectedTool="tool"
+    :mirror="mirror"
   />
   <Menu @modal-set="setModal" @preview="setPreview" />
   <show-tutorial @modal-set="setModal" :show="showTutorialButton" />
@@ -382,6 +383,9 @@ export default {
   mounted() {
     this.init();
     this.animate();
+
+    // this.mirror = "x";
+
     vm = this;
     this.cameraResetDisabled = false; //this is an override, I'm not quite sure what sets it to true on mount
 

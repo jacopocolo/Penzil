@@ -214,6 +214,7 @@ import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { scene, renderer, camera, vm } from "../App.vue";
 
 export let canvas, controls;
+let canvasMirror;
 let geometry = new THREE.PlaneGeometry(5, 5);
 let headGeometry;
 
@@ -248,6 +249,7 @@ export default {
   props: {
     selectedShape: String,
     selectedTool: String,
+    mirror: [Boolean, String],
   },
   emits: ["selected-canvas-shape"],
   methods: {
@@ -260,11 +262,57 @@ export default {
       controls.mode = "combined";
       // controls.scale.set(1.1, 1.1, 1.1);
       controls.addEventListener("change", () => {
-        renderer.render(scene, camera);
         //this is not very elegant but…
         if (vm != undefined) {
           vm.$refs.raycastCanvas.transformationResetDisabled = false;
         }
+
+        if (canvasMirror !== undefined) {
+          var position = new THREE.Vector3();
+          canvas.getWorldPosition(position);
+          var quaternion = new THREE.Quaternion();
+          canvas.getWorldQuaternion(quaternion);
+          var scale = new THREE.Vector3();
+          canvas.getWorldScale(scale);
+          switch (vm.$refs.raycastCanvas.mirror) {
+            case "x":
+              canvasMirror.position.set(-position.x, position.y, position.z);
+              canvasMirror.quaternion.set(
+                -quaternion.x,
+                quaternion.y,
+                quaternion.z,
+                -quaternion.w
+              );
+              canvasMirror.scale.set(-scale.x, scale.y, scale.z);
+              canvasMirror.matrixWorldNeedsUpdate = true;
+              break;
+            case "y":
+              canvasMirror.position.set(position.x, -position.y, position.z);
+              canvasMirror.quaternion.set(
+                quaternion.x,
+                -quaternion.y,
+                quaternion.z,
+                -quaternion.w
+              );
+              canvasMirror.scale.set(scale.x, -scale.y, scale.z);
+              canvasMirror.matrixWorldNeedsUpdate = true;
+              break;
+            case "z":
+              canvasMirror.position.set(position.x, position.y, -position.z);
+              canvasMirror.quaternion.set(
+                quaternion.x,
+                quaternion.y,
+                -quaternion.z,
+                -quaternion.w
+              );
+              canvasMirror.scale.set(scale.x, scale.y, -scale.z);
+              canvasMirror.matrixWorldNeedsUpdate = true;
+              break;
+            default:
+              return;
+          }
+        }
+        renderer.render(scene, camera);
       });
       controls.enabled = true;
       scene.add(controls);
@@ -346,6 +394,28 @@ export default {
       this.shape = val;
       this.$emit("selected-canvas-shape", val);
     },
+    setUpMirror(val) {
+      switch (val) {
+        case "x":
+          canvasMirror = canvas.clone();
+          canvasMirror.applyMatrix4(canvas.matrixWorld.makeScale(-1, 1, 1));
+          scene.add(canvasMirror);
+          renderer.render(scene, camera);
+          break;
+
+        case "y":
+          break;
+
+        case "z":
+          break;
+
+        default:
+          break;
+      }
+    },
+    removeMirror() {
+      scene.remove(canvasMirror);
+    },
   },
   watch: {
     opacity: function (val) {
@@ -426,6 +496,13 @@ export default {
       //     renderer.render(scene, camera);
       //   }
       // }
+    },
+    mirror: function (val) {
+      if (val === false) {
+        this.removeMirror();
+      } else {
+        this.setUpMirror(val);
+      }
     },
   },
   mounted() {

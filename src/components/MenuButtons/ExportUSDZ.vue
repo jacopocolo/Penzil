@@ -18,7 +18,7 @@
 import * as THREE from "three";
 import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
 import { scene, renderer, camera } from "../../App.vue";
-import { TubeBufferGeometry } from "../TubeGeometryVW.js";
+import { TubeBufferGeometry } from "../TubeGeometryWithVariableWidth.js";
 let sceneUSDZ;
 
 export default {
@@ -81,7 +81,7 @@ export default {
 
               //https://github.com/spite/THREE.MeshLine/blob/master/src/THREE.MeshLine.js#L424
               //in the shader it seems like it's base witdth * width
-              let width = obj.userData.stroke.force[i] / 80;
+              let width = obj.userData.stroke.force[i] / 60;
               let tailLength = 3;
 
               //Beginning of the line
@@ -147,9 +147,16 @@ export default {
             fill.scale.set(1, 1, 1);
             fill.material = new THREE.MeshStandardMaterial({
               color: obj.userData.fill.color,
-              side: THREE.DoubleSide,
+              side: THREE.FrontSide,
             });
             sceneUSDZ.add(fill);
+
+            let fillFlipped = fill.clone();
+            let fillFlippedGeometry = fill.geometry.clone();
+            fillFlippedGeometry.index.array =
+              fillFlippedGeometry.index.array.reverse();
+            fillFlipped.geometry = fillFlippedGeometry;
+            sceneUSDZ.add(fillFlipped);
           }
 
           renderer.render(scene, camera);
