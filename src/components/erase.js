@@ -189,7 +189,45 @@ let erase = {
 
             if (pickedObjects != undefined && pickedObjects.length > 0) {
                 pickedObjects.forEach((object) => {
-                    erase.deleteObject(object)
+
+                    //if delete whole line
+                    //erase.deleteObject(object)
+                    //else
+                    //raycast
+                    let vertices = [];
+                    let points = Array.from(object.geometry.attributes.position.array);
+
+                    //this seems ridicolous? I need to iterate through the duplicates of the points?
+                    for (let i = 0; i < points.length; i = i + 6) {
+                        //https://threejs.org/docs/#api/en/objects/Points
+                        let vertex = new THREE.Vector3(points[i], points[i + 1], points[i + 2]);
+                        vertex.applyMatrix4(object.matrix);
+
+                        var dGeometry = new THREE.SphereBufferGeometry(0.025, 32, 32);
+                        var dMaterial = new THREE.MeshBasicMaterial({ color: 0xff0000 });
+                        var d = new THREE.Mesh(dGeometry, dMaterial);
+                        scene.add(d);
+                        d.position.set(vertex.x, vertex.y, vertex.z)
+
+                        vertices.push(vertex);
+                    }
+
+                    let raycaster = new THREE.Raycaster();
+                    raycaster.setFromCamera(new THREE.Vector2((cx / window.innerWidth) * 2 - 1, -(cy / window.innerHeight) * 2 + 1), camera);
+                    raycaster.params.Points.threshold = 100000;
+                    try {
+                        var closestPoint = raycaster.intersectObjects(vertices)[0];
+                        console.log(closestPoint)
+                        var dotGeometry = new THREE.SphereBufferGeometry(0.025, 32, 32);
+                        var dotMaterial = new THREE.MeshBasicMaterial({ color: 0xffc75f });
+                        var dot = new THREE.Mesh(dotGeometry, dotMaterial);
+                        scene.add(dot);
+                        dot.position.copy(closestPoint.position);
+                        erase.deleteObject(object);
+                    } catch (err) {
+                        console.log(err)
+                    }
+                    //erase.deleteObject(object)
                 });
             }
 
@@ -207,7 +245,8 @@ let erase = {
             );
             if (pickedObjects != undefined && pickedObjects.length > 0) {
                 pickedObjects.forEach((object) => {
-                    erase.deleteObject(object);
+
+                    console.log(object);
                 });
             }
             renderer.render(scene, camera)
