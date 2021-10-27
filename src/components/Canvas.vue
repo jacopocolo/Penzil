@@ -621,4 +621,16 @@ export default {
     display: none;
   }
 }
+
+/* @media (min-width: 320px) and (max-width: 480px) {
+  .canvasSettings {
+    top: auto;
+    bottom: 12px;
+  }
+
+  .icon-and-label {
+    font-size: 0;
+    text-overflow: clip;
+  }
+} */
 </style>

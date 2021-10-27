@@ -29,7 +29,7 @@
     :selectedTool="tool"
     :mirror="mirror"
   />
-  <Menu @modal-set="setModal" @preview="setPreview" />
+  <Menu @modal-set="setModal" @preview="setPreview" ref="dotdotdot" />
   <show-tutorial @modal-set="setModal" :show="showTutorialButton" />
   <!-- <div>
     <a id="ar" rel="ar"><img src="@/assets/icons/AR.png" /></a>
@@ -499,12 +499,13 @@ a:hover {
     display: none;
   }
 
-  .canvasSettings {
+  .soapbar {
     display: none;
   }
 
-  .soapbar {
-    display: none;
+  .canvasSettings {
+    top: auto;
+    bottom: 12px;
   }
 }
 </style>

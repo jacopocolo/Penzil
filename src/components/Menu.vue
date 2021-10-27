@@ -3,9 +3,9 @@
     <About @modal="showModal" />
     <Feedback @modal="showModal" />
     <Save />
-    <Load />
+    <Load ref="load" />
     <Export @modal="showModal" />
-    <ExportUSDZ />
+    <ExportUSDZ v-if="isSafari" />
     <ExportGLTF />
     <start-preview @preview="startPreview" />
   </div>
@@ -53,6 +53,7 @@ export default {
   data() {
     return {
       show: false,
+      isSafari: false,
     };
   },
   methods: {
@@ -69,7 +70,14 @@ export default {
     },
   },
   watch: {},
-  mounted() {},
+  mounted() {
+    this.isSafari =
+      navigator.vendor &&
+      navigator.vendor.indexOf("Apple") > -1 &&
+      navigator.userAgent &&
+      navigator.userAgent.indexOf("CriOS") == -1 &&
+      navigator.userAgent.indexOf("FxiOS") == -1;
+  },
 };
 </script>
 

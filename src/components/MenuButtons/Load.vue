@@ -4,6 +4,7 @@
 
 <script>
 import { draw } from "../draw.js";
+import { scene, renderer, camera } from "../../App.vue";
 
 export default {
   name: "Import",
@@ -21,56 +22,30 @@ export default {
       input.type = "file";
       document.body.appendChild(input);
       input.onchange = (event) => {
-        let _this = this;
         file = event.target.files[0];
         function onReaderLoad(event) {
           var json = JSON.parse(event.target.result);
-          try {
-            for (let i = 0; i < json.length; i++) {
-              console.log(i);
-              _this.text = "Loading";
-              let l = json[i];
-              setTimeout(() => {
-                draw.fromVertices(
-                  new Float32Array(l.vertices),
-                  l.stroke,
-                  l.fill,
-                  l.mirrorOn,
-                  null, //uuid, not necessary to restore in import
-                  l.position,
-                  l.quaternion,
-                  l.scale,
-                  l.matrix
-                );
-              }, 1);
+          let i = 0;
+          function drawLine(l) {
+            draw.fromVertices(
+              new Float32Array(l.vertices),
+              l.stroke,
+              l.fill,
+              l.mirrorOn,
+              null, //uuid, not necessary to restore in import
+              l.position,
+              l.quaternion,
+              l.scale,
+              l.matrix
+            );
+            if (i < json.length - 1) {
+              i++;
+              drawLine(json[i]);
+            } else {
+              renderer.render(scene, camera);
             }
-            // json.forEach((l, index) => {
-            //   if (l.vertices.length === 0) {
-            //     console.log(l);
-            //   } else {
-            //     _this.updateText(index, json.length);
-            //     draw.fromVertices(
-            //       new Float32Array(l.vertices),
-            //       l.stroke,
-            //       l.fill,
-            //       l.mirrorOn,
-            //       null, //uuid, not necessary to restore in import
-            //       l.position,
-            //       l.quaternion,
-            //       l.scale,
-            //       l.matrix
-            //     );
-            //   }
-            // });
-            _this.text = "Load";
-          } catch (err) {
-            console.log(err);
-            // app.toast.show = true;
-            // app.toast.text = "Error. No line data found";
-            // setTimeout(function () {
-            //   app.toast.show = false;
-            // }, 2000);
           }
+          drawLine(json[i]);
         }
         if (file.type == "application/json") {
           var reader = new FileReader();

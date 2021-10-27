@@ -123,8 +123,8 @@ let draw = {
         end_internal(mirrorOn) {
             scene.add(this.mesh);
             drawingScene.clear();
-            renderer.autoClear = true;
-            renderer.render(scene, camera);
+            // renderer.autoClear = true;
+            // renderer.render(scene, camera);
 
             this.geometry.verticesNeedsUpdate = true;
             this.stroke.show_stroke ? '' : this.mesh.material.opacity = 0;
@@ -138,21 +138,21 @@ let draw = {
             // }
             // this.fillGeometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2));
 
-            renderer.render(scene, camera);
+            //renderer.render(scene, camera);
 
             this.mesh.position.set(
                 this.mesh.geometry.boundingSphere.center.x,
                 this.mesh.geometry.boundingSphere.center.y,
                 this.mesh.geometry.boundingSphere.center.z
             );
-            renderer.render(scene, camera);
+            //renderer.render(scene, camera);
 
             this.geometry.center();
-            renderer.render(scene, camera);
+            //renderer.render(scene, camera);
             this.setGeometry("tail");
-            renderer.render(scene, camera);
+            //renderer.render(scene, camera);
             this.geometry.needsUpdate = true;
-            renderer.render(scene, camera);
+            //renderer.render(scene, camera);
 
             switch (mirrorOn) {
                 case "x":
@@ -168,7 +168,7 @@ let draw = {
                 //it's false, do nothing
             }
 
-            renderer.render(scene, camera);
+            //renderer.render(scene, camera);
 
             let vert = this.geometry.attributes.position.array;
             this.fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
@@ -176,7 +176,7 @@ let draw = {
             this.fillGeometry.setIndex(triangles);
             this.fillGeometry.computeBoundingSphere();
             //this.fillGeometry.computeVertexNormals();
-            renderer.render(scene, camera);
+            //renderer.render(scene, camera);
         }
         end(mirrorOn) {
 
@@ -217,7 +217,8 @@ let draw = {
                         position,
                         quaternion,
                         scale,
-                        matrix
+                        matrix,
+                        true
                     );
                 }
             });
@@ -405,7 +406,7 @@ let draw = {
     onCancel: function () {
         this.l ? this.l.cancel() : null;
     },
-    fromVertices(vertices, stroke, fill, mirrorOn, uuid, position, quaternion, scale, matrix) {
+    fromVertices(vertices, stroke, fill, mirrorOn, uuid, position, quaternion, scale, matrix, render) {
         this.l = new this.draw(stroke, fill);
         this.onStart(0, 0, 0, 0, false, mirrorOn, stroke, fill);
         this.l.geometry.attributes.position.array = vertices;
@@ -413,9 +414,9 @@ let draw = {
         this.l.geometry.attributes.position.needsUpdate = true;
         this.l.mesh.userData.stroke.force = stroke.force;
         this.l.setGeometry();
-        renderer.autoClear = false;
-        renderer.clearDepth();
-        renderer.render(drawingScene, camera);
+        // renderer.autoClear = false;
+        // renderer.clearDepth();
+        // renderer.render(drawingScene, camera);
         if (uuid) { this.l.mesh.uuid = uuid; }
         this.onEnd_internal(mirrorOn);
         if (matrix) {
@@ -444,7 +445,7 @@ let draw = {
             );
         }
         scene.add(this.l.mesh)
-        renderer.render(scene, camera)
+        if (render === true) { renderer.render(scene, camera) }
     }
 }
 
