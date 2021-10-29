@@ -393,6 +393,7 @@ export default {
     setCanvasShape(val) {
       this.shape = val;
       this.$emit("selected-canvas-shape", val);
+      this.shapeSelectionVisibility = false;
     },
     setUpMirror(val) {
       switch (val) {

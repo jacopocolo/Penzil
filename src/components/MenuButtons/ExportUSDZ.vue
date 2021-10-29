@@ -1,15 +1,11 @@
 <template>
   <button
-    v-bind:class="[text === 'Export for AR' ? '' : 'hidden']"
-    @click="text === 'Export for AR' ? exportToUsdz() : ''"
+    v-bind:class="[mode === 'default' || mode === 'exporting' ? '' : 'hidden']"
+    @click="mode === 'default' ? exportForAr() : ''"
   >
-    {{ text }}
+    {{ mode === "default" ? "Export for AR" : "Exporting..." }}
   </button>
-  <a
-    v-bind:class="[text != 'Export for AR' ? 'ar' : 'ar hidden']"
-    id="ar"
-    rel="ar"
-  >
+  <a v-bind:class="[mode === 'view' ? 'ar' : 'ar hidden']" id="ar" rel="ar">
     <img src="@/assets/icons/View_in_AR.svg" />
   </a>
 </template>
@@ -17,7 +13,7 @@
 <script>
 import * as THREE from "three";
 import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
-import { scene, renderer, camera } from "../../App.vue";
+import { scene } from "../../App.vue";
 import { TubeBufferGeometry } from "../TubeGeometryWithVariableWidth.js";
 let sceneUSDZ;
 
@@ -28,13 +24,19 @@ export default {
     return {
       lightbox: false,
       text: "Export for AR",
+      mode: "default", //default || exporting || view
     };
   },
   methods: {
-    exportToUsdz: async function () {
-      this.text = "Exporting...";
+    exportForAr: function () {
+      this.mode = "exporting";
+      //there are better ways but this is good enough. The export floods the processor so vue doesn't update even with nextTick
+      setTimeout(() => {
+        this.viewInAr();
+      }, 500);
+    },
+    viewInAr: async function () {
       sceneUSDZ = new THREE.Scene();
-
       const group = new THREE.Group();
 
       function map(n, start1, stop1, start2, stop2) {
@@ -158,57 +160,12 @@ export default {
             fillFlipped.geometry = fillFlippedGeometry;
             sceneUSDZ.add(fillFlipped);
           }
-
-          renderer.render(scene, camera);
         }
       }
-
-      function addLightBox(scale) {
-        const geometry = new THREE.PlaneGeometry(scale, scale);
-        const material = new THREE.MeshStandardMaterial({
-          color: 0xffffff,
-          side: THREE.DoubleSide,
-        });
-        const semiTransparentMaterial = new THREE.MeshStandardMaterial({
-          color: 0xffffff,
-          side: THREE.DoubleSide,
-          transparent: true,
-          opacity: 0.8,
-        });
-
-        const backPlane = new THREE.Mesh(geometry, material);
-        const bottomPlane = new THREE.Mesh(geometry, material);
-        const topPlane = new THREE.Mesh(geometry, semiTransparentMaterial);
-        const leftPlane = new THREE.Mesh(geometry, material);
-        const rightPlane = new THREE.Mesh(geometry, material);
-
-        backPlane.position.set(0, 0, -scale / 2);
-        bottomPlane.position.set(0, -scale / 2, 0);
-        bottomPlane.rotation.set(-Math.PI / 2, 0, 0);
-
-        topPlane.position.set(0, scale / 2, 0);
-        topPlane.rotation.set(Math.PI / 2, 0, 0);
-
-        leftPlane.position.set(scale / 2, 0, 0);
-        leftPlane.rotation.set(0, -Math.PI / 2, 0);
-
-        rightPlane.position.set(-scale / 2, 0, 0);
-        rightPlane.rotation.set(0, Math.PI / 2, 0);
-
-        sceneUSDZ.add(backPlane);
-        sceneUSDZ.add(bottomPlane);
-        sceneUSDZ.add(topPlane);
-        sceneUSDZ.add(leftPlane);
-        sceneUSDZ.add(rightPlane);
-      }
-
-      //need to calculate the widest object of the element and pass it as a scale
-      this.lightbox ? addLightBox(8) : "";
 
       sceneUSDZ.add(group);
       sceneUSDZ.scale.set(0.1, 0.1, 0.1);
       sceneUSDZ.updateMatrixWorld(true);
-      console.log(sceneUSDZ);
 
       const exporter = new USDZExporter();
       const arraybuffer = await exporter.parse(sceneUSDZ);
@@ -220,12 +177,7 @@ export default {
       var el = document.getElementById("ar");
       el.setAttribute("href", URL.createObjectURL(blob));
       el.setAttribute("download", "sketch.usdz");
-
-      this.text = "Open in AR";
-      // el.click();
-    },
-    destroy: function () {
-      this.text = "Export for AR";
+      this.mode = "view";
     },
   },
   watch: {},
