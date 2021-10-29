@@ -120,11 +120,14 @@ let draw = {
 
             this.addVertex(x, y, z, force, unproject)
         }
-        end_internal(mirrorOn) {
+        end_internal(mirrorOn, render) {
             scene.add(this.mesh);
             drawingScene.clear();
-            // renderer.autoClear = true;
-            // renderer.render(scene, camera);
+
+            // if (render === true) {
+            //     renderer.autoClear = true;
+            //     renderer.render(scene, camera);
+            // }
 
             this.geometry.verticesNeedsUpdate = true;
             this.stroke.show_stroke ? '' : this.mesh.material.opacity = 0;
@@ -177,13 +180,17 @@ let draw = {
             this.fillGeometry.computeBoundingSphere();
             //this.fillGeometry.computeVertexNormals();
             //renderer.render(scene, camera);
+            if (render === true) {
+                renderer.autoClear = true;
+                renderer.render(scene, camera);
+            }
         }
         end(mirrorOn) {
 
             if (this.stroke.show_stroke === false && this.fill.show_stroke === false) return
             if (this.geometry.attributes.position.array.length < 3) return
 
-            this.end_internal(mirrorOn);
+            this.end_internal(mirrorOn, true);
 
             let uuid = this.uuid;
             let vertices = this.geometry.attributes.position.array;
@@ -400,8 +407,8 @@ let draw = {
     onEnd: function (mirrorOn) {
         this.l.end(mirrorOn);
     },
-    onEnd_internal: function (mirrorOn) {
-        this.l.end_internal(mirrorOn);
+    onEnd_internal: function (mirrorOn, render) {
+        this.l.end_internal(mirrorOn, render);
     },
     onCancel: function () {
         this.l ? this.l.cancel() : null;
@@ -418,7 +425,7 @@ let draw = {
         // renderer.clearDepth();
         // renderer.render(drawingScene, camera);
         if (uuid) { this.l.mesh.uuid = uuid; }
-        this.onEnd_internal(mirrorOn);
+        this.onEnd_internal(mirrorOn, false);
         if (matrix) {
             this.l.mesh.applyMatrix4(matrix)
         }

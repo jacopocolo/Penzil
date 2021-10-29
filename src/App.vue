@@ -265,6 +265,7 @@ export default {
       scene.add(light);
 
       this.$.refs.raycastCanvas.setUp();
+      this.$.refs.raycastCanvas.resetTransformation();
 
       window.addEventListener("resize", this.onWindowResize);
       window.addEventListener("orientationchange", this.onWindowResize);
