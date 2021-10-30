@@ -8,7 +8,7 @@ import * as THREE from "three";
 import { Earcut } from 'three/src/extras/Earcut.js';
 import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
-import { canvas } from "./Canvas.vue";
+import { canvas, currentShape } from "./Canvas.vue";
 import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
@@ -29,9 +29,7 @@ let draw = {
             this.geometry = new THREE.BufferGeometry();
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
-
             //this.material = materials.has() ? materials.has()
-
             this.material = new MeshLineMaterial({
                 lineWidth: this.stroke.show_stroke ? this.stroke.lineWidth : 0.005,
                 sizeAttenuation: 1,
@@ -58,6 +56,15 @@ let draw = {
             this.mesh.userData.stroke.force = new Array();
             this.mesh.userData.fill = { show_fill: fill.show_fill, color: fill.color };
 
+            let position = new THREE.Vector3();
+            canvas.getWorldPosition(position);
+            let quaternion = new THREE.Quaternion();
+            canvas.getWorldQuaternion(quaternion);
+            let scale = new THREE.Vector3();
+            canvas.getWorldScale(scale);
+
+            this.mesh.userData.canvas = { shape: currentShape, position: position, quaternion: quaternion, scale: scale };
+
             this.fill = fill;
             this.fillGeometry = new THREE.BufferGeometry();
             this.fillVertices = new Float32Array([]);
@@ -65,8 +72,6 @@ let draw = {
             this.triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
             this.fillGeometry.setIndex(this.triangles);
             this.fillMaterial = new THREE.MeshBasicMaterial({
-                // useMap: true,
-                // map: watercolor,
                 color: this.fill.color,
                 side: THREE.DoubleSide,
                 wireframe: false,
@@ -117,7 +122,6 @@ let draw = {
         move(x, y, z, force, unproject) {
 
             if (this.stroke.show_stroke === false && this.fill.show_fill === false) return
-
             this.addVertex(x, y, z, force, unproject)
         }
         end_internal(mirrorOn, render) {

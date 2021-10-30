@@ -88,7 +88,6 @@
 import { draw } from "./draw.js";
 import { erase } from "./erase.js";
 import { select } from "./select.js";
-import { setCenter } from "./setCenter.js";
 
 import * as THREE from "three";
 import { canvas, controls } from "./Canvas.vue";
@@ -121,6 +120,7 @@ export default {
     stroke: [Object],
     fill: [Object],
   },
+  emits: ["mouse-coordinates"],
   methods: {
     updateMouseCoordinates: function (event) {
       if (event.touches) {
@@ -149,8 +149,9 @@ export default {
       }
     },
     onStart: function (event) {
-      if ((event.button && event.button != 0) || this.toolEnabled === false)
+      if ((event.button && event.button != 0) || this.toolEnabled === false) {
         return;
+      }
 
       this.touches = [];
       //this is just to display the touches event
@@ -222,9 +223,6 @@ export default {
               this.mouse.cy
             );
             break;
-          case "center":
-            //setCenter.set(this.mouse.tx, this.mouse.ty);
-            break;
           default:
             break;
         }
@@ -245,9 +243,6 @@ export default {
               break;
             case "select":
               select.onCancel();
-              break;
-            case "center":
-              //setCenter.set(this.mouse.tx, this.mouse.ty);
               break;
             default:
               break;
@@ -287,9 +282,6 @@ export default {
               break;
             case "select":
               select.onMove(this.mouse.cx, this.mouse.cy);
-              break;
-            case "center":
-              //setCenter.set(this.mouse.tx, this.mouse.ty);
               break;
             default:
               break;
@@ -332,9 +324,6 @@ export default {
           case "select":
             select.onEnd(this.mouse.tx, this.mouse.ty);
             break;
-          case "center":
-            setCenter.set(this.mouse.tx, this.mouse.ty);
-            break;
           default:
             break;
         }
@@ -353,6 +342,12 @@ export default {
           this.onMove(event);
           break;
         case "touchend":
+          if (this.toolEnabled === false) {
+            this.$emit("mouse-coordinates", {
+              x: this.mouse.tx,
+              y: this.mouse.ty,
+            });
+          }
           this.onEnd(event);
           break;
         case "mousedown":
@@ -362,6 +357,12 @@ export default {
           this.onMove(event);
           break;
         case "mouseup":
+          if (this.toolEnabled === false) {
+            this.$emit("mouse-coordinates", {
+              x: this.mouse.tx,
+              y: this.mouse.ty,
+            });
+          }
           this.onEnd(event);
           break;
         default:

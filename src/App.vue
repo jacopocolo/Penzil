@@ -16,6 +16,7 @@
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
   <Input
+    @mouse-coordinates="setMouseCoordinates"
     :selectedTool="tool"
     :mirror="mirror"
     :stroke="stroke"
@@ -25,9 +26,11 @@
   <Canvas
     ref="raycastCanvas"
     @selected-canvas-shape="setSelectedCanvasShape"
+    @set-tool-enabled="setToolEnabled"
     :selectedShape="canvasShape"
     :selectedTool="tool"
     :mirror="mirror"
+    :mouse="mouse"
   />
   <Menu @modal-set="setModal" @preview="setPreview" ref="dotdotdot" />
   <show-tutorial @modal-set="setModal" :show="showTutorialButton" />
@@ -116,6 +119,7 @@ export default {
       modalProp: { show: false, mode: "about" },
       previewing: false,
       showTutorialButton: true,
+      mouse: {},
     };
   },
   emits: ["modal-set", "selected-canvas-shape"],
@@ -340,6 +344,12 @@ export default {
       });
 
       this.$.refs.undoRedo.updateUi();
+    },
+    setToolEnabled: function (val) {
+      this.toolEnabled = val;
+    },
+    setMouseCoordinates: function (val) {
+      this.mouse = val;
     },
     setSelectedCanvasShape: function (val) {
       this.canvasShape = val;

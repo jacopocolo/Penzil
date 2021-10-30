@@ -133,7 +133,18 @@
     >
       <img
         src="@/assets/icons/reset.svg"
-        alt="Reset canvas position and rotation"
+        alt="Reset canvas position, rotation and scale"
+      />
+    </span>
+    <span
+      v-bind:class="[!visible ? 'disabled' : '']"
+      class="canvas-button"
+      @click="restoreTransformation()"
+      v-if="!shapeSelectionVisibility"
+    >
+      <img
+        src="@/assets/icons/MagicWand.svg"
+        alt="Restore canvas position, rotation and scale"
       />
     </span>
     <div class="canvasShapeSelection" v-if="shapeSelectionVisibility">
@@ -213,7 +224,8 @@ import { TransformControls } from "./transformControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { scene, renderer, camera, vm } from "../App.vue";
 
-export let canvas, controls;
+export let canvas, controls, currentShape;
+let raycaster;
 let canvasMirror;
 let geometry = new THREE.PlaneGeometry(5, 5);
 let headGeometry;
@@ -244,14 +256,16 @@ export default {
       shape: "plane",
       snap: false,
       shapeSelectionVisibility: false,
+      restoringTransformation: false,
     };
   },
   props: {
     selectedShape: String,
     selectedTool: String,
     mirror: [Boolean, String],
+    mouse: Object,
   },
-  emits: ["selected-canvas-shape"],
+  emits: ["selected-canvas-shape", "set-tool-enabled"],
   methods: {
     setUp() {
       const material = this.material;
@@ -335,6 +349,23 @@ export default {
       renderer.render(scene, camera);
       this.transformationResetDisabled = true;
     },
+    restoreTransformation() {
+      this.$emit("set-tool-enabled", false);
+      this.restoringTransformation = true;
+    },
+    setShapeAndMatrix(shape, position, quaternion, scale) {
+      this.setCanvasShape(shape);
+      console.log(position);
+      canvas.position.set(position.x, position.y, position.z);
+      canvas.quaternion.set(
+        quaternion.x,
+        quaternion.y,
+        quaternion.z,
+        quaternion.w
+      );
+      canvas.scale.set(scale.x, scale.y, scale.z);
+      renderer.render(scene, camera);
+    },
     toggleTransformMode() {
       if (this.mode === "combined") {
         this.mode = "scale";
@@ -392,6 +423,7 @@ export default {
     },
     setCanvasShape(val) {
       this.shape = val;
+      currentShape = val;
       this.$emit("selected-canvas-shape", val);
       this.shapeSelectionVisibility = false;
     },
@@ -503,6 +535,29 @@ export default {
         this.removeMirror();
       } else {
         this.setUpMirror(val);
+      }
+    },
+    mouse: function (val) {
+      if (this.restoringTransformation === true) {
+        raycaster = new THREE.Raycaster();
+        try {
+          raycaster.setFromCamera(new THREE.Vector2(val.x, val.y), camera);
+          raycaster.params.Line.threshold = 0.05;
+          raycaster.layers.set(1);
+          let obj = raycaster.intersectObjects(scene.children)[0].object;
+          if (obj != undefined && obj.geometry.type == "MeshLine") {
+            this.setShapeAndMatrix(
+              obj.userData.canvas.shape,
+              obj.userData.canvas.position,
+              obj.userData.canvas.quaternion,
+              obj.userData.canvas.scale
+            );
+          }
+        } catch (error) {
+          console.log(error);
+        }
+        this.$emit("set-tool-enabled", true);
+        this.restoringTransformation = false;
       }
     },
   },
