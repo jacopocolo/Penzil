@@ -6,7 +6,7 @@
     <Load ref="load" />
     <Export @modal="showModal" />
     <ExportUSDZ v-if="isSafari" />
-    <!-- <ExportGLTF /> -->
+    <ExportGLTF />
     <start-preview @preview="startPreview" />
   </div>
   <button class="toggle-menu" @click="show = !show">
@@ -34,7 +34,7 @@ import Export from "./MenuButtons/Export.vue";
 import StartPreview from "./MenuButtons/StartPreview.vue";
 import Feedback from "./MenuButtons/Feedback.vue";
 import ExportUSDZ from "./MenuButtons/ExportUSDZ.vue";
-// import ExportGLTF from "./MenuButtons/ExportGLTF.vue";
+import ExportGLTF from "./MenuButtons/ExportGLTF.vue";
 
 export default {
   name: "Import",
@@ -47,7 +47,7 @@ export default {
     StartPreview,
     Feedback,
     ExportUSDZ,
-    // ExportGLTF,
+    ExportGLTF,
   },
   emits: ["modal-set", "preview"],
   data() {

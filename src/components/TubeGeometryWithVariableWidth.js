@@ -8,7 +8,7 @@
 
 import { BufferGeometry } from 'three';
 import { Float32BufferAttribute } from 'three';
-// import { Vector2 } from 'three';
+import { Vector2 } from 'three';
 import { Vector3 } from 'three';
 
 // TubeBufferGeometry
@@ -45,7 +45,7 @@ class TubeBufferGeometry extends BufferGeometry {
 
         var vertex = new Vector3();
         var normal = new Vector3();
-        // var uv = new Vector2();
+        var uv = new Vector2();
         var P = new Vector3();
 
         var i, j;
@@ -88,7 +88,7 @@ class TubeBufferGeometry extends BufferGeometry {
 
             // uvs are generated in a separate function.
             // this makes it easy compute correct values for closed geometries
-            // generateUVs();
+            generateUVs();
 
             // finally create faces
 
@@ -163,22 +163,22 @@ class TubeBufferGeometry extends BufferGeometry {
 
         }
 
-        // function generateUVs() {
+        function generateUVs() {
 
-        //     for (i = 0; i <= tubularSegments; i++) {
+            for (i = 0; i <= tubularSegments; i++) {
 
-        //         for (j = 0; j <= radialSegments; j++) {
+                for (j = 0; j <= radialSegments; j++) {
 
-        //             uv.x = i / tubularSegments;
-        //             uv.y = j / radialSegments;
+                    uv.x = i / tubularSegments;
+                    uv.y = j / radialSegments;
 
-        //             uvs.push(uv.x, uv.y);
+                    uvs.push(uv.x, uv.y);
 
-        //         }
+                }
 
-        //     }
+            }
 
-        // }
+        }
 
     }
 }

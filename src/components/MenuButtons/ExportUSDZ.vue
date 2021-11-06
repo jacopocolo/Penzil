@@ -8,6 +8,13 @@
   <a v-bind:class="[mode === 'view' ? 'ar' : 'ar hidden']" id="ar" rel="ar">
     <img src="@/assets/icons/View_in_AR.svg" />
   </a>
+  <a
+    id="download"
+    v-bind:class="[mode === 'view' ? 'ar' : 'ar hidden']"
+    download="sketch.usdz"
+  >
+    Download USDZ
+  </a>
 </template>
 
 <script>
@@ -25,6 +32,7 @@ export default {
       lightbox: false,
       text: "Export for AR",
       mode: "default", //default || exporting || view
+      url: undefined,
     };
   },
   methods: {
@@ -83,7 +91,7 @@ export default {
 
               //https://github.com/spite/THREE.MeshLine/blob/master/src/THREE.MeshLine.js#L424
               //in the shader it seems like it's base witdth * width
-              let width = obj.userData.stroke.force[i] / 60;
+              let width = obj.userData.stroke.force[i] / (baseWidth * 10000);
               let tailLength = 3;
 
               //Beginning of the line
@@ -133,9 +141,12 @@ export default {
               metalness: 1,
             });
             const mesh = new THREE.Mesh(tubeGeometry, material);
-            // mesh.geometry.computeBoundingSphere();
-            group.attach(mesh);
-            sceneUSDZ.add(mesh);
+            if (mesh.geometry.attributes.uv != undefined) {
+              group.attach(mesh);
+              sceneUSDZ.add(mesh);
+            } else {
+              continue;
+            }
           }
 
           // The fill
@@ -147,18 +158,26 @@ export default {
             fill.position.set(0, 0, 0);
             fill.rotation.set(0, 0, 0);
             fill.scale.set(1, 1, 1);
+
             fill.material = new THREE.MeshStandardMaterial({
               color: obj.userData.fill.color,
               side: THREE.FrontSide,
             });
+
+            let texture;
+            if (obj.children[0].material.map) {
+              texture = obj.children[0].material.map.clone();
+              fill.material.map = texture;
+            }
+
             sceneUSDZ.add(fill);
 
-            let fillFlipped = fill.clone();
-            let fillFlippedGeometry = fill.geometry.clone();
-            fillFlippedGeometry.index.array =
-              fillFlippedGeometry.index.array.reverse();
-            fillFlipped.geometry = fillFlippedGeometry;
-            sceneUSDZ.add(fillFlipped);
+            // let fillFlipped = fill.clone();
+            // let fillFlippedGeometry = fill.geometry.clone();
+            // fillFlippedGeometry.index.array =
+            //   fillFlippedGeometry.index.array.reverse();
+            // fillFlipped.geometry = fillFlippedGeometry;
+            // sceneUSDZ.add(fillFlipped);
           }
         }
       }
@@ -177,6 +196,9 @@ export default {
       var el = document.getElementById("ar");
       el.setAttribute("href", URL.createObjectURL(blob));
       el.setAttribute("download", "sketch.usdz");
+      document
+        .getElementById("download")
+        .setAttribute("href", URL.createObjectURL(blob));
       this.mode = "view";
     },
   },

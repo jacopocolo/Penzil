@@ -136,7 +136,7 @@
         alt="Reset canvas position, rotation and scale"
       />
     </span>
-    <span
+    <!-- <span
       v-bind:class="[!visible ? 'disabled' : '']"
       class="canvas-button"
       @click="restoreTransformation()"
@@ -146,7 +146,7 @@
         src="@/assets/icons/MagicWand.svg"
         alt="Restore canvas position, rotation and scale"
       />
-    </span>
+    </span> -->
     <div class="canvasShapeSelection" v-if="shapeSelectionVisibility">
       <span @click="setCanvasShape('plane')">
         <input
