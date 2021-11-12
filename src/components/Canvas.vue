@@ -237,7 +237,7 @@ export default {
       material: new THREE.MeshToonMaterial({
         color: 0xe6edf5,
         transparent: true,
-        opacity: 0.95,
+        opacity: 0.5,
         side: THREE.DoubleSide,
         polygonOffset: true,
         polygonOffsetFactor: 2.5,
@@ -573,10 +573,6 @@ export default {
   position: absolute;
   top: 12px;
   left: 12px;
-  /* background-color: white;
-  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
-  height: 44px;
-  border-radius: 8px; */
   font-weight: 900;
   display: flex;
   flex-direction: column;
@@ -605,8 +601,6 @@ export default {
 .canvasShapeSelection > span > label {
   display: flex;
   flex-direction: row;
-  /* width: 100px; */
-  /* align-items: center; */
   align-items: initial;
 }
 

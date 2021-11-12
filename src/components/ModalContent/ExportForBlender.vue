@@ -4,7 +4,7 @@
     <h1>Export for Blender</h1>
 
     <p>
-      You can export your drawing for Beldner with the button below but there
+      You can export your sketch for Blender with the button below but there
       isn't a proper improter yet, just a script. Hop in
       <a href="https://discord.gg/jvzjNpZGCk" target="_blank">Penzil Discord</a>
       server and I'll guide you along.
@@ -54,7 +54,7 @@ export default {
         "data:text/json;charset=utf-8," +
         encodeURIComponent(JSON.stringify(json));
 
-      var filename = prompt("Enter filename", "gp_");
+      var filename = prompt("Enter a name for your file", "gp_");
 
       if (filename != null) {
         var el = document.createElement("a");

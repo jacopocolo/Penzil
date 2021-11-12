@@ -4,7 +4,8 @@
     <Feedback @modal="showModal" />
     <Save />
     <Load ref="load" />
-    <Export @modal="showModal" />
+    <export-for-blender @modal="showModal" />
+    <export-for-procreate @modal="showModal" />
     <ExportUSDZ v-if="isSafari" />
     <ExportGLTF />
     <start-preview @preview="startPreview" />
@@ -16,13 +17,7 @@
       <circle cx="30.5" cy="21.5" r="2" fill="#1C1C1E" stroke="black" />
     </svg>
   </button>
-  <div
-    class="fade"
-    v-if="show"
-    @touchstart="show = false"
-    @mousedown="show = false"
-    @click="show = false"
-  ></div>
+  <div class="fade" v-if="show" @click="show = false"></div>
   <feedback />
 </template>
 
@@ -30,7 +25,8 @@
 import About from "./MenuButtons/About.vue";
 import Save from "./MenuButtons/Save.vue";
 import Load from "./MenuButtons/Load.vue";
-import Export from "./MenuButtons/Export.vue";
+import ExportForBlender from "./MenuButtons/ExportForBlender.vue";
+import ExportForProcreate from "./MenuButtons/ExportForProcreate.vue";
 import StartPreview from "./MenuButtons/StartPreview.vue";
 import Feedback from "./MenuButtons/Feedback.vue";
 import ExportUSDZ from "./MenuButtons/ExportUSDZ.vue";
@@ -43,7 +39,8 @@ export default {
     About,
     Load,
     Save,
-    Export,
+    ExportForBlender,
+    ExportForProcreate,
     StartPreview,
     Feedback,
     ExportUSDZ,

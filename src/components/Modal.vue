@@ -5,7 +5,8 @@
       <div class="component-container">
         <Welcome v-if="modalProp.mode === 'about'" />
         <Feedback v-if="modalProp.mode === 'feedback'" />
-        <ExportForBlender v-if="modalProp.mode === 'export'" />
+        <export-for-blender v-if="modalProp.mode === 'blender'" />
+        <export-for-procreate v-if="modalProp.mode === 'procreate'" />
         <Tutorial v-if="modalProp.mode === 'tutorial'" />
         <Survey v-if="modalProp.mode === 'survey'" />
       </div>
@@ -17,6 +18,7 @@
 import Welcome from "./ModalContent/Welcome.vue";
 import Feedback from "./ModalContent/Feedback.vue";
 import ExportForBlender from "./ModalContent/ExportForBlender.vue";
+import ExportForProcreate from "./ModalContent/ExportForProcreate.vue";
 import Tutorial from "./ModalContent/Tutorial.vue";
 import Survey from "./ModalContent/Survey.vue";
 
@@ -26,6 +28,7 @@ export default {
     Welcome,
     Feedback,
     ExportForBlender,
+    ExportForProcreate,
     Tutorial,
     Survey,
   },

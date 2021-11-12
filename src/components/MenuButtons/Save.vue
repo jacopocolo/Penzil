@@ -47,7 +47,7 @@ export default {
         "data:text/json;charset=utf-8," +
         encodeURIComponent(JSON.stringify(json));
 
-      var filename = prompt("Enter filename", "sketch");
+      var filename = prompt("Enter a name for your file", "sketch");
 
       if (filename != null) {
         var el = document.createElement("a");

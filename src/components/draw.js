@@ -79,6 +79,7 @@ let draw = {
             this.uvsY = [];
             this.uvs = [];
             this.triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
+            this.face = null;
             this.fillGeometry.setIndex(this.triangles);
             this.fillMaterial = new THREE.MeshBasicMaterial({
                 color: this.fill.color,
@@ -169,9 +170,16 @@ let draw = {
 
             let vert = this.geometry.attributes.position.array;
             this.fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
-            let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
+            let triangles;
+
+            var planeVector = (new THREE.Vector3(0, 0, 1)).applyQuaternion(this.fillMesh.quaternion);
+            var cameraVector = (new THREE.Vector3(0, 0, -1)).applyQuaternion(camera.quaternion);
+
+            if (planeVector.angleTo(cameraVector) > Math.PI / 2) { triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1) } else { triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3).reverse()), 1) }
             this.fillGeometry.setIndex(triangles);
             this.fillGeometry.computeBoundingSphere();
+
+
             if (render === true) {
                 renderer.autoClear = true;
                 renderer.render(scene, camera);
@@ -237,6 +245,17 @@ let draw = {
             try {
                 var intersectedObject = raycaster.intersectObjects([canvas])[0];
                 var nt = intersectedObject.point;
+                if (this.face === null) {
+                    if (
+                        (Math.sign(intersectedObject.face.normal.y) === -1 || Object.is(Math.sign(intersectedObject.face.normal.y), -0))
+                        ||
+                        (Math.sign(intersectedObject.face.normal.z) === -1 || Object.is(Math.sign(intersectedObject.face.normal.z), -0))
+                    ) {
+                        this.face = 'back'
+                    } else {
+                        this.face = 'front'
+                    }
+                }
                 let normal = { x: 0, y: 0, z: 0 };
                 v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
             } catch (err) {
@@ -392,7 +411,6 @@ let draw = {
                     }
                 }
             );
-            console.log({ "this.geometry.attributes.position.array": this.geometry.attributes.position.array })
         }
         setUvs() {
             function map(n, start1, stop1, start2, stop2) {
@@ -400,9 +418,6 @@ let draw = {
                     ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2
                 );
             }
-
-            console.log(this.uvsX);
-            console.log(this.uvsY);
 
             const uvLowestX = Math.min(...this.uvsX);
             const uvHighestX = Math.max(...this.uvsX);
@@ -499,7 +514,6 @@ let draw = {
                 scale.z
             );
         }
-        console.log(this.l.mesh)
         scene.add(this.l.mesh)
         if (render === true) { renderer.render(scene, camera) }
     }
