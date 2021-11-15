@@ -466,15 +466,6 @@ input[type="radio"] {
   width: 0;
 }
 
-label {
-  display: flex;
-  width: 60px;
-  height: 44px;
-  align-content: center;
-  justify-content: center;
-  margin: 0px;
-}
-
 input[type="radio"]:checked + label {
   background-color: #ffe8b3;
 }

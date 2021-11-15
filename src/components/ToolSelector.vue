@@ -94,6 +94,15 @@ export default {
   float: left;
 }
 
+label {
+  display: flex;
+  width: 60px;
+  height: 44px;
+  align-content: center;
+  justify-content: center;
+  margin: 0px;
+}
+
 label > img {
   min-height: 44px;
 }

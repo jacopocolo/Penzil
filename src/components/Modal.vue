@@ -66,8 +66,11 @@ export default {
 }
 
 .modal {
-  width: 50%;
-  height: 50%;
+  width: fit-content;
+  min-width: 50%;
+  max-width: 75%;
+  height: fit-content;
+  min-height: 50%;
   background-color: white;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   border-radius: 8px;

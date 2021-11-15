@@ -171,7 +171,7 @@ div {
 }
 
 h1 {
-  font-size: 40px;
+  font-size: 2em;
 }
 
 h2 {

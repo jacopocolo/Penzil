@@ -115,6 +115,7 @@ div {
 }
 
 button {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
   align-content: center;
   background-color: rgba(0, 0, 0, 0);
   border: none;
@@ -122,6 +123,7 @@ button {
   padding-left: 12px;
   padding-right: 12px;
   border-bottom: 1px solid #ffe8b3;
+  font-size: 0.8em;
 }
 
 button:last-child,

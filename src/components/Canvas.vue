@@ -237,7 +237,7 @@ export default {
       material: new THREE.MeshToonMaterial({
         color: 0xe6edf5,
         transparent: true,
-        opacity: 0.5,
+        opacity: 0.8,
         side: THREE.DoubleSide,
         polygonOffset: true,
         polygonOffsetFactor: 2.5,
@@ -655,6 +655,15 @@ export default {
   font-size: 0.5em;
   color: #1c1c1e;
   padding: 0px 12px 0px 4px;
+}
+
+label {
+  display: flex;
+  width: 60px;
+  height: 44px;
+  align-content: center;
+  justify-content: center;
+  margin: 0px;
 }
 
 #transform-mode {

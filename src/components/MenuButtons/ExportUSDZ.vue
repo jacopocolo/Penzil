@@ -229,6 +229,9 @@ export default {
 
 <style scoped>
 button {
+  font-family: Avenir, Helvetica, Arial, sans-serif;
+  font-weight: 900;
+  font-size: 0.8em;
   border-bottom: 1px solid #ffe8b3;
 }
 
@@ -248,10 +251,10 @@ button {
 
 a.ar {
   color: #1c1c1e;
-  font-size: 0.9em;
-  font-weight: 800;
+  font-weight: 900;
   line-height: 30px;
   text-align: center;
+  font-size: 0.8em;
 }
 
 .ar > img {

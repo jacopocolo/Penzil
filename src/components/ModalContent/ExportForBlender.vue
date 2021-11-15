@@ -75,7 +75,7 @@ div {
 }
 
 h1 {
-  font-size: 60px;
+  font-size: 2em;
   display: inline;
 }
 
