@@ -6,7 +6,7 @@
       <div id="scene-usdz-canvas" class="column">
         <canvas id="usdz-canvas"></canvas>
         <span class="canvas-instructions"
-          >Tap or click on a fill to flip it</span
+          >Tap or click on a fill (visible face or edge) to flip it</span
         >
       </div>
       <div id="usdz-options" class="column">
@@ -25,7 +25,8 @@
           <br />
           <input type="checkbox" name="fills" v-model="checkFills" />
           <label for="fills"
-            >Manually check your fills. Tap or click on one to flip it
+            >Manually check your fills. Tap or click on a visible face or edge
+            to flip it
             <p>
               Procrete only support single face meshes and you can only paint
               their front side. Check that your fills are facing the direction
@@ -170,7 +171,6 @@ export default {
                 vertices.push(v3);
               }
             }
-
             //if the line is too short, we skip this iteration
             if (vertices.length < 2) continue;
 
@@ -178,11 +178,11 @@ export default {
             for (let i = 0; i < obj.userData.stroke.force.length; i++) {
               let length = obj.userData.stroke.force.length;
               let minWidth = 0;
-              let baseWidth = obj.userData.stroke.lineWidth;
+              let baseWidth = obj.userData.stroke.lineWidth * 2.5;
 
               //https://github.com/spite/THREE.MeshLine/blob/master/src/THREE.MeshLine.js#L424
               //in the shader it seems like it's base witdth * width
-              let width = obj.userData.stroke.force[i] / (baseWidth * 10000);
+              let width = obj.userData.stroke.force[i] / 15;
               let tailLength = 3;
 
               //Beginning of the line
@@ -221,7 +221,7 @@ export default {
               vertices.length,
               force,
               8,
-              !true
+              false
             );
 
             const material = new THREE.MeshBasicMaterial({
@@ -494,14 +494,18 @@ export default {
 .column {
   display: flex;
   flex-direction: column;
-  flex-basis: 100%;
   flex: 1;
+  flex-basis: 100%;
 }
+/* 
+#scene-usdz-canvas {
+  flex-basis: 30%;
+} */
 
 #usdz-canvas {
   position: relative;
   top: 0;
-  width: 90%;
+  width: 95%;
   height: 100%;
 }
 
@@ -511,6 +515,10 @@ export default {
   text-align: center;
   width: 90%;
   margin-bottom: 1em;
+}
+
+input > label {
+  text-indent: 1.25em;
 }
 
 label {
