@@ -55,28 +55,34 @@
       />
     </span>
     <span
-      class="canvas-button"
+      class="canvas-button transform-mode"
       @click="toggleTransformMode()"
       v-bind:class="[!visible ? 'disabled' : '']"
       v-if="!shapeSelectionVisibility"
     >
-      <span v-if="mode === 'combined'" class="icon-and-label"
-        ><img
-          src="@/assets/icons/translate.svg"
-          alt="Switch to scale"
-        />Move</span
+      <span
+        class="icon-and-label"
+        v-bind:class="[mode === 'combined' ? 'active' : '']"
       >
-      <span v-if="mode === 'scale'" class="icon-and-label"
+        <img src="@/assets/icons/translate.svg" alt="Switch to scale" />
+        <span v-if="mode === 'combined'">Move</span>
+      </span>
+      <span
+        class="icon-and-label"
+        v-bind:class="[mode === 'scale' ? 'active' : '']"
         ><img
           src="@/assets/icons/scale.svg"
           alt="Switch to move and rotate"
-        />Scale</span
+        /><span v-if="mode === 'scale'">Scale</span></span
       ></span
     >
     <span
       class="canvas-button"
       @click="toggleControls()"
-      v-bind:class="[!visible ? 'disabled' : '']"
+      v-bind:class="[
+        !visible ? 'disabled' : '',
+        !transformationEnabled ? 'active' : '',
+      ]"
       v-if="!shapeSelectionVisibility"
       ><span v-if="transformationEnabled" class="icon-and-label"
         ><img
@@ -95,6 +101,7 @@
       class="canvas-button"
       @click="toggleVisibility()"
       v-if="!shapeSelectionVisibility"
+      v-bind:class="[!visible ? 'active' : '']"
     >
       <span v-if="visible" class="icon-and-label"
         ><img
@@ -113,7 +120,7 @@
       class="canvas-button"
       @click="toggleSnap()"
       v-if="!shapeSelectionVisibility"
-      v-bind:class="[!visible ? 'disabled' : '']"
+      v-bind:class="[!visible ? 'disabled' : '', snap ? 'active' : '']"
       ><span v-if="!snap" class="icon-and-label"
         ><img src="@/assets/icons/snapOff.svg" alt="Turn off snap" />Snap
         off</span
@@ -393,17 +400,32 @@ export default {
     toggleVisibility() {
       if (canvas.visible === true) {
         this.visible = false;
+
         if (this.transformationEnabled === true) {
           controls.visible = false;
         }
+
+        //if controls are enabled we temporary disable them without overriding the setting
+        if (controls.enabled === true) {
+          controls.enabled = false;
+        }
+
         canvas.visible = false;
         renderer.render(scene, camera);
       } else {
         this.visible = true;
+
         if (this.transformationEnabled === true) {
           controls.visible = true;
         }
+
+        //if controls were enabled, restore them to be enabled
+        if (controls.enabled === false && this.transformationEnabled === true) {
+          controls.enabled = true;
+        }
+
         canvas.visible = true;
+
         renderer.render(scene, camera);
       }
     },
@@ -653,8 +675,18 @@ export default {
   align-items: center;
   gap: 4px;
   font-size: 0.5em;
+  border-radius: 22px;
   color: #1c1c1e;
   padding: 0px 12px 0px 4px;
+}
+
+.transform-mode {
+  padding: 0px 2px;
+}
+
+.active {
+  box-shadow: inset 0px 0px 0px 1px #fff;
+  background-color: #ffe8b3;
 }
 
 label {
@@ -681,15 +713,14 @@ label {
   }
 }
 
-/* @media (min-width: 320px) and (max-width: 480px) {
+@media (min-width: 320px) and (max-width: 480px) {
   .canvasSettings {
-    top: auto;
-    bottom: 12px;
+    top: 80px;
   }
 
   .icon-and-label {
-    font-size: 0;
-    text-overflow: clip;
+    max-width: 32px;
+    overflow: hidden;
   }
-} */
+}
 </style>

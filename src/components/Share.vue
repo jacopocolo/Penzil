@@ -1,35 +1,37 @@
 <template>
   <div class="popup" v-if="show">
-    <About @modal="showModal" />
-    <Feedback @modal="showModal" />
-    <Save />
-    <Load ref="load" />
+    <export-for-blender @modal="showModal" />
+    <export-for-procreate @modal="showModal" />
+    <ExportUSDZ v-if="isSafari" />
+    <ExportGLB />
+    <start-preview @preview="startPreview" />
   </div>
-  <button class="toggle-menu" @click="show = !show">
-    <svg viewBox="0 0 44 44" fill="none" xmlns="http://www.w3.org/2000/svg">
-      <circle cx="14.5" cy="21.5" r="2" fill="#1C1C1E" stroke="black" />
-      <circle cx="22.5" cy="21.5" r="2" fill="#1C1C1E" stroke="black" />
-      <circle cx="30.5" cy="21.5" r="2" fill="#1C1C1E" stroke="black" />
-    </svg>
+  <button
+    class="toggle-menu"
+    @click="show = !show"
+    v-bind:style="[show === true ? 'z-index: 10' : '']"
+  >
+    <img src="@/assets/icons/share.svg" alt="Share your sketch" />
   </button>
   <div class="fade" v-if="show" @click="show = false"></div>
-  <feedback />
 </template>
 
 <script>
-import About from "./MenuButtons/About.vue";
-import Save from "./MenuButtons/Save.vue";
-import Load from "./MenuButtons/Load.vue";
-import Feedback from "./MenuButtons/Feedback.vue";
+import ExportForBlender from "./MenuButtons/ExportForBlender.vue";
+import ExportForProcreate from "./MenuButtons/ExportForProcreate.vue";
+import StartPreview from "./MenuButtons/StartPreview.vue";
+import ExportUSDZ from "./MenuButtons/ExportUSDZ.vue";
+import ExportGLB from "./MenuButtons/ExportGLB.vue";
 
 export default {
   name: "Import",
   props: {},
   components: {
-    About,
-    Load,
-    Save,
-    Feedback,
+    ExportForBlender,
+    ExportForProcreate,
+    StartPreview,
+    ExportUSDZ,
+    ExportGLB,
   },
   emits: ["modal-set", "preview"],
   data() {
@@ -66,7 +68,7 @@ export default {
 <style scoped>
 .fade {
   position: absolute;
-  z-index: 7;
+  z-index: 9;
   width: 100%;
   height: 100%;
   top: 0;
@@ -76,9 +78,9 @@ export default {
 
 .toggle-menu {
   position: absolute;
-  z-index: 8;
+  z-index: 5;
   bottom: 12px;
-  right: 12px;
+  right: 62px;
   width: 44px;
   height: 44px;
   background-color: white;
@@ -89,9 +91,9 @@ export default {
 
 div {
   position: absolute;
-  z-index: 8;
+  z-index: 10;
   bottom: 64px;
-  right: 12px;
+  right: 68px;
   background-color: white;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   border-radius: 8px;

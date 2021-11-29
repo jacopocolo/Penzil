@@ -32,7 +32,8 @@
     :mirror="mirror"
     :mouse="mouse"
   />
-  <Menu @modal-set="setModal" @preview="setPreview" ref="dotdotdot" />
+  <Menu @modal-set="setModal" ref="dotdotdot" />
+  <Share @modal-set="setModal" @preview="setPreview" ref="share" />
   <show-tutorial @modal-set="setModal" :show="showTutorialButton" />
   <!-- <div>
     <a id="ar" rel="ar"><img src="@/assets/icons/AR.png" /></a>
@@ -54,6 +55,7 @@ import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
 import LineSettings from "./components/LineSettings.vue";
 import Menu from "./components/Menu.vue";
+import Share from "./components/Share.vue";
 import Canvas from "./components/Canvas.vue";
 import { controls, canvas } from "./components/Canvas.vue";
 import Modal from "./components/Modal.vue";
@@ -96,6 +98,7 @@ export default {
     ViewportCube,
     UndoRedo,
     Menu,
+    Share,
     Canvas,
     Modal,
     VideoExportPreview,
@@ -476,6 +479,7 @@ input[type="radio"]:not(:checked) + label {
 
 .disabled {
   pointer-events: none;
+  touch-action: none;
   opacity: 0.6;
 }
 

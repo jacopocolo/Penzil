@@ -1,17 +1,17 @@
 import * as THREE from "three";
 import { TubeBufferGeometry } from "./TubeGeometryWithVariableWidth.js";
 
-export function convertMeshlineToGeometry(line) {
+export function map(n, start1, stop1, start2, stop2) {
+    return ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2;
+}
+
+export function convertMeshlineToGeometry(line, material) {
     let obj = line;
     let geometry = obj.geometry.clone();
     geometry.applyMatrix4(obj.matrix);
     let vertices = [];
     let points = Array.from(geometry.attributes.position.array);
 
-
-    function map(n, start1, stop1, start2, stop2) {
-        return ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2;
-    }
 
     for (let i = 0; i <= points.length; i = i + 6) {
         let v3 = new THREE.Vector3(
@@ -76,19 +76,28 @@ export function convertMeshlineToGeometry(line) {
         !true
     );
 
-    const material = new THREE.MeshStandardMaterial({
-        color: obj.userData.stroke.color,
-        flatShading: true,
-        roughness: 1,
-        shininess: 0,
-        metalness: 1,
-    });
-    const mesh = new THREE.Mesh(tubeGeometry, material);
+    let tubeMaterial
+
+    if (material === "basic") {
+        tubeMaterial = new THREE.MeshBasicMaterial({
+            color: obj.userData.stroke.color,
+            flatShading: true,
+        });
+    } else {
+        tubeMaterial = new THREE.MeshStandardMaterial({
+            color: obj.userData.stroke.color,
+            flatShading: true,
+            roughness: 1,
+            shininess: 0,
+            metalness: 1,
+        });
+    }
+    const mesh = new THREE.Mesh(tubeGeometry, tubeMaterial);
     return mesh;
 }
 
 
-export function convertMeshlineFillToGeometry(mesh) {
+export function convertMeshlineFillToGeometry(mesh, material, edges, duplicate) {
     let obj = mesh;
     let fill = obj.children[0].clone();
     let fillGeometry = obj.children[0].geometry.clone();
@@ -97,9 +106,54 @@ export function convertMeshlineFillToGeometry(mesh) {
     fill.position.set(0, 0, 0);
     fill.rotation.set(0, 0, 0);
     fill.scale.set(1, 1, 1);
-    fill.material = new THREE.MeshStandardMaterial({
-        color: obj.userData.fill.color,
-        side: THREE.DoubleSide,
-    });
-    return fill;
+
+    let fillMaterial;
+
+    if (material === "basic") {
+        fillMaterial = new THREE.MeshBasicMaterial({
+            color: obj.userData.fill.color,
+            side: THREE.FrontSide,
+            wireframe: false
+        });
+    }
+    else {
+        fillMaterial = new THREE.MeshStandardMaterial({
+            color: obj.userData.fill.color,
+            side: THREE.DoubleSide,
+        });
+    }
+
+    let fillMesh = new THREE.Mesh(fillGeometry, fillMaterial);
+    let fillMeshFlipped;
+
+    if (duplicate === true) {
+        let fillFlippedGeometry = fillGeometry.clone();
+        fillFlippedGeometry.index.array =
+            fillFlippedGeometry.index.array.reverse();
+        let fillMeshMaterial = new THREE.MeshStandardMaterial({
+            color: obj.userData.fill.color,
+            side: THREE.DoubleSide,
+        });
+        fillMeshFlipped = new THREE.Mesh(fillFlippedGeometry, fillMeshMaterial)
+    }
+
+    if (edges === true) {
+        const edges = new THREE.EdgesGeometry(fillGeometry);
+        const line = new THREE.LineSegments(
+            edges,
+            new THREE.LineBasicMaterial({
+                color: obj.userData.fill.color,
+            })
+        );
+
+        fillMesh.attach(line);
+    }
+
+
+    if (duplicate === true) {
+        let arr = [fillMesh, fillMeshFlipped]
+        return arr
+    } else {
+        return fillMesh;
+    }
 }

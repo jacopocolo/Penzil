@@ -71,13 +71,15 @@ export default {
   max-width: 75%;
   height: fit-content;
   min-height: 50%;
+  max-height: 70%;
+  overflow-y: scroll;
   background-color: white;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   border-radius: 8px;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none;
+  user-select: text;
   touch-action: none;
   padding: 32px;
 }

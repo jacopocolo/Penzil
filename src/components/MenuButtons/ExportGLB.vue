@@ -1,5 +1,5 @@
 <template>
-  <button @click="exportToGltf()">Export to GLTF</button>
+  <button @click="exportToGltf()">Export to GLB</button>
 </template>
 
 <script>
@@ -51,14 +51,18 @@ export default {
       console.log(sceneGLTF);
 
       const exporter = new GLTFExporter();
-      exporter.parse(sceneGLTF, function (result) {
-        if (result instanceof ArrayBuffer) {
-          saveArrayBuffer(result, "scene.glb");
-        } else {
-          const output = JSON.stringify(result, null, 2);
-          saveString(output, "scene.gltf");
-        }
-      });
+      exporter.parse(
+        sceneGLTF,
+        function (result) {
+          if (result instanceof ArrayBuffer) {
+            saveArrayBuffer(result, "scene.glb");
+          } else {
+            const output = JSON.stringify(result, null, 2);
+            saveString(output, "scene.gltf");
+          }
+        },
+        { binary: true }
+      );
       const link = document.createElement("a");
       link.style.display = "none";
       document.body.appendChild(link);

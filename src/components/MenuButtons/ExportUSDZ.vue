@@ -22,7 +22,10 @@
 import * as THREE from "three";
 import { USDZExporter } from "three/examples/jsm/exporters/USDZExporter.js";
 import { scene } from "../../App.vue";
-import { TubeBufferGeometry } from "../TubeGeometryWithVariableWidth.js";
+import {
+  convertMeshlineToGeometry,
+  convertMeshlineFillToGeometry,
+} from "../convertMeshlineToGeometry.js";
 let sceneUSDZ;
 
 export default {
@@ -46,163 +49,181 @@ export default {
     },
     viewInAr: async function () {
       sceneUSDZ = new THREE.Scene();
-      const group = new THREE.Group();
 
-      function map(n, start1, stop1, start2, stop2) {
-        return ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2;
-      }
-
-      for (let o = 0; o <= scene.children.length; o++) {
-        let obj = scene.children[o];
-
+      scene.children.forEach((obj) => {
         if (
           obj != undefined &&
           obj.geometry &&
           obj.geometry.type == "MeshLine" &&
           obj.layers.mask == 2 &&
-          obj.geometry.attributes.position.array.length > 0
+          obj.geometry.attributes.position.array.length > 6
         ) {
           // The stroke
           if (obj.userData.stroke.show_stroke === true) {
-            let geometry = obj.geometry.clone();
-            geometry.applyMatrix4(obj.matrix);
-            let vertices = [];
-            let points = Array.from(geometry.attributes.position.array);
-
-            for (let i = 0; i <= points.length; i = i + 6) {
-              let v3 = new THREE.Vector3(
-                points[i],
-                points[i + 1],
-                points[i + 2]
-              );
-              //why do I have 0,0,0 points in my positions? :thinking:
-              if (v3.x != 0 && v3.y != 0 && v3.z != 0) {
-                vertices.push(v3);
-              }
-            }
-
-            //if the line is too short, we skip this iteration
-            if (vertices.length < 2) continue;
-
-            let force = [0];
-            for (let i = 0; i < obj.userData.stroke.force.length; i++) {
-              let length = obj.userData.stroke.force.length;
-              let minWidth = 0;
-              let baseWidth = obj.userData.stroke.lineWidth;
-
-              //https://github.com/spite/THREE.MeshLine/blob/master/src/THREE.MeshLine.js#L424
-              //in the shader it seems like it's base witdth * width
-              let width = obj.userData.stroke.force[i] / (baseWidth * 10000);
-              let tailLength = 3;
-
-              //Beginning of the line
-              if (i < tailLength) {
-                let n = map(
-                  i,
-                  minWidth,
-                  tailLength,
-                  minWidth,
-                  baseWidth + width
-                );
-
-                force.push(n);
-              }
-              //End of the line
-              else if (i > length - tailLength) {
-                let n = map(
-                  i,
-                  length - tailLength,
-                  length - 1,
-                  baseWidth + width,
-                  minWidth
-                );
-
-                force.push(n);
-              }
-              //bulk of the line
-              else {
-                force.push(baseWidth + width);
-              }
-            }
-
-            var pathBase = new THREE.CatmullRomCurve3(vertices);
-            const tubeGeometry = new TubeBufferGeometry(
-              pathBase,
-              vertices.length,
-              force,
-              8,
-              !true
-            );
-
-            const material = new THREE.MeshStandardMaterial({
-              color: obj.userData.stroke.color,
-              flatShading: true,
-              roughness: 1,
-              shininess: 0,
-              metalness: 1,
-            });
-            const mesh = new THREE.Mesh(tubeGeometry, material);
-            if (mesh.geometry.attributes.uv != undefined) {
-              group.attach(mesh);
-              sceneUSDZ.add(mesh);
-            } else {
-              continue;
-            }
+            sceneUSDZ.add(convertMeshlineToGeometry(obj, "standard"));
           }
 
           // The fill
           if (obj.userData.fill.show_fill === true) {
-            let fill = obj.children[0].clone();
-            let fillGeometry = obj.children[0].geometry.clone();
-
-            // let flippedFaces = obj.children[0].geometry.clone();
-            // let flippedArray = flippedFaces.index.array.reverse();
-            // flippedFaces.index.array = flippedArray;
-            // const mergedFaces = new Uint16Array(
-            //   fillGeometry.index.array.length + flippedFaces.index.array.length
-            // );
-            // for (var f = 0; f < fillGeometry.index.array.length; f++)
-            //   mergedFaces[f] = fillGeometry.index.array[f];
-            // for (var e = 0; e < flippedFaces.index.array.length; e++)
-            //   mergedFaces[fillGeometry.index.array.lenght + e] =
-            //     flippedFaces.index.array[e];
-            // fillGeometry.index.array = mergedFaces;
-            // fillGeometry.index.count = mergedFaces.length;
-
-            fill.geometry = fillGeometry;
-            fill.geometry.applyMatrix4(obj.matrix);
-            fill.position.set(0, 0, 0);
-            fill.rotation.set(0, 0, 0);
-            fill.scale.set(1, 1, 1);
-
-            fill.material = new THREE.MeshStandardMaterial({
-              color: obj.userData.fill.color,
-              side: THREE.DoubleSide,
-            });
-
-            let texture;
-            if (obj.children[0].material.map) {
-              texture = obj.children[0].material.map.clone();
-              fill.material.map = texture;
-            }
-
-            sceneUSDZ.add(fill);
-
-            let fillFlipped = fill.clone();
-            let fillFlippedGeometry = fill.geometry.clone();
-            fillFlippedGeometry.index.array =
-              fillFlippedGeometry.index.array.reverse();
-            fillFlipped.geometry = fillFlippedGeometry;
-            fillFlipped.material = new THREE.MeshStandardMaterial({
-              color: obj.userData.fill.color,
-              side: THREE.DoubleSide,
-            });
-            sceneUSDZ.add(fillFlipped);
+            convertMeshlineFillToGeometry(obj, "standard", false, true).forEach(
+              (mesh) => {
+                sceneUSDZ.add(mesh);
+              }
+            );
           }
         }
-      }
+      });
 
-      sceneUSDZ.add(group);
+      // for (let o = 0; o <= scene.children.length; o++) {
+      //   let obj = scene.children[o];
+
+      //   if (
+      //     obj != undefined &&
+      //     obj.geometry &&
+      //     obj.geometry.type == "MeshLine" &&
+      //     obj.layers.mask == 2 &&
+      //     obj.geometry.attributes.position.array.length > 0
+      //   ) {
+      //     // The stroke
+      //     if (obj.userData.stroke.show_stroke === true) {
+      //       let geometry = obj.geometry.clone();
+      //       geometry.applyMatrix4(obj.matrix);
+      //       let vertices = [];
+      //       let points = Array.from(geometry.attributes.position.array);
+
+      //       for (let i = 0; i <= points.length; i = i + 6) {
+      //         let v3 = new THREE.Vector3(
+      //           points[i],
+      //           points[i + 1],
+      //           points[i + 2]
+      //         );
+      //         //why do I have 0,0,0 points in my positions? :thinking:
+      //         if (v3.x != 0 && v3.y != 0 && v3.z != 0) {
+      //           vertices.push(v3);
+      //         }
+      //       }
+
+      //       //if the line is too short, we skip this iteration
+      //       if (vertices.length < 2) continue;
+
+      //       let force = [0];
+      //       for (let i = 0; i < obj.userData.stroke.force.length; i++) {
+      //         let length = obj.userData.stroke.force.length;
+      //         let minWidth = 0;
+      //         let baseWidth = obj.userData.stroke.lineWidth;
+
+      //         //https://github.com/spite/THREE.MeshLine/blob/master/src/THREE.MeshLine.js#L424
+      //         //in the shader it seems like it's base witdth * width
+      //         let width = obj.userData.stroke.force[i] / (baseWidth * 10000);
+      //         let tailLength = 3;
+
+      //         //Beginning of the line
+      //         if (i < tailLength) {
+      //           let n = map(
+      //             i,
+      //             minWidth,
+      //             tailLength,
+      //             minWidth,
+      //             baseWidth + width
+      //           );
+
+      //           force.push(n);
+      //         }
+      //         //End of the line
+      //         else if (i > length - tailLength) {
+      //           let n = map(
+      //             i,
+      //             length - tailLength,
+      //             length - 1,
+      //             baseWidth + width,
+      //             minWidth
+      //           );
+
+      //           force.push(n);
+      //         }
+      //         //bulk of the line
+      //         else {
+      //           force.push(baseWidth + width);
+      //         }
+      //       }
+
+      //       var pathBase = new THREE.CatmullRomCurve3(vertices);
+      //       const tubeGeometry = new TubeBufferGeometry(
+      //         pathBase,
+      //         vertices.length,
+      //         force,
+      //         8,
+      //         !true
+      //       );
+
+      //       const material = new THREE.MeshStandardMaterial({
+      //         color: obj.userData.stroke.color,
+      //         flatShading: true,
+      //         roughness: 1,
+      //         shininess: 0,
+      //         metalness: 1,
+      //       });
+      //       const mesh = new THREE.Mesh(tubeGeometry, material);
+      //       if (mesh.geometry.attributes.uv != undefined) {
+      //         group.attach(mesh);
+      //         sceneUSDZ.add(mesh);
+      //       } else {
+      //         continue;
+      //       }
+      //     }
+
+      //     // The fill
+      //     if (obj.userData.fill.show_fill === true) {
+      //       let fill = obj.children[0].clone();
+      //       let fillGeometry = obj.children[0].geometry.clone();
+
+      //       // let flippedFaces = obj.children[0].geometry.clone();
+      //       // let flippedArray = flippedFaces.index.array.reverse();
+      //       // flippedFaces.index.array = flippedArray;
+      //       // const mergedFaces = new Uint16Array(
+      //       //   fillGeometry.index.array.length + flippedFaces.index.array.length
+      //       // );
+      //       // for (var f = 0; f < fillGeometry.index.array.length; f++)
+      //       //   mergedFaces[f] = fillGeometry.index.array[f];
+      //       // for (var e = 0; e < flippedFaces.index.array.length; e++)
+      //       //   mergedFaces[fillGeometry.index.array.lenght + e] =
+      //       //     flippedFaces.index.array[e];
+      //       // fillGeometry.index.array = mergedFaces;
+      //       // fillGeometry.index.count = mergedFaces.length;
+
+      //       fill.geometry = fillGeometry;
+      //       fill.geometry.applyMatrix4(obj.matrix);
+      //       fill.position.set(0, 0, 0);
+      //       fill.rotation.set(0, 0, 0);
+      //       fill.scale.set(1, 1, 1);
+
+      //       fill.material = new THREE.MeshStandardMaterial({
+      //         color: obj.userData.fill.color,
+      //         side: THREE.DoubleSide,
+      //       });
+
+      //       let texture;
+      //       if (obj.children[0].material.map) {
+      //         texture = obj.children[0].material.map.clone();
+      //         fill.material.map = texture;
+      //       }
+
+      //       sceneUSDZ.add(fill);
+
+      //       let fillFlipped = fill.clone();
+      //       let fillFlippedGeometry = fill.geometry.clone();
+      //       fillFlippedGeometry.index.array =
+      //         fillFlippedGeometry.index.array.reverse();
+      //       fillFlipped.geometry = fillFlippedGeometry;
+      //       fillFlipped.material = new THREE.MeshStandardMaterial({
+      //         color: obj.userData.fill.color,
+      //         side: THREE.DoubleSide,
+      //       });
+      //       sceneUSDZ.add(fillFlipped);
+      //     }
+      //   }
+      // }
+
       sceneUSDZ.scale.set(0.1, 0.1, 0.1);
       sceneUSDZ.updateMatrixWorld(true);
 
