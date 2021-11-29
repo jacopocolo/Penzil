@@ -84,13 +84,17 @@
         !transformationEnabled ? 'active' : '',
       ]"
       v-if="!shapeSelectionVisibility"
-      ><span v-if="transformationEnabled" class="icon-and-label"
+      ><span
+        v-bind:class="[transformationEnabled ? '' : 'hidden']"
+        class="icon-and-label"
         ><img
           src="@/assets/icons/lockControls.svg"
           alt="Hide the canvas controls"
         />Unlocked</span
       >
-      <span v-if="!transformationEnabled" class="icon-and-label"
+      <span
+        v-bind:class="[!transformationEnabled ? '' : 'hidden']"
+        class="icon-and-label"
         ><img
           src="@/assets/icons/unlockControls.svg"
           alt="Show the canvas controls"
@@ -109,7 +113,7 @@
           alt="Hide the canvas controls"
         />Visible</span
       >
-      <span v-if="!visible" class="icon-and-label"
+      <span v-bind:class="[!visible ? '' : 'hidden']" class="icon-and-label"
         ><img
           src="@/assets/icons/showCanvas.svg"
           alt="Show the canvas controls"
@@ -121,11 +125,11 @@
       @click="toggleSnap()"
       v-if="!shapeSelectionVisibility"
       v-bind:class="[!visible ? 'disabled' : '', snap ? 'active' : '']"
-      ><span v-if="!snap" class="icon-and-label"
+      ><span v-bind:class="[!snap ? '' : 'hidden']" class="icon-and-label"
         ><img src="@/assets/icons/snapOff.svg" alt="Turn off snap" />Snap
         off</span
       >
-      <span v-if="snap" class="icon-and-label">
+      <span v-bind:class="[snap ? '' : 'hidden']" class="icon-and-label">
         <img src="@/assets/icons/snapOn.svg" alt="Turn on snap" />Snap on</span
       ></span
     >
@@ -154,7 +158,10 @@
         alt="Restore canvas position, rotation and scale"
       />
     </span> -->
-    <div class="canvasShapeSelection" v-if="shapeSelectionVisibility">
+    <div
+      class="canvasShapeSelection"
+      v-bind:class="[shapeSelectionVisibility ? '' : 'hidden']"
+    >
       <span @click="setCanvasShape('plane')">
         <input
           type="radio"
@@ -687,6 +694,10 @@ export default {
 .active {
   box-shadow: inset 0px 0px 0px 1px #fff;
   background-color: #ffe8b3;
+}
+
+.hidden {
+  display: none;
 }
 
 label {
