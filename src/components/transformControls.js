@@ -317,6 +317,10 @@ class TransformControls extends Object3D {
                 axis = "X";
                 mode = "rotate"
                 break;
+            case "XYZ":
+                axis = "XYZ";
+                mode = "translate"
+                break;
             default:
                 break;
         }
@@ -853,7 +857,7 @@ class TransformControlsGizmo extends Object3D {
 
         const matYellowTransparent = gizmoMaterial.clone();
         matYellowTransparent.color.setHex(0xFFD880);
-        matYellowTransparent.opacity = 0.25;
+        matYellowTransparent.opacity = 0.5;
 
         const matYellow = gizmoMaterial.clone();
         matYellow.color.setHex(0xFFD880);
@@ -863,7 +867,7 @@ class TransformControlsGizmo extends Object3D {
 
         // reusable geometry
 
-        const arrowGeometry = new CylinderGeometry(0, 0.045, 0.125, 12);
+        const arrowGeometry = new CylinderGeometry(0, 0.055, 0.125, 12);
         arrowGeometry.translate(0, 0.05, 0);
 
         const arrowPickerGeometry = new CylinderGeometry(0.02, 0.06, 0.15, 12);
@@ -879,7 +883,7 @@ class TransformControlsGizmo extends Object3D {
         lineGeometry2.translate(0, 0.25, 0);
 
         function CircleGeometry(radius) {
-            const geometry = new RingGeometry(radius + 0.01, radius + 0.07, 10, 10, 0.5, Math.PI / 2 - 1);
+            const geometry = new RingGeometry(radius + 0.01, radius + 0.1, 10, 10, 0.5, Math.PI / 2 - 1);
             geometry.rotateY(Math.PI / 2);
             geometry.rotateX(Math.PI / 2);
             return geometry;
@@ -1090,20 +1094,23 @@ class TransformControlsGizmo extends Object3D {
 
         const gizmoCombined = {
             XT: [
-                [new Mesh(arrowGeometry, matRedArrow), [0.175, 0, 0], [0, 0, - Math.PI / 2]],
+                [new Mesh(arrowGeometry, matRedArrow), [0.2, 0, 0], [0, 0, - Math.PI / 2]],
             ],
             XR: [
                 [new Mesh(CircleGeometry(0.15, 0.5), matRed), null, [0, Math.PI / 2, Math.PI / 2]],
             ],
             YT: [
-                [new Mesh(arrowGeometry, matGreenArrow), [0, 0.175, 0]],
+                [new Mesh(arrowGeometry, matGreenArrow), [0, 0.2, 0]],
             ],
             YR: [
                 [new Mesh(CircleGeometry(0.15, 0.5), matGreen), null, [Math.PI / 2, Math.PI, Math.PI / 2]],
             ],
-            ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.175], [Math.PI / 2, 0, 0]]
+            ZT: [[new Mesh(arrowGeometry, matBlueArrow), [0, 0, 0.2], [Math.PI / 2, 0, 0]]
             ],
             ZR: [[new Mesh(CircleGeometry(0.15, 0.5), matBlue), null, [0, 0, 0]],
+            ],
+            XYZ: [
+                [new Mesh(new OctahedronGeometry(0.07, 0), matYellowTransparent.clone()), [0, 0, 0]]
             ],
         }
 
@@ -1127,7 +1134,7 @@ class TransformControlsGizmo extends Object3D {
             ],
             ZT: [
                 [new Line(lineGeometry, matHelper.clone()), [0, 0, - 1e3], [0, - Math.PI / 2, 0], [1e6, 1, 1], 'helper']
-            ]
+            ],
         }
 
         // Creates an Object3D with gizmos described in custom hierarchy definition.

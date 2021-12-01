@@ -6,9 +6,9 @@
 
 import * as THREE from "three";
 import { Earcut } from 'three/src/extras/Earcut.js';
-import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "three.meshline";
+import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
-import { canvas } from "./Canvas.vue";
+import { canvas, currentShape } from "./Canvas.vue";
 import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
@@ -16,9 +16,15 @@ import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
 // let pencil = new THREE.TextureLoader().load(
 //     "/pencilVectorWide.png"
 // )
-// let watercolor = new THREE.TextureLoader().load(
+// let texture = new THREE.TextureLoader().load(
+//     "/mesh.jpg"
+// )
+// let texture = new THREE.TextureLoader().load(
 //     "/watercolor.jpg"
 // )
+// texture.wrapS = THREE.RepeatWrapping;
+// texture.wrapT = THREE.RepeatWrapping;
+// texture.repeat.set(1, 1);
 
 let draw = {
     l: undefined,
@@ -29,18 +35,15 @@ let draw = {
             this.geometry = new THREE.BufferGeometry();
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
+            //this.material = materials.has() ? materials.has()
             this.material = new MeshLineMaterial({
-                // useMap: true,
-                // map: pencil,
                 lineWidth: this.stroke.show_stroke ? this.stroke.lineWidth : 0.005,
                 sizeAttenuation: 1,
                 color: this.stroke.show_stroke ? this.stroke.color : 0xFFFFFF,
                 side: THREE.DoubleSide,
                 fog: true,
                 wireframe: false,
-                // depthTest: true,
                 alphaTest: 0.9,
-                // transparent: this.stroke.show_stroke ? false : true,
                 blending: THREE.NormalBlending,
                 transparent: false,
                 repeat: new THREE.Vector2(1, 1),
@@ -48,8 +51,6 @@ let draw = {
             });
             this.mesh = new THREE.Mesh(this.line, this.material);
             this.uuid = this.mesh.uuid;
-            // this.line.userData.points = new Array();
-            // this.line.userData.force = new Array();
 
             this.mesh.raycast = MeshLineRaycast;
             this.mesh.layers.set(1);
@@ -61,15 +62,26 @@ let draw = {
             this.mesh.userData.stroke.force = new Array();
             this.mesh.userData.fill = { show_fill: fill.show_fill, color: fill.color };
 
+            let position = new THREE.Vector3();
+            canvas.getWorldPosition(position);
+            let quaternion = new THREE.Quaternion();
+            canvas.getWorldQuaternion(quaternion);
+            let scale = new THREE.Vector3();
+            canvas.getWorldScale(scale);
+
+            this.mesh.userData.canvas = { shape: currentShape, position: position, quaternion: quaternion, scale: scale };
+
             this.fill = fill;
             this.fillGeometry = new THREE.BufferGeometry();
             this.fillVertices = new Float32Array([]);
             this.fillGeometry.setAttribute("position", new THREE.BufferAttribute(this.fillVertices, 3));
+            this.uvsX = [];
+            this.uvsY = [];
+            this.uvs = [];
             this.triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
+            this.face = null;
             this.fillGeometry.setIndex(this.triangles);
             this.fillMaterial = new THREE.MeshBasicMaterial({
-                // useMap: true,
-                // map: watercolor,
                 color: this.fill.color,
                 side: THREE.DoubleSide,
                 wireframe: false,
@@ -79,7 +91,8 @@ let draw = {
                 polygonOffsetUnits: -1,
                 transparent: this.fill.show_fill ? true : false,
                 opacity: this.fill.show_fill ? 0.05 : 0,
-                fog: true
+                fog: true,
+                // map: texture
             });
             this.fillMesh = new THREE.Mesh(this.fillGeometry, this.fillMaterial);
             this.fillMesh.layers.set(1);
@@ -120,42 +133,26 @@ let draw = {
         move(x, y, z, force, unproject) {
 
             if (this.stroke.show_stroke === false && this.fill.show_fill === false) return
-
             this.addVertex(x, y, z, force, unproject)
         }
-        end_internal(mirrorOn) {
+        end_internal(mirrorOn, render) {
             scene.add(this.mesh);
             drawingScene.clear();
-            renderer.autoClear = true;
-            renderer.render(scene, camera);
 
             this.geometry.verticesNeedsUpdate = true;
             this.stroke.show_stroke ? '' : this.mesh.material.opacity = 0;
             this.fill.show_fill ? this.fillMesh.material.transparent = false : '';
             this.fill.show_fill ? this.fillMesh.material.opacity = 1 : '';
 
-            // let uvs = [];
-            // for (let i = this.fillGeometry.attributes.position.array.length; i >= 0; i = i - 2) {
-            //     uvs.push(this.fillGeometry.attributes.position.array[i]);
-            //     uvs.push(this.fillGeometry.attributes.position.array[i + 1]);
-            // }
-            // this.fillGeometry.setAttribute("uv", new THREE.BufferAttribute(new Float32Array(uvs), 2));
-
-            renderer.render(scene, camera);
-
             this.mesh.position.set(
                 this.mesh.geometry.boundingSphere.center.x,
                 this.mesh.geometry.boundingSphere.center.y,
                 this.mesh.geometry.boundingSphere.center.z
             );
-            renderer.render(scene, camera);
 
             this.geometry.center();
-            renderer.render(scene, camera);
             this.setGeometry("tail");
-            renderer.render(scene, camera);
             this.geometry.needsUpdate = true;
-            renderer.render(scene, camera);
 
             switch (mirrorOn) {
                 case "x":
@@ -171,22 +168,29 @@ let draw = {
                 //it's false, do nothing
             }
 
-            renderer.render(scene, camera);
-
             let vert = this.geometry.attributes.position.array;
             this.fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
-            let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
+            let triangles;
+
+            var planeVector = (new THREE.Vector3(0, 0, 1)).applyQuaternion(this.fillMesh.quaternion);
+            var cameraVector = (new THREE.Vector3(0, 0, -1)).applyQuaternion(camera.quaternion);
+
+            if (planeVector.angleTo(cameraVector) > Math.PI / 2) { triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1) } else { triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3).reverse()), 1) }
             this.fillGeometry.setIndex(triangles);
             this.fillGeometry.computeBoundingSphere();
-            //this.fillGeometry.computeVertexNormals();
-            renderer.render(scene, camera);
+
+
+            if (render === true) {
+                renderer.autoClear = true;
+                renderer.render(scene, camera);
+            }
         }
         end(mirrorOn) {
 
             if (this.stroke.show_stroke === false && this.fill.show_stroke === false) return
             if (this.geometry.attributes.position.array.length < 3) return
 
-            this.end_internal(mirrorOn);
+            this.end_internal(mirrorOn, true);
 
             let uuid = this.uuid;
             let vertices = this.geometry.attributes.position.array;
@@ -220,7 +224,8 @@ let draw = {
                         position,
                         quaternion,
                         scale,
-                        matrix
+                        matrix,
+                        true
                     );
                 }
             });
@@ -229,9 +234,6 @@ let draw = {
 
         }
         addVertex(x, y, z, force, unproject) {
-
-            //trying to add a bit of noise maybe?
-            // force = force * Math.random() * 4;
 
             var v3 = new THREE.Vector3(x, y, z);
             if (unproject) {
@@ -243,11 +245,17 @@ let draw = {
             try {
                 var intersectedObject = raycaster.intersectObjects([canvas])[0];
                 var nt = intersectedObject.point;
-                // var normal = intersectedObject.face.normal;
-                // let offset = 30;
-                // normal.x = normal.x / offset;
-                // normal.y = normal.y / offset;
-                // normal.z = normal.z / offset;
+                if (this.face === null) {
+                    if (
+                        (Math.sign(intersectedObject.face.normal.y) === -1 || Object.is(Math.sign(intersectedObject.face.normal.y), -0))
+                        ||
+                        (Math.sign(intersectedObject.face.normal.z) === -1 || Object.is(Math.sign(intersectedObject.face.normal.z), -0))
+                    ) {
+                        this.face = 'back'
+                    } else {
+                        this.face = 'front'
+                    }
+                }
                 let normal = { x: 0, y: 0, z: 0 };
                 v4 = new THREE.Vector4(nt.x + normal.x, nt.y + normal.y, nt.z + normal.z, force);
             } catch (err) {
@@ -256,14 +264,25 @@ let draw = {
                 return
             }
 
+            function map(n, start1, stop1, start2, stop2) {
+                return (
+                    ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2
+                );
+            }
+
             if (unproject) {
                 this.appendToBuffer(v4);
                 let pt = this.getAveragePoint(0);
                 if (pt) {
                     //stroke
+                    this.mesh.userData.vertices.push([pt.x, pt.y, pt.z]);
                     this.mesh.userData.stroke.force.push(pt.w);
 
                     this.geometry.attributes.position.array = this.Float32Concat(this.geometry.attributes.position.array, new Float32Array([pt.x, pt.y, pt.z]));
+
+                    this.uvsX.push(pt.x)
+                    this.uvsY.push(pt.y)
+
                     this.geometry.attributes.position.count = this.geometry.attributes.position.count + 3
                     this.geometry.attributes.position.needsUpdate = true;
 
@@ -272,6 +291,21 @@ let draw = {
                         this.fillGeometry.setAttribute('position', new THREE.BufferAttribute(vert, 3));
                         this.fillGeometry.attributes.position.needsUpdate = true;
                         this.fillGeometry.computeBoundingSphere();
+
+                        const uvLowestX = Math.min(...this.uvsX);
+                        const uvHighestX = Math.max(...this.uvsX);
+                        const uvLowestY = Math.min(...this.uvsY);
+                        const uvHighestY = Math.max(...this.uvsY);
+
+                        this.uvs = []
+                        for (let u = 0; u < this.uvsX.length; u++) {
+                            let x = map(this.uvsX[u], uvLowestX, uvHighestX, 0.01, 0.99)
+                            let y = map(this.uvsY[u], uvLowestY, uvHighestY, 0.01, 0.99)
+                            this.uvs.push(x, y);
+                        }
+
+                        this.fillGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(this.uvs, 2));
+                        this.fillGeometry.attributes.uv.needsUpdate = true;
 
                         let triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
                         this.fillGeometry.index = triangles;
@@ -378,6 +412,27 @@ let draw = {
                 }
             );
         }
+        setUvs() {
+            function map(n, start1, stop1, start2, stop2) {
+                return (
+                    ((n - start1) / (stop1 - start1)) * (stop2 - start2) + start2
+                );
+            }
+
+            const uvLowestX = Math.min(...this.uvsX);
+            const uvHighestX = Math.max(...this.uvsX);
+            const uvLowestY = Math.min(...this.uvsY);
+            const uvHighestY = Math.max(...this.uvsY);
+            this.uvs = []
+            for (let u = 0; u < this.uvsX.length; u++) {
+                let x = map(this.uvsX[u], uvLowestX, uvHighestX, 0.01, 0.99)
+                let y = map(this.uvsY[u], uvLowestY, uvHighestY, 0.01, 0.99)
+                this.uvs.push(x, y);
+            }
+
+            this.fillGeometry.setAttribute('uv', new THREE.Float32BufferAttribute(this.uvs, 2));
+            this.fillGeometry.attributes.uv.needsUpdate = true;
+        }
         cancel() {
             drawingScene.remove(this.mesh);
             mirror.eraseMirrorOf(this.mesh);
@@ -402,26 +457,38 @@ let draw = {
     onEnd: function (mirrorOn) {
         this.l.end(mirrorOn);
     },
-    onEnd_internal: function (mirrorOn) {
-        this.l.end_internal(mirrorOn);
+    onEnd_internal: function (mirrorOn, render) {
+        this.l.end_internal(mirrorOn, render);
     },
     onCancel: function () {
         this.l ? this.l.cancel() : null;
     },
-    fromVertices(vertices, stroke, fill, mirrorOn, uuid, position, quaternion, scale, matrix) {
+    fromVertices(vertices, stroke, fill, mirrorOn, uuid, position, quaternion, scale, matrix, render) {
+
+        let verticesArray = [];
+        vertices.forEach((v3) => {
+            verticesArray.push(v3.x, v3.y, v3.z);
+        });
+
         this.l = new this.draw(stroke, fill);
         this.onStart(0, 0, 0, 0, false, mirrorOn, stroke, fill);
-        console.log(this.l.geometry.attributes.position.array)
         this.l.geometry.attributes.position.array = vertices;
         this.l.geometry.attributes.position.count = vertices.length / 3;
         this.l.geometry.attributes.position.needsUpdate = true;
+
+        for (let i = 0; i < vertices.length / 3; i++) {
+            let v3 = new THREE.Vector3().fromArray(vertices, i * 3).applyMatrix4(matrix);
+            this.l.uvsX.push(v3.x)
+            this.l.uvsY.push(v3.y)
+        }
+
+        this.l.setUvs();
+
         this.l.mesh.userData.stroke.force = stroke.force;
         this.l.setGeometry();
-        renderer.autoClear = false;
-        renderer.clearDepth();
-        renderer.render(drawingScene, camera);
+
         if (uuid) { this.l.mesh.uuid = uuid; }
-        this.onEnd_internal(mirrorOn);
+        this.onEnd_internal(mirrorOn, false);
         if (matrix) {
             this.l.mesh.applyMatrix4(matrix)
         }
@@ -448,7 +515,7 @@ let draw = {
             );
         }
         scene.add(this.l.mesh)
-        renderer.render(scene, camera)
+        if (render === true) { renderer.render(scene, camera) }
     }
 }
 

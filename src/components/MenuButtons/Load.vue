@@ -1,15 +1,18 @@
 <template>
-  <button @click="importFromJson">Load</button>
+  <button @click="importFromJson">{{ text }}</button>
 </template>
 
 <script>
 import { draw } from "../draw.js";
+import { scene, renderer, camera } from "../../App.vue";
 
 export default {
   name: "Import",
   props: {},
   data() {
-    return {};
+    return {
+      text: "Load",
+    };
   },
   methods: {
     importFromJson: function () {
@@ -22,30 +25,27 @@ export default {
         file = event.target.files[0];
         function onReaderLoad(event) {
           var json = JSON.parse(event.target.result);
-          try {
-            json.forEach((l) => {
-              console.log(l);
-
-              draw.fromVertices(
-                new Float32Array(l.vertices),
-                l.stroke,
-                l.fill,
-                l.mirrorOn,
-                null, //uuid, not necessary to restore in import
-                l.position,
-                l.quaternion,
-                l.scale,
-                l.matrix
-              );
-            });
-          } catch (err) {
-            console.log(err);
-            // app.toast.show = true;
-            // app.toast.text = "Error. No line data found";
-            // setTimeout(function () {
-            //   app.toast.show = false;
-            // }, 2000);
+          let i = 0;
+          function drawLine(l) {
+            draw.fromVertices(
+              new Float32Array(l.vertices),
+              l.stroke,
+              l.fill,
+              l.mirrorOn,
+              null, //uuid, not necessary to restore in import
+              l.position,
+              l.quaternion,
+              l.scale,
+              l.matrix
+            );
+            if (i < json.length - 1) {
+              i++;
+              drawLine(json[i]);
+            } else {
+              renderer.render(scene, camera);
+            }
           }
+          drawLine(json[i]);
         }
         if (file.type == "application/json") {
           var reader = new FileReader();
@@ -61,6 +61,9 @@ export default {
       };
       input.click();
     },
+    // updateText: function (index, length) {
+    //   this.text = "Loading " + index + "/" + length;
+    // },
   },
   watch: {},
   mounted() {},

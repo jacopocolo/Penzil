@@ -87,7 +87,7 @@ export default {
         return this.easeInOutQuadYoyo(
           this.currentLength,
           this.startAzimuthAngle,
-          (this.startAzimuthAngle / 100) * 5,
+          Math.PI / 20,
           this.length
         );
       }

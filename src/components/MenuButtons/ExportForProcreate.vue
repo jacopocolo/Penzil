@@ -1,5 +1,5 @@
 <template>
-  <button @click="showExportModal">Export for Blender</button>
+  <button @click="showExportModal">Export for Procreate</button>
 </template>
 
 <script>
@@ -11,7 +11,7 @@ export default {
   },
   methods: {
     showExportModal: function () {
-      this.$emit("modal", { display: true, mode: "export" });
+      this.$emit("modal", { display: true, mode: "procreate" });
     },
   },
   watch: {},

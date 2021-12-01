@@ -55,36 +55,46 @@
       />
     </span>
     <span
-      class="canvas-button"
+      class="canvas-button transform-mode"
       @click="toggleTransformMode()"
       v-bind:class="[!visible ? 'disabled' : '']"
       v-if="!shapeSelectionVisibility"
     >
-      <span v-if="mode === 'combined'" class="icon-and-label"
-        ><img
-          src="@/assets/icons/translate.svg"
-          alt="Switch to scale"
-        />Move</span
+      <span
+        class="icon-and-label"
+        v-bind:class="[mode === 'combined' ? 'active' : '']"
       >
-      <span v-if="mode === 'scale'" class="icon-and-label"
+        <img src="@/assets/icons/translate.svg" alt="Switch to scale" />
+        <span v-if="mode === 'combined'">Move</span>
+      </span>
+      <span
+        class="icon-and-label"
+        v-bind:class="[mode === 'scale' ? 'active' : '']"
         ><img
           src="@/assets/icons/scale.svg"
           alt="Switch to move and rotate"
-        />Scale</span
+        /><span v-if="mode === 'scale'">Scale</span></span
       ></span
     >
     <span
       class="canvas-button"
       @click="toggleControls()"
-      v-bind:class="[!visible ? 'disabled' : '']"
+      v-bind:class="[
+        !visible ? 'disabled' : '',
+        !transformationEnabled ? 'active' : '',
+      ]"
       v-if="!shapeSelectionVisibility"
-      ><span v-if="transformationEnabled" class="icon-and-label"
+      ><span
+        v-bind:class="[transformationEnabled ? '' : 'hidden']"
+        class="icon-and-label"
         ><img
           src="@/assets/icons/lockControls.svg"
           alt="Hide the canvas controls"
         />Unlocked</span
       >
-      <span v-if="!transformationEnabled" class="icon-and-label"
+      <span
+        v-bind:class="[!transformationEnabled ? '' : 'hidden']"
+        class="icon-and-label"
         ><img
           src="@/assets/icons/unlockControls.svg"
           alt="Show the canvas controls"
@@ -95,6 +105,7 @@
       class="canvas-button"
       @click="toggleVisibility()"
       v-if="!shapeSelectionVisibility"
+      v-bind:class="[!visible ? 'active' : '']"
     >
       <span v-if="visible" class="icon-and-label"
         ><img
@@ -102,7 +113,7 @@
           alt="Hide the canvas controls"
         />Visible</span
       >
-      <span v-if="!visible" class="icon-and-label"
+      <span v-bind:class="[!visible ? '' : 'hidden']" class="icon-and-label"
         ><img
           src="@/assets/icons/showCanvas.svg"
           alt="Show the canvas controls"
@@ -113,12 +124,12 @@
       class="canvas-button"
       @click="toggleSnap()"
       v-if="!shapeSelectionVisibility"
-      v-bind:class="[!visible ? 'disabled' : '']"
-      ><span v-if="!snap" class="icon-and-label"
+      v-bind:class="[!visible ? 'disabled' : '', snap ? 'active' : '']"
+      ><span v-bind:class="[!snap ? '' : 'hidden']" class="icon-and-label"
         ><img src="@/assets/icons/snapOff.svg" alt="Turn off snap" />Snap
         off</span
       >
-      <span v-if="snap" class="icon-and-label">
+      <span v-bind:class="[snap ? '' : 'hidden']" class="icon-and-label">
         <img src="@/assets/icons/snapOn.svg" alt="Turn on snap" />Snap on</span
       ></span
     >
@@ -133,10 +144,24 @@
     >
       <img
         src="@/assets/icons/reset.svg"
-        alt="Reset canvas position and rotation"
+        alt="Reset canvas position, rotation and scale"
       />
     </span>
-    <div class="canvasShapeSelection" v-if="shapeSelectionVisibility">
+    <!-- <span
+      v-bind:class="[!visible ? 'disabled' : '']"
+      class="canvas-button"
+      @click="restoreTransformation()"
+      v-if="!shapeSelectionVisibility"
+    >
+      <img
+        src="@/assets/icons/MagicWand.svg"
+        alt="Restore canvas position, rotation and scale"
+      />
+    </span> -->
+    <div
+      class="canvasShapeSelection"
+      v-bind:class="[shapeSelectionVisibility ? '' : 'hidden']"
+    >
       <span @click="setCanvasShape('plane')">
         <input
           type="radio"
@@ -213,7 +238,9 @@ import { TransformControls } from "./transformControls.js";
 import { GLTFLoader } from "three/examples/jsm/loaders/GLTFLoader.js";
 import { scene, renderer, camera, vm } from "../App.vue";
 
-export let canvas, controls;
+export let canvas, controls, currentShape;
+let raycaster;
+let canvasMirror;
 let geometry = new THREE.PlaneGeometry(5, 5);
 let headGeometry;
 
@@ -224,7 +251,7 @@ export default {
       material: new THREE.MeshToonMaterial({
         color: 0xe6edf5,
         transparent: true,
-        opacity: 0.95,
+        opacity: 0.8,
         side: THREE.DoubleSide,
         polygonOffset: true,
         polygonOffsetFactor: 2.5,
@@ -243,13 +270,16 @@ export default {
       shape: "plane",
       snap: false,
       shapeSelectionVisibility: false,
+      restoringTransformation: false,
     };
   },
   props: {
     selectedShape: String,
     selectedTool: String,
+    mirror: [Boolean, String],
+    mouse: Object,
   },
-  emits: ["selected-canvas-shape"],
+  emits: ["selected-canvas-shape", "set-tool-enabled"],
   methods: {
     setUp() {
       const material = this.material;
@@ -260,11 +290,57 @@ export default {
       controls.mode = "combined";
       // controls.scale.set(1.1, 1.1, 1.1);
       controls.addEventListener("change", () => {
-        renderer.render(scene, camera);
         //this is not very elegant but…
         if (vm != undefined) {
           vm.$refs.raycastCanvas.transformationResetDisabled = false;
         }
+
+        if (canvasMirror !== undefined) {
+          var position = new THREE.Vector3();
+          canvas.getWorldPosition(position);
+          var quaternion = new THREE.Quaternion();
+          canvas.getWorldQuaternion(quaternion);
+          var scale = new THREE.Vector3();
+          canvas.getWorldScale(scale);
+          switch (vm.$refs.raycastCanvas.mirror) {
+            case "x":
+              canvasMirror.position.set(-position.x, position.y, position.z);
+              canvasMirror.quaternion.set(
+                -quaternion.x,
+                quaternion.y,
+                quaternion.z,
+                -quaternion.w
+              );
+              canvasMirror.scale.set(-scale.x, scale.y, scale.z);
+              canvasMirror.matrixWorldNeedsUpdate = true;
+              break;
+            case "y":
+              canvasMirror.position.set(position.x, -position.y, position.z);
+              canvasMirror.quaternion.set(
+                quaternion.x,
+                -quaternion.y,
+                quaternion.z,
+                -quaternion.w
+              );
+              canvasMirror.scale.set(scale.x, -scale.y, scale.z);
+              canvasMirror.matrixWorldNeedsUpdate = true;
+              break;
+            case "z":
+              canvasMirror.position.set(position.x, position.y, -position.z);
+              canvasMirror.quaternion.set(
+                quaternion.x,
+                quaternion.y,
+                -quaternion.z,
+                -quaternion.w
+              );
+              canvasMirror.scale.set(scale.x, scale.y, -scale.z);
+              canvasMirror.matrixWorldNeedsUpdate = true;
+              break;
+            default:
+              return;
+          }
+        }
+        renderer.render(scene, camera);
       });
       controls.enabled = true;
       scene.add(controls);
@@ -286,6 +362,23 @@ export default {
       canvas.scale.set(this.startScale.x, this.startScale.y, this.startScale.z);
       renderer.render(scene, camera);
       this.transformationResetDisabled = true;
+    },
+    restoreTransformation() {
+      this.$emit("set-tool-enabled", false);
+      this.restoringTransformation = true;
+    },
+    setShapeAndMatrix(shape, position, quaternion, scale) {
+      this.setCanvasShape(shape);
+      console.log(position);
+      canvas.position.set(position.x, position.y, position.z);
+      canvas.quaternion.set(
+        quaternion.x,
+        quaternion.y,
+        quaternion.z,
+        quaternion.w
+      );
+      canvas.scale.set(scale.x, scale.y, scale.z);
+      renderer.render(scene, camera);
     },
     toggleTransformMode() {
       if (this.mode === "combined") {
@@ -314,17 +407,32 @@ export default {
     toggleVisibility() {
       if (canvas.visible === true) {
         this.visible = false;
+
         if (this.transformationEnabled === true) {
           controls.visible = false;
         }
+
+        //if controls are enabled we temporary disable them without overriding the setting
+        if (controls.enabled === true) {
+          controls.enabled = false;
+        }
+
         canvas.visible = false;
         renderer.render(scene, camera);
       } else {
         this.visible = true;
+
         if (this.transformationEnabled === true) {
           controls.visible = true;
         }
+
+        //if controls were enabled, restore them to be enabled
+        if (controls.enabled === false && this.transformationEnabled === true) {
+          controls.enabled = true;
+        }
+
         canvas.visible = true;
+
         renderer.render(scene, camera);
       }
     },
@@ -344,7 +452,31 @@ export default {
     },
     setCanvasShape(val) {
       this.shape = val;
+      currentShape = val;
       this.$emit("selected-canvas-shape", val);
+      this.shapeSelectionVisibility = false;
+    },
+    setUpMirror(val) {
+      switch (val) {
+        case "x":
+          canvasMirror = canvas.clone();
+          canvasMirror.applyMatrix4(canvas.matrixWorld.makeScale(-1, 1, 1));
+          scene.add(canvasMirror);
+          renderer.render(scene, camera);
+          break;
+
+        case "y":
+          break;
+
+        case "z":
+          break;
+
+        default:
+          break;
+      }
+    },
+    removeMirror() {
+      scene.remove(canvasMirror);
     },
   },
   watch: {
@@ -427,6 +559,36 @@ export default {
       //   }
       // }
     },
+    mirror: function (val) {
+      if (val === false) {
+        this.removeMirror();
+      } else {
+        this.setUpMirror(val);
+      }
+    },
+    mouse: function (val) {
+      if (this.restoringTransformation === true) {
+        raycaster = new THREE.Raycaster();
+        try {
+          raycaster.setFromCamera(new THREE.Vector2(val.x, val.y), camera);
+          raycaster.params.Line.threshold = 0.05;
+          raycaster.layers.set(1);
+          let obj = raycaster.intersectObjects(scene.children)[0].object;
+          if (obj != undefined && obj.geometry.type == "MeshLine") {
+            this.setShapeAndMatrix(
+              obj.userData.canvas.shape,
+              obj.userData.canvas.position,
+              obj.userData.canvas.quaternion,
+              obj.userData.canvas.scale
+            );
+          }
+        } catch (error) {
+          console.log(error);
+        }
+        this.$emit("set-tool-enabled", true);
+        this.restoringTransformation = false;
+      }
+    },
   },
   mounted() {
     this.setCanvasShape(this.shape);
@@ -440,10 +602,6 @@ export default {
   position: absolute;
   top: 12px;
   left: 12px;
-  /* background-color: white;
-  filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
-  height: 44px;
-  border-radius: 8px; */
   font-weight: 900;
   display: flex;
   flex-direction: column;
@@ -472,8 +630,6 @@ export default {
 .canvasShapeSelection > span > label {
   display: flex;
   flex-direction: row;
-  /* width: 100px; */
-  /* align-items: center; */
   align-items: initial;
 }
 
@@ -526,8 +682,31 @@ export default {
   align-items: center;
   gap: 4px;
   font-size: 0.5em;
+  border-radius: 22px;
   color: #1c1c1e;
   padding: 0px 12px 0px 4px;
+}
+
+.transform-mode {
+  padding: 0px 2px;
+}
+
+.active {
+  box-shadow: inset 0px 0px 0px 1px #fff;
+  background-color: #ffe8b3;
+}
+
+.hidden {
+  display: none;
+}
+
+label {
+  display: flex;
+  width: 60px;
+  height: 44px;
+  align-content: center;
+  justify-content: center;
+  margin: 0px;
 }
 
 #transform-mode {
@@ -542,6 +721,17 @@ export default {
 @media (pointer: coarse) {
   #transform-mode {
     display: none;
+  }
+}
+
+@media (min-width: 320px) and (max-width: 480px) {
+  .canvasSettings {
+    top: 80px;
+  }
+
+  .icon-and-label {
+    max-width: 32px;
+    overflow: hidden;
   }
 }
 </style>

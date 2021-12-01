@@ -5,7 +5,8 @@
       <div class="component-container">
         <Welcome v-if="modalProp.mode === 'about'" />
         <Feedback v-if="modalProp.mode === 'feedback'" />
-        <ExportForBlender v-if="modalProp.mode === 'export'" />
+        <export-for-blender v-if="modalProp.mode === 'blender'" />
+        <export-for-procreate v-if="modalProp.mode === 'procreate'" />
         <Tutorial v-if="modalProp.mode === 'tutorial'" />
         <Survey v-if="modalProp.mode === 'survey'" />
       </div>
@@ -17,6 +18,7 @@
 import Welcome from "./ModalContent/Welcome.vue";
 import Feedback from "./ModalContent/Feedback.vue";
 import ExportForBlender from "./ModalContent/ExportForBlender.vue";
+import ExportForProcreate from "./ModalContent/ExportForProcreate.vue";
 import Tutorial from "./ModalContent/Tutorial.vue";
 import Survey from "./ModalContent/Survey.vue";
 
@@ -26,6 +28,7 @@ export default {
     Welcome,
     Feedback,
     ExportForBlender,
+    ExportForProcreate,
     Tutorial,
     Survey,
   },
@@ -63,15 +66,21 @@ export default {
 }
 
 .modal {
-  width: 50%;
-  height: 50%;
+  width: fit-content;
+  min-width: 50%;
+  max-width: 75%;
+  max-width: 800px;
+  height: fit-content;
+  min-height: 50%;
+  max-height: 70%;
+  overflow-y: scroll;
   background-color: white;
   filter: drop-shadow(0px 0px 24px rgba(0, 0, 0, 0.08));
   border-radius: 8px;
   -webkit-user-select: none;
   -moz-user-select: none;
   -ms-user-select: none;
-  user-select: none;
+  user-select: text;
   touch-action: none;
   padding: 32px;
 }

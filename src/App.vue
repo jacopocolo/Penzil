@@ -16,6 +16,7 @@
   />
   <undo-redo @selected-tool="setSelectedTool" ref="undoRedo" />
   <Input
+    @mouse-coordinates="setMouseCoordinates"
     :selectedTool="tool"
     :mirror="mirror"
     :stroke="stroke"
@@ -25,11 +26,18 @@
   <Canvas
     ref="raycastCanvas"
     @selected-canvas-shape="setSelectedCanvasShape"
+    @set-tool-enabled="setToolEnabled"
     :selectedShape="canvasShape"
     :selectedTool="tool"
+    :mirror="mirror"
+    :mouse="mouse"
   />
-  <Menu @modal-set="setModal" @preview="setPreview" />
+  <Menu @modal-set="setModal" ref="dotdotdot" />
+  <Share @modal-set="setModal" @preview="setPreview" ref="share" />
   <show-tutorial @modal-set="setModal" :show="showTutorialButton" />
+  <!-- <div>
+    <a id="ar" rel="ar"><img src="@/assets/icons/AR.png" /></a>
+  </div> -->
 </template>
 
 <script>
@@ -47,6 +55,7 @@ import TransormToolbar from "./components/TransformToolbar.vue";
 import { select } from "./components/select.js";
 import LineSettings from "./components/LineSettings.vue";
 import Menu from "./components/Menu.vue";
+import Share from "./components/Share.vue";
 import Canvas from "./components/Canvas.vue";
 import { controls, canvas } from "./components/Canvas.vue";
 import Modal from "./components/Modal.vue";
@@ -89,6 +98,7 @@ export default {
     ViewportCube,
     UndoRedo,
     Menu,
+    Share,
     Canvas,
     Modal,
     VideoExportPreview,
@@ -112,6 +122,7 @@ export default {
       modalProp: { show: false, mode: "about" },
       previewing: false,
       showTutorialButton: true,
+      mouse: {},
     };
   },
   emits: ["modal-set", "selected-canvas-shape"],
@@ -261,6 +272,7 @@ export default {
       scene.add(light);
 
       this.$.refs.raycastCanvas.setUp();
+      this.$.refs.raycastCanvas.resetTransformation();
 
       window.addEventListener("resize", this.onWindowResize);
       window.addEventListener("orientationchange", this.onWindowResize);
@@ -336,6 +348,12 @@ export default {
 
       this.$.refs.undoRedo.updateUi();
     },
+    setToolEnabled: function (val) {
+      this.toolEnabled = val;
+    },
+    setMouseCoordinates: function (val) {
+      this.mouse = val;
+    },
     setSelectedCanvasShape: function (val) {
       this.canvasShape = val;
     },
@@ -379,6 +397,9 @@ export default {
   mounted() {
     this.init();
     this.animate();
+
+    // this.mirror = "x";
+
     vm = this;
     this.cameraResetDisabled = false; //this is an override, I'm not quite sure what sets it to true on mount
 
@@ -448,15 +469,6 @@ input[type="radio"] {
   width: 0;
 }
 
-label {
-  display: flex;
-  width: 60px;
-  height: 44px;
-  align-content: center;
-  justify-content: center;
-  margin: 0px;
-}
-
 input[type="radio"]:checked + label {
   background-color: #ffe8b3;
 }
@@ -467,6 +479,7 @@ input[type="radio"]:not(:checked) + label {
 
 .disabled {
   pointer-events: none;
+  touch-action: none;
   opacity: 0.6;
 }
 
@@ -492,12 +505,13 @@ a:hover {
     display: none;
   }
 
-  .canvasSettings {
+  .soapbar {
     display: none;
   }
 
-  .soapbar {
-    display: none;
+  .canvasSettings {
+    top: auto;
+    bottom: 12px;
   }
 }
 </style>
