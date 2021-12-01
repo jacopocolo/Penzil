@@ -69,6 +69,7 @@ export default {
   width: fit-content;
   min-width: 50%;
   max-width: 75%;
+  max-width: 800px;
   height: fit-content;
   min-height: 50%;
   max-height: 70%;

@@ -365,7 +365,7 @@ export default {
 
 @media (orientation: landscape) {
   #usdz-options {
-    padding-left: 1px;
+    padding-left: 16px;
   }
 }
 
