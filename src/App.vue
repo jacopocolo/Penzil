@@ -7,6 +7,7 @@
   />
   <tool-selector @selected-tool="setSelectedTool" :selectedTool="tool" />
   <line-settings @stroke="setStroke" @fill="setFill" :selectedTool="tool" />
+  <materials />
   <transorm-toolbar
     :top="transformToolbar.top"
     :left="transformToolbar.left"
@@ -59,6 +60,7 @@ import Share from "./components/Share.vue";
 import Canvas from "./components/Canvas.vue";
 import { controls, canvas } from "./components/Canvas.vue";
 import Modal from "./components/Modal.vue";
+import Materials from "./components/Materials.vue";
 import VideoExportPreview from "./components/VideoExportPreview.vue";
 import ShowTutorial from "./components/ShowTutorial.vue";
 
@@ -103,6 +105,7 @@ export default {
     Modal,
     VideoExportPreview,
     ShowTutorial,
+    Materials,
   },
   data() {
     return {

@@ -6,12 +6,13 @@
 
 import * as THREE from "three";
 import { Earcut } from 'three/src/extras/Earcut.js';
-import { MeshLine, MeshLineMaterial, MeshLineRaycast } from "meshline";
+import { MeshLine, MeshLineRaycast } from "meshline";
 import { scene, drawingScene, renderer, camera } from "../App.vue";
 import { canvas, currentShape } from "./Canvas.vue";
 import { erase } from "./erase.js"
 import { mirror } from "./mirror.js"
 import { undoManager, undoRedoComponent } from "./UndoRedo.vue"
+import { materialsComponent } from "./Materials.vue"
 
 // let pencil = new THREE.TextureLoader().load(
 //     "/pencilVectorWide.png"
@@ -35,20 +36,13 @@ let draw = {
             this.geometry = new THREE.BufferGeometry();
             this.vertices = new Float32Array([]);
             this.geometry.setAttribute("position", new THREE.BufferAttribute(this.vertices, 3));
-            //this.material = materials.has() ? materials.has()
-            this.material = new MeshLineMaterial({
-                lineWidth: this.stroke.show_stroke ? this.stroke.lineWidth : 0.005,
-                sizeAttenuation: 1,
-                color: this.stroke.show_stroke ? this.stroke.color : 0xFFFFFF,
-                side: THREE.DoubleSide,
-                fog: true,
-                wireframe: false,
-                alphaTest: 0.9,
-                blending: THREE.NormalBlending,
-                transparent: false,
-                repeat: new THREE.Vector2(1, 1),
-                opacity: !this.stroke.show_stroke ? 1 : 1,
-            });
+
+            this.materials = materialsComponent.$.ctx.returnMaterials(stroke, fill);
+
+            console.log(this.materials);
+
+            this.material = this.materials[0];
+
             this.mesh = new THREE.Mesh(this.line, this.material);
             this.uuid = this.mesh.uuid;
 
@@ -81,19 +75,9 @@ let draw = {
             this.triangles = new THREE.BufferAttribute(new Uint16Array(Earcut.triangulate(this.fillGeometry.attributes.position.array, null, 3)), 1);
             this.face = null;
             this.fillGeometry.setIndex(this.triangles);
-            this.fillMaterial = new THREE.MeshBasicMaterial({
-                color: this.fill.color,
-                side: THREE.DoubleSide,
-                wireframe: false,
-                polygonOffset: this.stroke.show_stroke ? true : false,
-                polygonOffsetFactor: this.stroke.lineWidth * 1000,
-                depthTest: true,
-                polygonOffsetUnits: -1,
-                transparent: this.fill.show_fill ? true : false,
-                opacity: this.fill.show_fill ? 0.05 : 0,
-                fog: true,
-                // map: texture
-            });
+
+            this.fillMaterial = this.materials[1];
+
             this.fillMesh = new THREE.Mesh(this.fillGeometry, this.fillMaterial);
             this.fillMesh.layers.set(1);
         }
