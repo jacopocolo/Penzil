@@ -4,7 +4,7 @@
 
 Penzil is a web application for sketching in 3d, powered by three.js and Vue. It is intended to be a light version of Blender's Grease pencil for the web. Penzil is designed for tablet with a pen, but it should work on desktop as well.
 
-See the [Roadmap](https://github.com/jacopocolo/Penzil/projects/1) for upcoming features. 
+The project is currently on pause and offered as-is. 
 
 ## Basic instructions
 
